@@ -2,1151 +2,976 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Mitral Valve Simulator — Single File</title>
-  <meta name="description" content="Web-based, single-file mitral valve simulator for repair training."/>
+  <title>Mitral Valve Surgical Simulator (Web)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+  <meta name="description" content="Web-based mitral valve repair & replacement simulator for training and education."/>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <!-- Three.js (global) + OrbitControls + lil-gui (tiny panel) -->
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://unpkg.com/lil-gui@0.19/dist/lil-gui.umd.min.js"></script>
   <style>
-    :root {
-      color-scheme: dark;
-      --bg: #0b0f14;
-      --panel: #0f1620;
-      --ink: #d8e1ea;
-      --accent: #4cc9f0;
-      --ok: #7ef7c9;
-      --warn: #ffd166;
-      --err: #ff6b6b;
+    :root{
+      --bg:#0b0f14;
+      --bg2:#0e141b;
+      --panel:#111822;
+      --ink:#e9eef6;
+      --muted:#9bb2ca;
+      --accent:#47d4a1;
+      --danger:#ff6b6b;
+      --warning:#f6c945;
+      --ok:#8bffb3;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 14px;
     }
-    html, body { height: 100%; margin: 0; }
-    body {
-      background: radial-gradient(1200px 800px at 70% 10%, #101826, #0b0f14 55%);
-      color: var(--ink);
-      font: 14px/1.4 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:radial-gradient(1200px 900px at 70% 10%, #0f1621 0%, var(--bg) 70%);}
+    body{font:14px/1.2 Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink);overscroll-behavior:none;}
+    #app{position:fixed; inset:0; display:grid; grid-template-rows:auto 1fr auto; grid-template-columns:260px 1fr 320px; grid-template-areas:
+      "header header header"
+      "left   main   right"
+      "footer footer footer"; gap:10px; padding:10px;}
+    header,aside,main,footer{background:linear-gradient(180deg,var(--panel),#0b121a); border:1px solid #1b2a3a; border-radius:var(--radius); box-shadow:var(--shadow);}
+    header{grid-area:header; display:flex; align-items:center; justify-content:space-between; padding:10px 14px;}
+    #brand{display:flex; align-items:center; gap:12px;}
+    #brand .dot{width:14px; height:14px; border-radius:50%; background:conic-gradient(#ff4d6d, #c9184a, #ff758f);}
+    #brand h1{font-size:16px; margin:0; letter-spacing:.3px}
+    #simCanvas{display:block; width:100%; height:100%; border-radius:12px;}
+    main{grid-area:main; position:relative; overflow:hidden; padding:6px;}
+    .scopeVignette{
+      pointer-events:none; position:absolute; inset:6px; border-radius:12px;
+      background: radial-gradient(ellipse at center, rgba(0,0,0,0) 60%, rgba(0,0,0,.22) 75%, rgba(0,0,0,.55) 100%);
+      mix-blend-mode:multiply; opacity:.85;
     }
-    #app { position: relative; height: 100%; width: 100%; overflow: hidden; }
-    canvas { display: block; width: 100%; height: 100%; }
-
-    .hud { position: absolute; inset: 0; pointer-events: none; }
-    .panel {
-      position: absolute;
-      background: color-mix(in oklab, var(--panel) 88%, transparent);
-      backdrop-filter: blur(8px) saturate(120%);
-      border: 1px solid #1d2735; border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.35);
-      color: var(--ink); pointer-events: auto;
-    }
-    .panel h3 { margin: 0; padding: 10px 12px; font-weight: 600; letter-spacing: .2px; border-bottom: 1px solid #1d2735; }
-    .panel .body { padding: 10px 12px; }
-
-    #stats    { position: absolute; top: 12px; left: 12px; min-width: 220px; }
-    #controls { position: absolute; top: 12px; right: 12px; min-width: 340px; }
-    #toasts   { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); display: grid; gap: 10px; }
-
-    .btn { display: inline-flex; align-items: center; gap: 8px; background: #1a2331; padding: 8px 12px; border-radius: 12px; border: 1px solid #253247;
-      color: var(--ink); cursor: pointer; user-select: none; text-decoration: none; transition: .15s ease; }
-    .btn:hover  { background: #213248; border-color: #2f4461; }
-    .btn:active { transform: translateY(1px); }
-    .btn[aria-pressed="true"] { outline: 2px solid var(--accent); }
-
-    .kv { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; }
-    .kv .k { opacity: .72; }
-    .kv .v { font-variant-numeric: tabular-nums; }
-
-    #error { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -60%); max-width: 720px; background: #141b23; border: 1px solid #2a374c;
-      border-left: 6px solid var(--err); padding: 18px 20px; border-radius: 14px; display: none; }
-    #error h2 { margin: 0 0 6px; }
-    #error pre { background: #0b1118; padding: 10px 12px; border-radius: 10px; overflow-x: auto; }
-
-    footer.disclaimer {
-      position: absolute; left: 12px; bottom: 6px; opacity: .55; font-size: 12px; pointer-events: none;
+    .hud{position:absolute; left:12px; bottom:12px; display:flex; flex-wrap:wrap; gap:8px;}
+    .pill{background:#112131; border:1px solid #22384f; padding:8px 10px; border-radius:999px; color:var(--muted);}
+    .pill b{color:var(--ink)}
+    .kbd{display:inline-flex; align-items:center; justify-content:center; min-width:20px; padding:0 6px; height:20px; border-radius:5px; background:#0d1520; border:1px solid #2a3e55; color:#d0e1f7; font-weight:600; font-size:12px; margin:0 2px;}
+    aside{padding:12px; overflow:auto}
+    aside h2{font-size:13px; letter-spacing:.2px; text-transform:uppercase; color:#c8d7e8; margin:2px 0 10px;}
+    .card{background:#0e1622; border:1px solid #203149; border-radius:12px; padding:10px; margin-bottom:10px;}
+    .row{display:flex; gap:8px; flex-wrap:wrap;}
+    .btn{appearance:none; border:none; background:#12304b; border:1px solid #224765; color:#e6f1fb; padding:10px 12px; border-radius:10px; cursor:pointer;}
+    .btn:hover{filter:brightness(1.08)}
+    .btn:active{transform:translateY(1px)}
+    .btn.alt{background:#193346; border-color:#2a5a7c}
+    .btn.green{background:#0f3b2f;border-color:#2d7c6a}
+    .btn.red{background:#3b1020;border-color:#7c2d55}
+    .grid2{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+    .kpi{background:#0b1420; border:1px solid #1c2c42; border-radius:10px; padding:10px; }
+    .kpi h3{margin:0 0 6px 0; font-size:12px; text-transform:uppercase; color:#b8cde4; letter-spacing:.2px;}
+    .kpi .val{font-size:18px; font-weight:700}
+    .kpi small{color:#9fb3c9}
+    #teeWrap{position:absolute; top:10px; right:10px; width:240px; height:180px; background:#0c1219; border:1px solid #22364a; border-radius:10px; overflow:hidden; display:none;}
+    #teeTitle{position:absolute; top:8px; left:10px; font-size:12px; color:#cbe2ff; z-index:3; text-shadow:0 2px 6px rgba(0,0,0,.6)}
+    #tee{width:100%; height:100%; display:block;}
+    #overlayMsg{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:40px; text-align:center; background:rgba(10,14,20,.5); backdrop-filter: blur(6px); }
+    #overlayMsg .bubble{max-width:820px; background:#0e1624; border:1px solid #23405d; border-radius:16px; padding:18px; box-shadow:var(--shadow);}
+    #overlayMsg h3{margin:0 0 10px 0;}
+    #overlayMsg .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
+    #overlayMsg .li{background:#0c1320; border:1px solid #1b2b40; padding:10px; border-radius:12px;}
+    footer{grid-area:footer; display:flex; align-items:center; justify-content:space-between; padding:8px 12px; font-size:12px; color:#b7ccdf}
+    .link{color:#bfe3ff; text-decoration:underline; cursor:pointer}
+    .switch{display:inline-flex; align-items:center; gap:8px}
+    .switch input{accent-color:var(--accent); transform:scale(1.1)}
+    .legend{font-size:12px; color:#9db2c9}
+    .warn{color:var(--warning)}
+    .ok{color:var(--ok)}
+    .danger{color:var(--danger)}
+    .sep{height:1px;background:#1b2b3f;margin:10px 0}
+    /* Small screens */
+    @media (max-width:1100px){
+      #app{grid-template-columns:1fr; grid-template-rows:auto 1fr auto auto; grid-template-areas:
+        "header" "main" "left" "right" "footer"}
+      aside{max-height:45vh}
+      #teeWrap{width:180px;height:140px}
     }
   </style>
 </head>
 <body>
-  <div id="app">
-    <canvas id="sim" aria-label="Mitral Valve Simulator canvas"></canvas>
-    <div class="hud" aria-live="polite">
-      <div id="stats" class="panel" role="group" aria-label="Runtime statistics">
-        <h3>Runtime</h3>
-        <div class="body kv">
-          <div class="k">Renderer</div><div class="v" id="stat-renderer">—</div>
-          <div class="k">FPS</div><div class="v" id="stat-fps">—</div>
-          <div class="k">Frame (ms)</div><div class="v" id="stat-ms">—</div>
-          <div class="k">Sim (ms)</div><div class="v" id="stat-sim">—</div>
-          <div class="k">Draw (ms)</div><div class="v" id="stat-draw">—</div>
-          <div class="k">Substeps</div><div class="v" id="stat-sub">—</div>
-        </div>
-      </div>
-
-      <div id="controls" class="panel" role="group" aria-label="Controls">
-        <h3>Controls</h3>
-        <div class="body" style="display: grid; gap: 10px;">
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <button class="btn" id="btn-pause" aria-pressed="false">⏸ Pause (P)</button>
-            <button class="btn" id="btn-reset">🔄 Reset</button>
-            <button class="btn" id="btn-full">⤢ Fullscreen</button>
-          </div>
-          <div class="kv">
-            <div class="k">Grid</div>
-            <div class="v"><input type="checkbox" id="chk-grid" checked aria-label="Toggle grid"></div>
-            <div class="k">Bloom</div>
-            <div class="v"><input type="checkbox" id="chk-bloom" checked aria-label="Toggle bloom"></div>
-          </div>
-          <div style="opacity:.85">
-            Orbit: L-drag • Zoom: Wheel • Pan: Shift+L-drag<br/>
-            <strong>Instrument:</strong> R-drag move • Wheel depth • L-click jaw • Q/E roll • W/S pitch • A/D yaw • R reset<br/>
-            <strong>Hemodynamics:</strong> Adjust Flow (L/min) in the Hemodynamics panel (bottom-right).
-          </div>
-        </div>
-      </div>
-
-      <div id="toasts" aria-live="polite"></div>
-      <div id="error" role="alert">
-        <h2>Initialization error</h2>
-        <div>Sorry — the simulator couldn't start. Details:</div>
-        <pre id="error-log"></pre>
-      </div>
-      <footer class="disclaimer">Educational simulator (non-clinical).</footer>
+<div id="app">
+  <header>
+    <div id="brand">
+      <div class="dot"></div>
+      <h1>Mitral Valve Surgical Simulator • Web</h1>
     </div>
-  </div>
+    <div class="row">
+      <button class="btn green" id="btnStart">Start Simulation</button>
+      <button class="btn alt" id="btnReset">Reset</button>
+      <button class="btn" id="btnRecord">Record</button>
+      <button class="btn" id="btnExport">Export</button>
+      <button class="btn" id="btnHelp">Help</button>
+    </div>
+  </header>
 
-  <!-- All logic inline as one ES module -->
-  <script type="module">
-    // External ESM modules
-    import * as THREE from 'https://esm.sh/three@0.160.0';
-    import { OrbitControls } from 'https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls.js';
-    import { WebGPURenderer } from 'https://esm.sh/three@0.160.0/examples/jsm/renderers/webgpu/WebGPURenderer.js';
-    // =============== Engine Core ===============
-    class EventBus extends EventTarget {
-      on(type, listener) { this.addEventListener(type, listener); }
-      off(type, listener) { this.removeEventListener(type, listener); }
-      emit(type, detail = {}) { this.dispatchEvent(new CustomEvent(type, { detail })); }
-    }
-    class Plugin {
-      onInit(engine) {}
-      onFixedUpdate(dt) {}
-      onBeforeRender(alpha) {}
-      onAfterRender() {}
-      onDispose() {}
-    }
-    class Perf {
-      constructor(){ this._last = performance.now(); this.fps = 0; this.ms = 0; }
-      frameStart(){ this._t0 = performance.now(); }
-      frameEnd(){
-        const now = performance.now();
-        this.ms = now - this._t0;
-        const dt = now - this._last; this._last = now;
-        this.fps = 1000 / dt;
-      }
-    }
-    class Engine {
-      constructor(opts){
-        this.canvas = opts.canvas;
-        this.fixedHz = opts.fixedHz ?? 120;
-        this.dtFixed = 1 / this.fixedHz;
-        this.maxSubsteps = 5;
-        this.timeScale = 1;
-        this.running = false;
-        this.paused = false;
-        this.eventBus = new EventBus();
-        this.perf = new Perf();
-        this.perfSim = 0; this.perfDraw = 0; this.lastAlpha = 0;
-        this._plugins = [];
-        this._accum = 0; this._lastStamp = performance.now();
+  <aside style="grid-area:left">
+    <h2>Scenario</h2>
+    <div class="card">
+      <label>Procedure:</label>
+      <div class="row" style="margin-top:6px">
+        <button class="btn" data-scn="repair-annuloplasty">Repair: Annuloplasty + Neo-Chordae</button>
+        <button class="btn" data-scn="repair-resection">Repair: Posterior Resection + Ring</button>
+        <button class="btn" data-scn="replacement">Replacement: Bioprosthetic</button>
+      </div>
+      <div class="sep"></div>
+      <div class="legend">
+        <div><span class="kbd">1</span> Forceps • <span class="kbd">2</span> Needle/Suture •
+        <span class="kbd">3</span> Scissors • <span class="kbd">4</span> Ring Sizer •
+        <span class="kbd">5</span> Ring Inserter • <span class="kbd">6</span> Valve Prosthesis</div>
+        <div><span class="kbd">Ctrl</span>+Click = place suture; <span class="kbd">Shift</span> = precision</div>
+        <div>Orbit: LMB rotate • RMB pan • Wheel zoom</div>
+      </div>
+    </div>
 
-        this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color('#0c121a');
-        this.camera = new THREE.PerspectiveCamera(50, 16/9, 0.05, 200);
-        this.camera.position.set(0.85, 0.65, 1.6);
+    <h2>Checklist</h2>
+    <div class="card" id="checklist"></div>
 
-        this.rendererKind = 'WebGL';
-        try {
-          if (opts.useWebGPU !== false && 'gpu' in navigator) {
-            this.renderer = new WebGPURenderer({ canvas: this.canvas, antialias: true });
-            this.renderer.init();
-            this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            this.renderer.toneMappingExposure = 1.0;
-            this.rendererKind = 'WebGPU';
-          } else {
-            throw new Error('WebGPU not requested or not available');
-          }
-        } catch (e) {
-          this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true, alpha: true });
-          this.renderer.outputColorSpace = THREE.SRGBColorSpace;
-          this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-          this.renderer.toneMappingExposure = 1.0;
-          this.renderer.shadowMap.enabled = true;
-          this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-          try { this.renderer.getContext().getExtension('OES_element_index_uint'); } catch {}
-        }
+    <h2>Settings</h2>
+    <div class="card">
+      <div class="row">
+        <label class="switch"><input id="toggleVignette" type="checkbox" checked> Endoscopic Vignette</label>
+        <label class="switch"><input id="toggleTEE" type="checkbox"> TEE Overlay</label>
+        <label class="switch"><input id="toggleBeat" type="checkbox" checked> Heartbeat</label>
+        <label class="switch"><input id="toggleCollisions" type="checkbox" checked> Tissue Collisions</label>
+      </div>
+      <div class="sep"></div>
+      <div class="row">
+        <button class="btn" id="btnLighting">Cinematic Lighting</button>
+        <button class="btn" id="btnScope">Scope Cam</button>
+        <button class="btn" id="btnTop">Top Cam</button>
+      </div>
+    </div>
+  </aside>
 
-        this.controls = new OrbitControls(this.camera, this.canvas);
-        this.controls.enableDamping = true;
-        this.controls.dampingFactor = 0.06;
-        this.controls.target.set(0, 0.12, 0);
+  <main>
+    <canvas id="simCanvas"></canvas>
+    <div class="scopeVignette" id="vignette"></div>
 
-        this._bindResize();
-        this._bindInput();
-        this.resize();
-      }
-      addPlugin(p){ this._plugins.push(p); p.onInit?.(this); return p; }
-      start(){ if (this.running) return; this.running = true; this._tick(); }
-      stop(){ this.running = false; }
-      setPaused(v){ this.paused = v; document.getElementById('btn-pause')?.setAttribute('aria-pressed', v ? 'true' : 'false'); }
-      resetClock(){ this._accum = 0; this._lastStamp = performance.now(); }
-      _tick(){
-        if (!this.running) return;
-        this.perf.frameStart();
-        const now = performance.now();
-        let dt = (now - this._lastStamp) / 1000 * this.timeScale;
-        this._lastStamp = now;
-        dt = Math.min(dt, 0.2);
-        this._accum += dt;
+    <div id="teeWrap">
+      <div id="teeTitle">TEE (Simulated)</div>
+      <canvas id="tee"></canvas>
+    </div>
 
-        const t0 = performance.now();
-        let substeps = 0;
-        while (this._accum >= this.dtFixed && substeps < this.maxSubsteps){
-          if (!this.paused){
-            for (const p of this._plugins) p.onFixedUpdate?.(this.dtFixed);
-            this.eventBus.emit('fixedStep', { dt: this.dtFixed });
-          }
-          this._accum -= this.dtFixed; substeps++;
-        }
-        this.perfSim = performance.now() - t0;
+    <div class="hud" id="hud">
+      <div class="pill"><b>Tool</b>: <span id="toolName">Forceps</span></div>
+      <div class="pill"><b>Scenario</b>: <span id="scnName">Repair: Annuloplasty + Neo-Chordae</span></div>
+      <div class="pill"><b>Tension</b>: <span id="tension">0.0</span> N</div>
+      <div class="pill"><b>Tissue Trauma</b>: <span id="trauma" class="ok">OK</span></div>
+    </div>
 
-        const alpha = this._accum / this.dtFixed; this.lastAlpha = alpha;
-        for (const p of this._plugins) p.onBeforeRender?.(alpha);
-
-        const d0 = performance.now();
-        this.controls.update();
-        this.renderer.render(this.scene, this.camera);
-        this.perfDraw = performance.now() - d0;
-
-        for (const p of this._plugins) p.onAfterRender?.();
-        this.perf.frameEnd();
-
-        const el = (id)=>document.getElementById(id);
-        const s = (e, v)=>{ if (e) e.textContent = v; };
-        s(el('stat-renderer'), this.rendererKind);
-        s(el('stat-fps'), this.perf.fps.toFixed(1));
-        s(el('stat-ms'), this.perf.ms.toFixed(2));
-        s(el('stat-sim'), this.perfSim.toFixed(2));
-        s(el('stat-draw'), this.perfDraw.toFixed(2));
-        s(el('stat-sub'), String(substeps));
-
-        requestAnimationFrame(()=>this._tick());
-      }
-      _bindResize(){ window.addEventListener('resize', ()=>this.resize()); }
-      resize(){
-        const w = this.canvas.clientWidth; const h = this.canvas.clientHeight;
-        const dpr = Math.min(window.devicePixelRatio || 1, 2.0);
-        this.renderer.setPixelRatio(dpr);
-        this.renderer.setSize(w, h, false);
-        this.camera.aspect = w / h; this.camera.updateProjectionMatrix();
-      }
-      _bindInput(){
-        window.addEventListener('keydown', (e)=>{
-          if (e.repeat) return;
-          if (e.key === 'p' || e.key === 'P'){ this.setPaused(!this.paused); this.toast(this.paused ? 'Paused' : 'Resumed'); }
-          if (e.key === 'g' || e.key === 'G'){ this.eventBus.emit('toggleGrid'); }
-        });
-        const btnPause = document.getElementById('btn-pause');
-        const btnReset = document.getElementById('btn-reset');
-        const btnFull  = document.getElementById('btn-full');
-        const chkGrid  = document.getElementById('chk-grid');
-        const chkBloom = document.getElementById('chk-bloom');
-        btnPause?.addEventListener('click', ()=>{ this.setPaused(!this.paused); this.toast(this.paused ? 'Paused' : 'Resumed'); });
-        btnReset?.addEventListener('click', ()=>{ this.eventBus.emit('reset'); this.resetClock(); this.toast('Scene reset'); });
-        btnFull?.addEventListener('click', ()=> document.documentElement.requestFullscreen?.());
-        chkGrid?.addEventListener('change', (e)=> this.eventBus.emit('toggleGrid', { value: e.target.checked }));
-        chkBloom?.addEventListener('change', (e)=> this.eventBus.emit('toggleBloom', { value: e.target.checked }));
-      }
-      toast(text, kind='info', ms=1200){
-        const host = document.getElementById('toasts'); if (!host) return;
-        const el = document.createElement('div');
-        el.textContent = text;
-        el.style.padding = '10px 14px';
-        el.style.borderRadius = '12px';
-        el.style.border = '1px solid #2b3a52';
-        el.style.background = '#121a26';
-        if (kind === 'ok')   el.style.borderLeft = '6px solid var(--ok)';
-        if (kind === 'warn') el.style.borderLeft = '6px solid var(--warn)';
-        if (kind === 'err')  el.style.borderLeft = '6px solid var(--err)';
-        host.appendChild(el);
-        setTimeout(()=>{
-          el.style.opacity = '0'; el.style.transform = 'translateY(8px)'; el.style.transition = '.4s ease';
-          setTimeout(()=> el.remove(), 450);
-        }, ms);
-      }
-      fail(err){
-        console.error(err);
-        const box = document.getElementById('error');
-        const log = document.getElementById('error-log');
-        if (box && log){ log.textContent = String(err?.stack || err); box.style.display = 'block'; }
-      }
-    }
-
-    // =============== Surgical Shell ===============
-    class SurgicalShellPlugin extends Plugin {
-      onInit(engine){
-        this.engine = engine;
-        const scene = engine.scene;
-
-        const amb = new THREE.AmbientLight(0x8aa0b7, 0.55);
-        scene.add(amb);
-
-        const key = new THREE.DirectionalLight(0xe9eef7, 1.15);
-        key.position.set(1.6, 2.2, 1.2);
-        key.castShadow = true;
-        key.shadow.mapSize.set(2048, 2048);
-        key.shadow.camera.near = 0.1; key.shadow.camera.far = 10;
-        scene.add(key);
-
-        const fill = new THREE.DirectionalLight(0x6687b0, 0.4);
-        fill.position.set(-1.2, 1.4, -1.4);
-        scene.add(fill);
-
-        const floorGeo = new THREE.PlaneGeometry(10, 10);
-        const floorMat = new THREE.MeshStandardMaterial({ color: 0x0e1722, roughness: 0.9, metalness: 0.0 });
-        const floor = new THREE.Mesh(floorGeo, floorMat);
-        floor.rotation.x = -Math.PI/2; floor.receiveShadow = true; scene.add(floor);
-
-        this.grid = new THREE.GridHelper(4, 40, 0x27405f, 0x1b2a40);
-        this.grid.position.y = 0.001; scene.add(this.grid);
-
-        // Annulus look-alike (visual)
-        const annulus = new THREE.TorusGeometry(0.22, 0.01, 24, 96);
-        const annulusMat = new THREE.MeshPhysicalMaterial({
-          color: 0x4cc9f0, roughness: 0.25, metalness: 0.1, clearcoat: 0.8, transparent: true, opacity: 0.7
-        });
-        const ring = new THREE.Mesh(annulus, annulusMat);
-        ring.rotation.x = Math.PI * 0.5;
-        ring.position.y = 0.12;
-        ring.castShadow = true; ring.receiveShadow = true;
-        scene.add(ring);
-
-        // Visual proxy (not simulated)
-        const leafletGeo = new THREE.PlaneGeometry(0.36, 0.26, 50, 30);
-        leafletGeo.rotateX(-Math.PI/2);
-        for (let i = 0; i < leafletGeo.attributes.position.count; i++) {
-          const x = leafletGeo.attributes.position.getX(i);
-          const z = leafletGeo.attributes.position.getZ(i);
-          const r = Math.sqrt(x*x + z*z);
-          const y = 0.14 * Math.exp(-(r*r) / (2 * 0.12*0.12)) - 0.02 * z;
-          leafletGeo.attributes.position.setY(i, y);
-        }
-        leafletGeo.computeVertexNormals();
-        const leafletMat = new THREE.MeshPhysicalMaterial({
-          color: 0x8fb6ff, roughness: 0.85, metalness: 0.0, transmission: 0.6, thickness: 0.05, transparent: true, opacity: 0.8
-        });
-        const leaflet = new THREE.Mesh(leafletGeo, leafletMat);
-        leaflet.position.y = 0.12;
-        leaflet.castShadow = true; leaflet.receiveShadow = true;
-        leaflet.userData.isProxy = true;
-        scene.add(leaflet);
-
-        engine.eventBus.on('toggleGrid', (e)=>{
-          const v = e.detail?.value ?? !this.grid.visible; this.grid.visible = v;
-        });
-        engine.eventBus.on('reset', ()=>{
-          engine.controls.target.set(0, 0.12, 0);
-          engine.camera.position.set(0.85, 0.65, 1.6);
-        });
-      }
-    }
-
-    // =============== Posterior Leaflet (XPBD) ===============
-    class LeafletXPBDPlugin extends Plugin {
-      constructor(opts={}){ 
-        super();
-        this.opts = Object.assign({
-          width: 0.36, height: 0.26, ny: 26, nx: 36, saddleHeight: 0.14, yOffset: 0.12,
-          massPerVertex: 0.002, damping: 0.02, substeps: 1, iterations: 10,
-          k_par: 2000, k_perp: 600, k_shear: 400, k_area: 3000, k_bend: 200,
-          chordCount: 10, chordSlack: 0.002, chordK: 1200, chordTmax: 3.5,
-          papillaryLeft:{x:-0.06,y:0.02,z:-0.10}, papillaryRight:{x:0.06,y:0.02,z:-0.10},
-          showFibers: true, showStress: true
-        }, opts);
-      }
-      onInit(engine){
-        this.engine = engine; this.scene = engine.scene;
-        this._buildMesh();
-        this.geom = new THREE.BufferGeometry();
-        this.posAttr = new THREE.BufferAttribute(this.x, 3);
-        this.geom.setAttribute('position', this.posAttr);
-        this.geom.setIndex(this.indices);
-        this.geom.computeVertexNormals();
-        this.colors = new Float32Array(this.vertexCount * 3);
-        this.colorAttr = new THREE.BufferAttribute(this.colors, 3);
-        this.geom.setAttribute('color', this.colorAttr);
-        const mat = new THREE.MeshPhysicalMaterial({
-          color: 0x8fb6ff, roughness: 0.8, metalness: 0.0,
-          transmission: 0.55, thickness: 0.05, transparent: true, opacity: 0.94,
-          vertexColors: true, clearcoat: 0.3, clearcoatRoughness: 0.6
-        });
-        this.mesh = new THREE.Mesh(this.geom, mat);
-        this.mesh.castShadow = true; this.mesh.receiveShadow = true;
-        this.scene.add(this.mesh);
-        if (this.opts.showFibers) this._buildFiberGizmos();
-        this._buildChordLines();
-        engine.eventBus.on('reset', ()=> this._resetState());
-      }
-      _buildMesh(){
-        const { nx, ny, width, height, saddleHeight, yOffset } = this.opts;
-        const cols = nx + 1, rows = ny + 1; const nVerts = cols * rows; this.vertexCount = nVerts;
-        this.x = new Float32Array(nVerts * 3);
-        this.xPrev = new Float32Array(nVerts * 3);
-        this.xRest = new Float32Array(nVerts * 3);
-        this.v = new Float32Array(nVerts * 3);
-        this.invMass = new Float32Array(nVerts);
-        const idx = (i, j)=> (j * cols + i);
-        const toXYZ = (i, j)=>{
-          const u = (i / nx - 0.5) * width;
-          const v = (j / ny - 0.5) * height;
-          const r2 = u*u + v*v;
-          const y = saddleHeight * Math.exp(-r2 / (2 * 0.12 * 0.12)) - 0.02 * v + yOffset;
-          return [u, y, v];
-        };
-        for (let j=0; j<=ny; j++){
-          for (let i=0; i<=nx; i++){
-            const id = idx(i,j), off = id*3;
-            const [px, py, pz] = toXYZ(i,j);
-            this.x[off]=this.xPrev[off]=this.xRest[off]=px;
-            this.x[off+1]=this.xPrev[off+1]=this.xRest[off+1]=py;
-            this.x[off+2]=this.xPrev[off+2]=this.xRest[off+2]=pz;
-            this.v[off]=this.v[off+1]=this.v[off+2]=0;
-            const boundary = (i===0 || i===nx || j===0 || j===ny);
-            this.invMass[id] = boundary ? 0 : 1/this.opts.massPerVertex;
-          }
-        }
-        const indices = [];
-        for (let j=0; j<ny; j++){
-          for (let i=0; i<nx; i++){
-            const i0 = idx(i, j), i1 = idx(i+1, j), i2 = idx(i, j+1), i3 = idx(i+1, j+1);
-            indices.push(i0, i2, i1); indices.push(i1, i2, i3);
-          }
-        }
-        this.indices = new Uint32Array(indices);
-        this._buildConstraints(cols, rows, idx);
-        this._buildChords(cols, rows, idx);
-      }
-      _buildConstraints(cols, rows, idx){
-        const { k_par, k_perp, k_shear, k_area, k_bend } = this.opts;
-        this.distanceCons = []; this.areaCons = []; this.bendCons = [];
-        const addDist = (a, b, k)=>{
-          const L0 = this._restLengthFromRest(a, b);
-          this.distanceCons.push({ i:a, j:b, L0, alpha: 1/(k+1e-9), lambda: 0 });
-        };
-        for (let r=0; r<rows; r++){
-          for (let c=0; c<cols; c++){
-            const id = (r*cols + c);
-            if (c+1 < cols) addDist(id, id+1,       k_par);
-            if (r+1 < rows) addDist(id, id+cols,    k_perp);
-            if (c+1 < cols && r+1 < rows) addDist(id, id+cols+1, k_shear);
-            if (c+1 < cols && r-1 >= 0)   addDist(id, id-cols+1, k_shear);
-            if (c+2 < cols) addDist(id, id+2,         k_bend);
-            if (r+2 < rows) addDist(id, id+2*cols,    k_bend);
-          }
-        }
-        const triA0 = (i0, i1, i2)=> this._triAreaFromRest(i0, i1, i2);
-        for (let r=0; r<rows-1; r++){
-          for (let c=0; c<cols-1; c++){
-            const i0 = r*cols + c, i1 = r*cols + c+1, i2 = (r+1)*cols + c, i3 = (r+1)*cols + c+1;
-            this.areaCons.push({ i0, i1: i2, i2: i1, A0: triA0(i0, i2, i1), alpha: 1/(k_area+1e-9), lambda: 0 });
-            this.areaCons.push({ i0: i1, i1: i2, i2: i3, A0: triA0(i1, i2, i3), alpha: 1/(k_area+1e-9), lambda: 0 });
-          }
-        }
-      }
-      _buildChords(cols, rows, idx){
-        const { chordCount, chordSlack, chordK, chordTmax, papillaryLeft, papillaryRight } = this.opts;
-        this.chords = []; const picks = [];
-        const jStart = Math.floor(rows*0.55), jEnd = Math.floor(rows*0.85);
-        for (let k=0; k<chordCount; k++){
-          const j = Math.floor(jStart + (k/(chordCount-1)) * (jEnd - jStart));
-          const t = (k/(chordCount-1))*2 - 1;
-          const i = Math.floor((cols/2) + t * (cols/2-2));
-          picks.push(idx(i,j));
-        }
-        const toArr = (o)=> [o.x, o.y, o.z];
-        const leftAnchor = toArr(papillaryLeft), rightAnchor = toArr(papillaryRight);
-        picks.forEach((vi, k)=>{
-          const anchor = (k < chordCount/2) ? leftAnchor : rightAnchor;
-          const L0 = this._restLengthToAnchorFromRest(vi, anchor);
-          this.chords.push({ i: vi, anchor, L0, slack: chordSlack, k: chordK, Tmax: chordTmax, lambda: 0, failed: false, tension: 0 });
-        });
-      }
-      _buildFiberGizmos(){
-        const { nx, ny } = this.opts; const cols = nx+1, rows = ny+1;
-        const verts = [];
-        for (let j=0; j<rows; j+=Math.max(1, Math.floor(rows/12))){
-          for (let i=0; i<cols; i+=Math.max(1, Math.floor(cols/12))){
-            const id = j*cols+i, off = id*3;
-            const p = new THREE.Vector3(this.x[off], this.x[off+1], this.x[off+2]);
-            const q = new THREE.Vector3(this.x[off]+0.02, this.x[off+1], this.x[off+2]);
-            verts.push(p.x,p.y,p.z, q.x,q.y,q.z);
-          }
-        }
-        const geo = new THREE.BufferGeometry();
-        geo.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(verts), 3));
-        const mat = new THREE.LineBasicMaterial({ color: 0x4cc9f0, transparent: true, opacity: 0.7 });
-        this.fiberLines = new THREE.LineSegments(geo, mat);
-        this.scene.add(this.fiberLines);
-      }
-      _buildChordLines(){
-        const verts = [];
-        for (const ch of this.chords){
-          const off = ch.i*3;
-          verts.push(this.x[off], this.x[off+1], this.x[off+2], ch.anchor[0], ch.anchor[1], ch.anchor[2]);
-        }
-        const geo = new THREE.BufferGeometry();
-        geo.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(verts), 3));
-        const mat = new THREE.LineBasicMaterial({ color: 0xffe08a, transparent: true, opacity: 0.9 });
-        this.chordLines = new THREE.LineSegments(geo, mat);
-        this.scene.add(this.chordLines);
-      }
-      _updateChordLines(){
-        const attr = this.chordLines.geometry.getAttribute('position'); let k = 0;
-        for (const ch of this.chords){
-          const off = ch.i*3;
-          attr.array[k++] = this.x[off]; attr.array[k++] = this.x[off+1]; attr.array[k++] = this.x[off+2];
-          attr.array[k++] = ch.anchor[0]; attr.array[k++] = ch.anchor[1]; attr.array[k++] = ch.anchor[2];
-        }
-        attr.needsUpdate = true;
-      }
-      _restLengthFromRest(i, j){
-        const ix=i*3, jx=j*3; const dx=this.xRest[ix]-this.xRest[jx], dy=this.xRest[ix+1]-this.xRest[jx+1], dz=this.xRest[ix+2]-this.xRest[jx+2];
-        return Math.hypot(dx, dy, dz);
-      }
-      _restLengthToAnchorFromRest(i, anchor){
-        const ix = i*3; const dx=this.xRest[ix]-anchor[0], dy=this.xRest[ix+1]-anchor[1], dz=this.xRest[ix+2]-anchor[2];
-        return Math.hypot(dx, dy, dz);
-      }
-      _triAreaFromRest(i0,i1,i2){
-        const a0=i0*3,a1=i1*3,a2=i2*3;
-        const x0=this.xRest[a0],y0=this.xRest[a0+1],z0=this.xRest[a0+2];
-        const x1=this.xRest[a1],y1=this.xRest[a1+1],z1=this.xRest[a1+2];
-        const x2=this.xRest[a2],y2=this.xRest[a2+1],z2=this.xRest[a2+2];
-        const ux=x1-x0, uy=y1-y0, uz=z1-z0;
-        const vx=x2-x0, vy=y2-y0, vz=z2-z0;
-        const cx=uy*vz-uz*vy, cy=uz*vx-ux*vz, cz=ux*vy-uy*vx;
-        return 0.5*Math.hypot(cx,cy,cz);
-      }
-      _solveDistance(c, invMass, x, dt){
-        const ix=c.i*3, jx=c.j*3;
-        const dx=x[ix]-x[jx], dy=x[ix+1]-x[jx+1], dz=x[ix+2]-x[jx+2];
-        const len=Math.hypot(dx,dy,dz); if (len<1e-7) return;
-        const C=len-c.L0; const nx=dx/len, ny=dy/len, nz=dz/len;
-        const wi=invMass[c.i], wj=invMass[c.j], w=wi+wj; const alpha=c.alpha/(dt*dt);
-        const denom=w+alpha; if (denom<1e-9) return;
-        const dlambda=-(C+alpha*(c.lambda||0))/denom; c.lambda=(c.lambda||0)+dlambda;
-        const dxi=wi*dlambda, dxj=-wj*dlambda;
-        x[ix]+=dxi*nx; x[ix+1]+=dxi*ny; x[ix+2]+=dxi*nz;
-        x[jx]+=dxj*nx; x[jx+1]+=dxj*ny; x[jx+2]+=dxj*nz;
-      }
-      _solveArea(c, invMass, x, dt){
-        const i0=c.i0,i1=c.i1,i2=c.i2; const a0=i0*3,a1=i1*3,a2=i2*3;
-        const x0=new THREE.Vector3(x[a0],x[a0+1],x[a0+2]);
-        const x1=new THREE.Vector3(x[a1],x[a1+1],x[a1+2]);
-        const x2=new THREE.Vector3(x[a2],x[a2+1],x[a2+2]);
-        const e1=new THREE.Vector3().subVectors(x1,x0);
-        const e2=new THREE.Vector3().subVectors(x2,x0);
-        const n=new THREE.Vector3().crossVectors(e1,e2);
-        const len=n.length(); if (len<1e-10) return;
-        const area=0.5*len; const nHat=n.multiplyScalar(1/len);
-        const g0=new THREE.Vector3().crossVectors(new THREE.Vector3().subVectors(x2,x1), nHat).multiplyScalar(0.5);
-        const g1=new THREE.Vector3().crossVectors(nHat, new THREE.Vector3().subVectors(x2,x0)).multiplyScalar(0.5);
-        const g2=new THREE.Vector3().crossVectors(new THREE.Vector3().subVectors(x1,x0), nHat).multiplyScalar(0.5);
-        const wi=invMass[i0], wj=invMass[i1], wk=invMass[i2];
-        const w=wi*g0.lengthSq()+wj*g1.lengthSq()+wk*g2.lengthSq(); const alpha=c.alpha/(dt*dt);
-        const C=area-c.A0; const denom=w+alpha; if (denom<1e-12) return;
-        const dlambda=-(C+alpha*(c.lambda||0))/denom; c.lambda=(c.lambda||0)+dlambda;
-        x[a0]+=wi*dlambda*g0.x; x[a0+1]+=wi*dlambda*g0.y; x[a0+2]+=wi*dlambda*g0.z;
-        x[a1]+=wj*dlambda*g1.x; x[a1+1]+=wj*dlambda*g1.y; x[a1+2]+=wj*dlambda*g1.z;
-        x[a2]+=wk*dlambda*g2.x; x[a2+1]+=wk*dlambda*g2.y; x[a2+2]+=wk*dlambda*g2.z;
-      }
-      _solveChord(ch, invMass, x, dt){
-        if (ch.failed) return;
-        const i = ch.i, ix = i*3;
-        const ax = ch.anchor[0], ay = ch.anchor[1], az = ch.anchor[2];
-        const dx = x[ix]-ax, dy = x[ix+1]-ay, dz = x[ix+2]-az;
-        const len = Math.hypot(dx, dy, dz); if (len<1e-7) return;
-        const L0 = ch.L0 + ch.slack; const C = len - L0;
-        const nx=dx/len, ny=dy/len, nz=dz/len;
-        const w = invMass[i]; const alpha=(1/(ch.k+1e-9))/(dt*dt); const denom=w+alpha;
-        const dlambda=-(C+alpha*(ch.lambda||0))/(denom||1e-9); ch.lambda=(ch.lambda||0)+dlambda;
-        const dxi=w*dlambda; x[ix]+=dxi*nx; x[ix+1]+=dxi*ny; x[ix+2]+=dxi*nz;
-        const ext = Math.max(0, len - ch.L0); ch.tension = ch.k * ext;
-        if (ch.tension > ch.Tmax) ch.failed = true;
-      }
-      _resetState(){
-        this.v.fill(0);
-        for (const c of this.distanceCons) c.lambda = 0;
-        for (const c of this.areaCons)     c.lambda = 0;
-        for (const c of this.bendCons)     c.lambda = 0;
-        for (const ch of this.chords){ ch.lambda = 0; ch.failed = false; ch.tension = 0; }
-      }
-      onFixedUpdate(dt){
-        const sub = Math.max(1, this.opts.substeps|0); const h = dt / sub;
-        for (let s=0; s<sub; s++) this._step(h);
-      }
-      onBeforeRender(){
-        this.posAttr.needsUpdate = true; this.geom.computeVertexNormals();
-        if (this.fiberLines) this._updateFiberLines();
-        if (this.chordLines) this._updateChordLines();
-        if (this.opts.showStress){ this._updateColors(); this.colorAttr.needsUpdate = true; }
-      }
-      _step(dt){
-        const n=this.vertexCount, invMass=this.invMass, x=this.x, v=this.v, xPrev=this.xPrev, damping=this.opts.damping;
-        const gx=0, gy=-0.2, gz=0;
-        for (let i=0; i<n; i++){
-          const off=i*3;
-          if (invMass[i]===0){ xPrev[off]=x[off]; xPrev[off+1]=x[off+1]; xPrev[off+2]=x[off+2]; v[off]=v[off+1]=v[off+2]=0; continue; }
-          v[off]+=dt*gx; v[off+1]+=dt*gy; v[off+2]+=dt*gz;
-          xPrev[off]=x[off]; xPrev[off+1]=x[off+1]; xPrev[off+2]=x[off+2];
-          x[off]+=dt*v[off]; x[off+1]+=dt*v[off+1]; x[off+2]+=dt*v[off+2];
-        }
-        for (let iter=0; iter<this.opts.iterations; iter++){
-          for (const c of this.distanceCons) this._solveDistance(c, invMass, x, dt);
-          for (const c of this.bendCons)     this._solveDistance(c, invMass, x, dt);
-          for (const c of this.areaCons)     this._solveArea(c, invMass, x, dt);
-          for (const ch of this.chords)      this._solveChord(ch, invMass, x, dt);
-        }
-        for (let i=0; i<n; i++){
-          const off=i*3;
-          const vx=(x[off]-xPrev[off])/dt, vy=(x[off+1]-xPrev[off+1])/dt, vz=(x[off+2]-xPrev[off+2])/dt;
-          v[off]=vx*(1-damping); v[off+1]=vy*(1-damping); v[off+2]=vz*(1-damping);
-        }
-      }
-      _updateColors(){
-        const cols=this.opts.nx+1, rows=this.opts.ny+1, n=this.vertexCount;
-        const acc=new Float32Array(n), cnt=new Uint16Array(n);
-        const idx=(i,j)=> j*cols+i;
-        const L=(a,b)=>{ const ax=a*3,bx=b*3; const dx=this.x[ax]-this.x[bx],dy=this.x[ax+1]-this.x[bx+1],dz=this.x[ax+2]-this.x[bx+2]; return Math.hypot(dx,dy,dz); };
-        const L0=(a,b)=> this._restLengthFromRest(a,b);
-        for (let j=0; j<rows; j++){
-          for (let i=0; i<cols; i++){
-            const id=idx(i,j);
-            if (i+1<cols){ const n1=idx(i+1,j); const s=Math.abs((L(id,n1)-L0(id,n1))/L0(id,n1)); acc[id]+=s; cnt[id]++; acc[n1]+=s; cnt[n1]++; }
-            if (j+1<rows){ const n2=idx(i,j+1); const s=Math.abs((L(id,n2)-L0(id,n2))/L0(id,n2)); acc[id]+=s; cnt[id]++; acc[n2]+=s; cnt[n2]++; }
-          }
-        }
-        let maxS=1e-6; for (let i=0;i<n;i++){ if (cnt[i]>0){ acc[i]/=cnt[i]; if (acc[i]>maxS) maxS=acc[i]; } }
-        for (let i=0;i<n;i++){
-          const s=Math.min(1,(acc[i]/maxS));
-          const r=Math.min(1, Math.max(0, 2*s - 0.2));
-          const g=Math.min(1, Math.max(0, 1.2 - Math.abs(2*s - 1.0)));
-          const b=Math.min(1, Math.max(0, 1.2 - 2*s));
-          this.colors[i*3]=r; this.colors[i*3+1]=g; this.colors[i*3+2]=b;
-        }
-      }
-      _updateFiberLines(){
-        const pos=this.fiberLines.geometry.getAttribute('position');
-        for (let i=0; i<pos.array.length; i+=6){
-          const x0=pos.array[i], y0=pos.array[i+1], z0=pos.array[i+2];
-          const x1=x0+0.02, y1=y0, z1=z0;
-          pos.array[i]=x0; pos.array[i+1]=y0; pos.array[i+2]=z0;
-          pos.array[i+3]=x1; pos.array[i+4]=y1; pos.array[i+5]=z1;
-        }
-        pos.needsUpdate = true;
-      }
-    }
-
-    // =============== Instrument: Needle Driver (both leaflets) ===============
-    class NeedleDriverPlugin extends Plugin {
-      constructor(opts = {}) {
-        super();
-        this.opts = Object.assign({
-          shaftLength: 0.35, shaftRadius: 0.004,
-          jawLength: 0.018, jawWidth: 0.006, jawOpenDeg: 22,
-          tipContactRadius: 0.006, grabRadius: 0.006,
-          friction: 0.35, moveSpeed: 1.0, rotateSpeed: 0.015
-        }, opts);
-      }
-      onInit(engine) {
-        this.engine = engine; this.scene = engine.scene; this.camera = engine.camera; this.canvas = engine.canvas;
-        this._refreshLeaflets();
-        this._buildInstrument();
-        this.depth = 0.8; this.offsetX = 0; this.offsetY = 0;
-        this.roll = 0; this.pitch = 0; this.yaw = 0;
-        this.jawOpen = true; this.grab = { pluginIdx: -1, vert: -1 };
-        this._updatePose(); this._bindInput();
-        engine.eventBus.on('reset', () => {
-          this.depth = 0.8; this.offsetX = 0; this.offsetY = 0;
-          this.roll = this.pitch = this.yaw = 0; this.jawOpen = true; this.grab = { pluginIdx: -1, vert: -1 };
-          this._updatePose(true);
-        });
-      }
-      _refreshLeaflets(){
-        this.leaflets = this.engine._plugins.filter(p => p && p.mesh && /Leaflet/i.test(p.constructor.name));
-      }
-      _buildInstrument() {
-        const g = new THREE.Group(); g.name = 'NeedleDriver';
-        const shaftGeo = new THREE.CylinderGeometry(this.opts.shaftRadius, this.opts.shaftRadius, this.opts.shaftLength, 24, 1, true);
-        const metal = new THREE.MeshPhysicalMaterial({ color: 0xcad3df, roughness: 0.25, metalness: 0.8, clearcoat: 0.5 });
-        const shaft = new THREE.Mesh(shaftGeo, metal);
-        shaft.rotation.x = Math.PI/2; shaft.castShadow = true; shaft.receiveShadow = true;
-        const jawGeo = new THREE.BoxGeometry(this.opts.jawWidth, this.opts.jawWidth*0.6, this.opts.jawLength);
-        const jawMat = new THREE.MeshPhysicalMaterial({ color: 0xcfd9e6, roughness: 0.3, metalness: 0.6, clearcoat: 0.3 });
-        const jawL = new THREE.Mesh(jawGeo, jawMat); const jawR = new THREE.Mesh(jawGeo, jawMat);
-        const halfL = this.opts.shaftLength/2;
-        jawL.position.set(-this.opts.jawWidth*0.5, 0, -halfL - this.opts.jawLength*0.5);
-        jawR.position.set( this.opts.jawWidth*0.5, 0, -halfL - this.opts.jawLength*0.5);
-        jawL.geometry.translate(0, 0, -this.opts.jawLength*0.5);
-        jawR.geometry.translate(0, 0, -this.opts.jawLength*0.5);
-        const tipSphere = new THREE.Mesh(
-          new THREE.SphereGeometry(this.opts.tipContactRadius*0.5, 16, 12),
-          new THREE.MeshStandardMaterial({ color: 0xffaf8f, emissive: 0x111111, roughness: 0.5, metalness: 0.2 })
-        );
-        tipSphere.position.set(0, 0, -halfL - this.opts.jawLength); tipSphere.castShadow = true;
-        g.add(shaft, jawL, jawR, tipSphere);
-        this.group = g; this.shaft = shaft; this.jawL = jawL; this.jawR = jawR; this.tipViz = tipSphere;
-        this.scene.add(g);
-      }
-      _bindInput() {
-        this.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
-        let dragging = false;
-        this.canvas.addEventListener('mousedown', (e) => { if (e.button === 2) dragging = true; if (e.button === 0) this._toggleJaw(); });
-        window.addEventListener('mouseup', () => dragging = false);
-        window.addEventListener('mousemove', (e) => { if (!dragging) return; this.offsetX += e.movementX * this.opts.moveSpeed; this.offsetY += e.movementY * this.opts.moveSpeed; this._updatePose(); });
-        this.canvas.addEventListener('wheel', (e) => {
-          e.preventDefault(); const delta = Math.sign(e.deltaY);
-          this.depth *= (1 + delta * 0.08); this.depth = Math.max(0.2, Math.min(2.5, this.depth)); this._updatePose();
-        }, { passive: false });
-        window.addEventListener('keydown', (e) => {
-          if (e.repeat) return;
-          if (e.key === 'q' || e.key === 'Q') this.roll -= this.opts.rotateSpeed;
-          if (e.key === 'e' || e.key === 'E') this.roll += this.opts.rotateSpeed;
-          if (e.key === 'w' || e.key === 'W') this.pitch += this.opts.rotateSpeed;
-          if (e.key === 's' || e.key === 'S') this.pitch -= this.opts.rotateSpeed;
-          if (e.key === 'a' || e.key === 'A') this.yaw   -= this.opts.rotateSpeed;
-          if (e.key === 'd' || e.key === 'D') this.yaw   += this.opts.rotateSpeed;
-          if (e.key === 'f' || e.key === 'F') this._toggleJaw();
-          if (e.key === 'r' || e.key === 'R') { this.depth = 0.8; this.offsetX = 0; this.offsetY = 0; this.roll = this.pitch = this.yaw = 0; this.jawOpen = true; this.grab = { pluginIdx: -1, vert: -1 }; }
-          this._updatePose();
-        });
-      }
-      _toggleJaw(){ this.jawOpen = !this.jawOpen; if (!this.jawOpen) this._tryAutoGrab(); else this.grab = { pluginIdx: -1, vert: -1 }; }
-      _tipWorld(){ const local = new THREE.Vector3(0, 0, -this.opts.shaftLength*0.5 - this.opts.jawLength); return this.group.localToWorld(local.clone()); }
-      _tryAutoGrab(){
-        this._refreshLeaflets();
-        const tip = this._tipWorld();
-        let best = { d: 1e9, pluginIdx: -1, vert: -1 };
-        this.leaflets.forEach((L, idx) => {
-          const n = L.vertexCount, x = L.x;
-          for (let i=0;i<n;i++){
-            if (L.invMass[i] === 0) continue;
-            const off=i*3; const dx=x[off]-tip.x, dy=x[off+1]-tip.y, dz=x[off+2]-tip.z;
-            const d=Math.hypot(dx,dy,dz); if (d < this.opts.grabRadius && d < best.d){ best = { d, pluginIdx: idx, vert: i }; }
-          }
-        });
-        this.grab = best;
-        if (best.pluginIdx >= 0) this.engine.toast('Vertex grabbed', 'ok'); else this.engine.toast('No tissue under jaws', 'warn');
-      }
-      _updatePose(force=false) {
-        const cam=this.camera, h=this.canvas.clientHeight; const fov=cam.fov*Math.PI/180;
-        const worldPerPixel=(2*this.depth*Math.tan(fov/2))/h;
-        const forward=new THREE.Vector3(0,0,-1).applyQuaternion(cam.quaternion);
-        const right=new THREE.Vector3(1,0,0).applyQuaternion(cam.quaternion);
-        const up=new THREE.Vector3(0,1,0).applyQuaternion(cam.quaternion);
-        const pos=new THREE.Vector3().copy(cam.position)
-          .add(forward.clone().multiplyScalar(this.depth))
-          .add(right.clone().multiplyScalar(this.offsetX*worldPerPixel))
-          .add(up.clone().multiplyScalar(-this.offsetY*worldPerPixel));
-        const baseQ=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,-1), forward.clone().negate());
-        const qYaw=new THREE.Quaternion().setFromAxisAngle(up, this.yaw);
-        const qPitch=new THREE.Quaternion().setFromAxisAngle(right, this.pitch);
-        const qRoll=new THREE.Quaternion().setFromAxisAngle(forward, this.roll);
-        const q=baseQ.clone().multiply(qYaw).multiply(qPitch).multiply(qRoll);
-        this.group.position.copy(pos); this.group.quaternion.copy(q);
-        const a=THREE.MathUtils.degToRad(this.opts.jawOpenDeg)*(this.jawOpen?1:0.05);
-        this.jawL.rotation.y=a; this.jawR.rotation.y=-a;
-        if (force) this.group.updateMatrixWorld(true);
-      }
-      onFixedUpdate(dt) {
-        this._refreshLeaflets();
-        const tip = this._tipWorld();
-        const R2 = this.opts.tipContactRadius * this.opts.tipContactRadius;
-        const friction = this.opts.friction;
-
-        // Grabbed vertex follows tip
-        if (!this.jawOpen && this.grab.pluginIdx >= 0) {
-          const L = this.leaflets[this.grab.pluginIdx];
-          if (L && L.invMass[this.grab.vert] > 0) {
-            const off = this.grab.vert*3; L.x[off]=tip.x; L.x[off+1]=tip.y; L.x[off+2]=tip.z; L.v[off]=L.v[off+1]=L.v[off+2]=0;
-          }
-        }
-        // Contact on all leaflets
-        this.leaflets.forEach(L=>{
-          const n=L.vertexCount, x=L.x, v=L.v, inv=L.invMass;
-          for (let i=0;i<n;i++){
-            if (inv[i]===0) continue;
-            const off=i*3;
-            const dx=x[off]-tip.x, dy=x[off+1]-tip.y, dz=x[off+2]-tip.z;
-            const d2=dx*dx+dy*dy+dz*dz; if (d2<R2){
-              const d=Math.sqrt(Math.max(d2,1e-9)), nx=dx/d, ny=dy/d, nz=dz/d, pen=(Math.sqrt(R2)-d), k=0.6;
-              x[off]+=k*pen*nx; x[off+1]+=k*pen*ny; x[off+2]+=k*pen*nz;
-              const vx=v[off], vy=v[off+1], vz=v[off+2]; const vn=vx*nx+vy*ny+vz*nz;
-              const vnx=vn*nx, vny=vn*ny, vnz=vn*nz; const vtx=vx-vnx, vty=vy-vny, vtz=vz-vnz;
-              v[off]=vnx+(1-friction)*vtx; v[off+1]=vny+(1-friction)*vty; v[off+2]=vnz+(1-friction)*vtz;
-            }
-          }
-        });
-      }
-      onBeforeRender(){ this.group.updateMatrixWorld(); }
-    }
-
-    // =============== Anterior Leaflet (XPBD) + Coaptation ===============
-    class AnteriorLeafletXPBDPlugin extends Plugin {
-      constructor(opts={}){ 
-        super();
-        this.opts = Object.assign({
-          width:0.36, height:0.26, ny:26, nx:36, saddleHeight:0.16, yOffset:0.12,
-          massPerVertex:0.002, damping:0.02, substeps:1, iterations:10,
-          k_par:2400, k_perp:700, k_shear:450, k_area:3200, k_bend:250,
-          chordCount:8, chordSlack:0.002, chordK:1300, chordTmax:4.0,
-          papillaryLeft:{x:-0.055,y:0.025,z:-0.115}, papillaryRight:{x:0.055,y:0.025,z:-0.115},
-          gapTarget:0.0008, gapBias:0.0, color:0xf0b4a1, showFibers:true, showStress:true
-        }, opts);
-      }
-      onInit(engine){
-        this.engine=engine; this.scene=engine.scene;
-        this.post = engine._plugins.find(p => p && p.constructor && p.constructor.name === 'LeafletXPBDPlugin');
-        if (!this.post) console.warn('[AnteriorLeaflet] Posterior not found — coaptation disabled.');
-        this._buildMesh();
-        this.geom=new THREE.BufferGeometry();
-        this.posAttr=new THREE.BufferAttribute(this.x,3);
-        this.geom.setAttribute('position', this.posAttr);
-        this.geom.setIndex(this.indices); this.geom.computeVertexNormals();
-        this.colors=new Float32Array(this.vertexCount*3);
-        this.colorAttr=new THREE.BufferAttribute(this.colors,3);
-        this.geom.setAttribute('color', this.colorAttr);
-        const mat=new THREE.MeshPhysicalMaterial({
-          color:this.opts.color, roughness:0.78, metalness:0.05, transmission:0.55, thickness:0.05, transparent:true, opacity:0.95,
-          vertexColors:true, clearcoat:0.3, clearcoatRoughness:0.6
-        });
-        this.mesh=new THREE.Mesh(this.geom, mat); this.mesh.castShadow=true; this.mesh.receiveShadow=true; this.scene.add(this.mesh);
-        if (this.opts.showFibers) this._buildFiberGizmos(); this._buildChordLines();
-        engine.eventBus.on('reset', ()=> this._resetState());
-      }
-      _buildMesh(){
-        const { nx, ny, width, height, saddleHeight, yOffset } = this.opts;
-        const cols=nx+1, rows=ny+1, nVerts=cols*rows; this.vertexCount=nVerts;
-        this.x=new Float32Array(nVerts*3); this.xPrev=new Float32Array(nVerts*3); this.xRest=new Float32Array(nVerts*3);
-        this.v=new Float32Array(nVerts*3); this.invMass=new Float32Array(nVerts);
-        const idx=(i,j)=> j*cols+i;
-        const toXYZ=(i,j)=>{
-          const u=(i/nx-0.5)*width; const v=(j/ny-0.5)*height;
-          const r2=u*u+v*v; const tilt=-0.028*v; const y=saddleHeight*Math.exp(-r2/(2*0.12*0.12))+tilt+yOffset;
-          return [u,y,v];
-        };
-        for (let j=0;j<=ny;j++){
-          for (let i=0;i<=nx;i++){
-            const id=idx(i,j), off=id*3; const [px,py,pz]=toXYZ(i,j);
-            this.x[off]=this.xPrev[off]=this.xRest[off]=px; this.x[off+1]=this.xPrev[off+1]=this.xRest[off+1]=py; this.x[off+2]=this.xPrev[off+2]=this.xRest[off+2]=pz;
-            this.v[off]=this.v[off+1]=this.v[off+2]=0; const boundary=(i===0||i===nx||j===0||j===ny); this.invMass[id]=boundary?0:1/this.opts.massPerVertex;
-          }
-        }
-        const indices=[]; for (let j=0;j<ny;j++){ for (let i=0;i<nx;i++){ const i0=idx(i,j),i1=idx(i+1,j),i2=idx(i,j+1),i3=idx(i+1,j+1); indices.push(i0,i2,i1); indices.push(i1,i2,i3); } }
-        this.indices=new Uint32Array(indices);
-        this._buildConstraints(cols, rows, idx); this._buildChords(cols, rows, idx);
-      }
-      _buildConstraints(cols, rows, idx){
-        const { k_par, k_perp, k_shear, k_area, k_bend } = this.opts;
-        this.distanceCons=[]; this.areaCons=[]; this.bendCons=[];
-        const addDist=(a,b,k)=>{ const L0=this._restLengthFromRest(a,b); this.distanceCons.push({i:a,j:b,L0,alpha:1/(k+1e-9),lambda:0}); };
-        for (let r=0;r<rows;r++){
-          for (let c=0;c<cols;c++){
-            const id=r*cols+c;
-            if (c+1<cols) addDist(id, id+1,       k_par);
-            if (r+1<rows) addDist(id, id+cols,    k_perp);
-            if (c+1<cols&&r+1<rows) addDist(id, id+cols+1, k_shear);
-            if (c+1<cols&&r-1>=0)   addDist(id, id-cols+1, k_shear);
-            if (c+2<cols) addDist(id, id+2,         k_bend);
-            if (r+2<rows) addDist(id, id+2*cols,    k_bend);
-          }
-        }
-        const triA0=(i0,i1,i2)=> this._triAreaFromRest(i0,i1,i2);
-        for (let r=0;r<rows-1;r++){
-          for (let c=0;c<cols-1;c++){
-            const i0=r*cols+c, i1=r*cols+c+1, i2=(r+1)*cols+c, i3=(r+1)*cols+c+1;
-            this.areaCons.push({ i0, i1: i2, i2: i1, A0: triA0(i0, i2, i1), alpha: 1/(k_area+1e-9), lambda: 0 });
-            this.areaCons.push({ i0: i1, i1: i2, i2: i3, A0: triA0(i1, i2, i3), alpha: 1/(k_area+1e-9), lambda: 0 });
-          }
-        }
-      }
-      _buildChords(cols, rows, idx){
-        const { chordCount, chordSlack, chordK, chordTmax, papillaryLeft, papillaryRight } = this.opts;
-        this.chords=[]; const picks=[]; const jStart=Math.floor(rows*0.25), jEnd=Math.floor(rows*0.5);
-        for (let k=0;k<chordCount;k++){
-          const j=Math.floor(jStart+(k/(chordCount-1))*(jEnd-jStart));
-          const t=(k/(chordCount-1))*2-1; const i=Math.floor((cols/2)+t*(cols/2-3)); picks.push(idx(i,j));
-        }
-        const toArr=o=>[o.x,o.y,o.z]; const left=toArr(papillaryLeft), right=toArr(papillaryRight);
-        picks.forEach((vi,k)=>{ const anchor=(k<chordCount/2)?left:right; const L0=this._restLengthToAnchorFromRest(vi, anchor);
-          this.chords.push({ i:vi, anchor, L0, slack:chordSlack, k:chordK, Tmax:chordTmax, lambda:0, failed:false, tension:0 }); });
-      }
-      _buildFiberGizmos(){
-        const { nx, ny } = this.opts; const cols=nx+1, rows=ny+1; const verts=[];
-        for (let j=0;j<rows;j+=Math.max(1,Math.floor(rows/12))){
-          for (let i=0;i<cols;i+=Math.max(1,Math.floor(cols/12))){
-            const id=j*cols+i, off=id*3; const p=new THREE.Vector3(this.x[off],this.x[off+1],this.x[off+2]);
-            const q=new THREE.Vector3(this.x[off]+0.02,this.x[off+1],this.x[off+2]); verts.push(p.x,p.y,p.z, q.x,q.y,q.z);
-          }
-        }
-        const geo=new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(verts),3));
-        const mat=new THREE.LineBasicMaterial({ color:0xf7a289, transparent:true, opacity:0.7 });
-        this.fiberLines=new THREE.LineSegments(geo, mat); this.scene.add(this.fiberLines);
-      }
-      _buildChordLines(){
-        const verts=[]; for (const ch of this.chords){ const off=ch.i*3; verts.push(this.x[off],this.x[off+1],this.x[off+2], ch.anchor[0],ch.anchor[1],ch.anchor[2]); }
-        const geo=new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(verts),3));
-        const mat=new THREE.LineBasicMaterial({ color:0xffd39a, transparent:true, opacity:0.85 }); this.chordLines=new THREE.LineSegments(geo,mat); this.scene.add(this.chordLines);
-      }
-      _updateChordLines(){
-        const attr=this.chordLines.geometry.getAttribute('position'); let k=0;
-        for (const ch of this.chords){ const off=ch.i*3; attr.array[k++]=this.x[off]; attr.array[k++]=this.x[off+1]; attr.array[k++]=this.x[off+2]; attr.array[k++]=ch.anchor[0]; attr.array[k++]=ch.anchor[1]; attr.array[k++]=ch.anchor[2]; }
-        attr.needsUpdate=true;
-      }
-      _restLengthFromRest(i, j){ const ix=i*3, jx=j*3; const dx=this.xRest[ix]-this.xRest[jx], dy=this.xRest[ix+1]-this.xRest[jx+1], dz=this.xRest[ix+2]-this.xRest[jx+2]; return Math.hypot(dx,dy,dz); }
-      _restLengthToAnchorFromRest(i, anchor){ const ix=i*3; const dx=this.xRest[ix]-anchor[0], dy=this.xRest[ix+1]-anchor[1], dz=this.xRest[ix+2]-anchor[2]; return Math.hypot(dx,dy,dz); }
-      _triAreaFromRest(i0,i1,i2){ const a0=i0*3,a1=i1*3,a2=i2*3;
-        const x0=this.xRest[a0],y0=this.xRest[a0+1],z0=this.xRest[a0+2];
-        const x1=this.xRest[a1],y1=this.xRest[a1+1],z1=this.xRest[a1+2];
-        const x2=this.xRest[a2],y2=this.xRest[a2+1],z2=this.xRest[a2+2];
-        const ux=x1-x0, uy=y1-y0, uz=z1-z0; const vx=x2-x0, vy=y2-y0, vz=z2-z0;
-        const cx=uy*vz-uz*vy, cy=uz*vx-ux*vz, cz=ux*vy-uy*vx; return 0.5*Math.hypot(cx,cy,cz);
-      }
-      _solveDistance(c, invMass, x, dt){
-        const ix=c.i*3, jx=c.j*3; const dx=x[ix]-x[jx], dy=x[ix+1]-x[jx+1], dz=x[ix+2]-x[jx+2];
-        const len=Math.hypot(dx,dy,dz); if (len<1e-7) return;
-        const C=len-c.L0; const nx=dx/len, ny=dy/len, nz=dz/len; const wi=invMass[c.i], wj=invMass[c.j], w=wi+wj; const alpha=c.alpha/(dt*dt);
-        const denom=w+alpha; if (denom<1e-9) return; const dlambda=-(C+alpha*(c.lambda||0))/denom; c.lambda=(c.lambda||0)+dlambda;
-        const dxi=wi*dlambda, dxj=-wj*dlambda; x[ix]+=dxi*nx; x[ix+1]+=dxi*ny; x[ix+2]+=dxi*nz; x[jx]+=dxj*nx; x[jx+1]+=dxj*ny; x[jx+2]+=dxj*nz;
-      }
-      _solveArea(c, invMass, x, dt){
-        const i0=c.i0, i1=c.i1, i2=c.i2; const a0=i0*3,a1=i1*3,a2=i2*3;
-        const x0=new THREE.Vector3(x[a0],x[a0+1],x[a0+2]);
-        const x1=new THREE.Vector3(x[a1],x[a1+1],x[a1+2]);
-        const x2=new THREE.Vector3(x[a2],x[a2+1],x[a2+2]);
-        const e1=new THREE.Vector3().subVectors(x1,x0);
-        const e2=new THREE.Vector3().subVectors(x2,x0);
-        const n=new THREE.Vector3().crossVectors(e1,e2); const len=n.length(); if (len<1e-10) return;
-        const area=0.5*len; const nHat=n.multiplyScalar(1/len);
-        const g0=new THREE.Vector3().crossVectors(new THREE.Vector3().subVectors(x2,x1), nHat).multiplyScalar(0.5);
-        const g1=new THREE.Vector3().crossVectors(nHat, new THREE.Vector3().subVectors(x2,x0)).multiplyScalar(0.5);
-        const g2=new THREE.Vector3().crossVectors(new THREE.Vector3().subVectors(x1,x0), nHat).multiplyScalar(0.5);
-        const wi=invMass[i0], wj=invMass[i1], wk=invMass[i2]; const w=wi*g0.lengthSq()+wj*g1.lengthSq()+wk*g2.lengthSq(); const alpha=c.alpha/(dt*dt);
-        const C=area-c.A0; const denom=w+alpha; if (denom<1e-12) return; const dlambda=-(C+alpha*(c.lambda||0))/denom; c.lambda=(c.lambda||0)+dlambda;
-        x[a0]+=wi*dlambda*g0.x; x[a0+1]+=wi*dlambda*g0.y; x[a0+2]+=wi*dlambda*g0.z;
-        x[a1]+=wj*dlambda*g1.x; x[a1+1]+=wj*dlambda*g1.y; x[a1+2]+=wj*dlambda*g1.z;
-        x[a2]+=wk*dlambda*g2.x; x[a2+1]+=wk*dlambda*g2.y; x[a2+2]+=wk*dlambda*g2.z;
-      }
-      _solveChord(ch, invMass, x, dt){
-        if (ch.failed) return;
-        const i=ch.i, ix=i*3; const ax=ch.anchor[0], ay=ch.anchor[1], az=ch.anchor[2];
-        const dx=x[ix]-ax, dy=x[ix+1]-ay, dz=x[ix+2]-az; const len=Math.hypot(dx,dy,dz); if (len<1e-7) return;
-        const L0=ch.L0+ch.slack; const C=len-L0; const nx=dx/len, ny=dy/len, nz=dz/len; const w=invMass[i]; const alpha=(1/(ch.k+1e-9))/(dt*dt);
-        const denom=w+alpha; const dlambda=-(C+alpha*(ch.lambda||0))/(denom||1e-9); ch.lambda=(ch.lambda||0)+dlambda;
-        const dxi=w*dlambda; x[ix]+=dxi*nx; x[ix+1]+=dxi*ny; x[ix+2]+=dxi*nz;
-        const ext=Math.max(0,len-ch.L0); ch.tension=ch.k*ext; if (ch.tension>ch.Tmax) ch.failed=true;
-      }
-      _resetState(){
-        this.v.fill(0);
-        for (const c of this.distanceCons) c.lambda=0;
-        for (const c of this.areaCons)     c.lambda=0;
-        for (const c of this.bendCons)     c.lambda=0;
-        for (const ch of this.chords){ ch.lambda=0; ch.failed=false; ch.tension=0; }
-      }
-      onFixedUpdate(dt){
-        const sub=Math.max(1,this.opts.substeps|0); const h=dt/sub; for (let s=0;s<sub;s++) this._step(h);
-        if (this.post) this._solveCoaptation(dt);
-      }
-      onBeforeRender(){ this.posAttr.needsUpdate=true; this.geom.computeVertexNormals(); if (this.fiberLines) this._updateFiberLines(); if (this.chordLines) this._updateChordLines(); if (this.opts.showStress){ this._updateColors(); this.colorAttr.needsUpdate=true; } }
-      _step(dt){
-        const n=this.vertexCount, inv=this.invMass, x=this.x, v=this.v, xPrev=this.xPrev, damping=this.opts.damping;
-        const gx=0, gy=-0.2, gz=0;
-        for (let i=0;i<n;i++){
-          const off=i*3;
-          if (inv[i]===0){ xPrev[off]=x[off]; xPrev[off+1]=x[off+1]; xPrev[off+2]=x[off+2]; v[off]=v[off+1]=v[off+2]=0; continue; }
-          v[off]+=dt*gx; v[off+1]+=dt*gy; v[off+2]+=dt*gz;
-          xPrev[off]=x[off]; xPrev[off+1]=x[off+1]; xPrev[off+2]=x[off+2];
-          x[off]+=dt*v[off]; x[off+1]+=dt*v[off+1]; x[off+2]+=dt*v[off+2];
-        }
-        for (let it=0; it<this.opts.iterations; it++){
-          for (const c of this.distanceCons) this._solveDistance(c, inv, x, dt);
-          for (const c of this.bendCons)     this._solveDistance(c, inv, x, dt);
-          for (const c of this.areaCons)     this._solveArea(c, inv, x, dt);
-          for (const ch of this.chords)      this._solveChord(ch, inv, x, dt);
-        }
-        for (let i=0;i<n;i++){
-          const off=i*3; const vx=(x[off]-xPrev[off])/dt, vy=(x[off+1]-xPrev[off+1])/dt, vz=(x[off+2]-xPrev[off+2])/dt;
-          v[off]=vx*(1-damping); v[off+1]=vy*(1-damping); v[off+2]=vz*(1-damping);
-        }
-      }
-      _solveCoaptation(dt){
-        const nx=this.opts.nx, ny=this.opts.ny; const cols=nx+1, rows=ny+1, gap=this.opts.gapTarget;
-        const xA=this.x, xP=this.post.x, invA=this.invMass, invP=this.post.invMass;
-        for (let j=0;j<rows;j++){
-          for (let i=0;i<cols;i++){
-            const id=j*cols+i; const a=id*3; const p=id*3; const C=(xA[a+1]-xP[p+1])-gap;
-            if (C<0){
-              const wi=invA[id], wj=invP[id], w=wi+wj; if (w>0){ const dl=-C/w; if (wi>0) xA[a+1]+=wi*dl; if (wj>0) xP[p+1]-=wj*dl; }
-            } else if (this.opts.gapBias>0 && C>0 && C<0.004){
-              const wi=invA[id], wj=invP[id], w=wi+wj; if (w>0){ const dl=-Math.min(C,0.001)*this.opts.gapBias/w; if (wi>0) xA[a+1]+=wi*dl; if (wj>0) xP[p+1]-=wj*dl; }
-            }
-          }
-        }
-      }
-      _updateColors(){
-        const cols=this.opts.nx+1, rows=this.opts.ny+1, n=this.vertexCount;
-        const acc=new Float32Array(n), cnt=new Uint16Array(n);
-        const idx=(i,j)=> j*cols+i;
-        const L=(a,b)=>{ const ax=a*3,bx=b*3; const dx=this.x[ax]-this.x[bx],dy=this.x[ax+1]-this.x[bx+1],dz=this.x[ax+2]-this.x[bx+2]; return Math.hypot(dx,dy,dz); };
-        const L0=(a,b)=> this._restLengthFromRest(a,b);
-        for (let j=0;j<rows;j++){
-          for (let i=0;i<cols;i++){
-            const id=idx(i,j);
-            if (i+1<cols){ const n1=idx(i+1,j); const s=Math.abs((L(id,n1)-L0(id,n1))/L0(id,n1)); acc[id]+=s; cnt[id]++; acc[n1]+=s; cnt[n1]++; }
-            if (j+1<rows){ const n2=idx(i,j+1); const s=Math.abs((L(id,n2)-L0(id,n2))/L0(id,n2)); acc[id]+=s; cnt[id]++; acc[n2]+=s; cnt[n2]++; }
-          }
-        }
-        let maxS=1e-6; for (let i=0;i<n;i++){ if (cnt[i]>0){ acc[i]/=cnt[i]; if (acc[i]>maxS) maxS=acc[i]; } }
-        for (let i=0;i<n;i++){
-          const s=Math.min(1,acc[i]/maxS);
-          const r=Math.min(1,Math.max(0,2*s-0.1));
-          const g=Math.min(1,Math.max(0,1.15-Math.abs(2*s-1.0)));
-          const b=Math.min(1,Math.max(0,1.1-2*s));
-          this.colors[i*3]=r; this.colors[i*3+1]=g; this.colors[i*3+2]=b;
-        }
-      }
-      _updateFiberLines(){
-        const pos=this.fiberLines.geometry.getAttribute('position');
-        for (let i=0;i<pos.array.length;i+=6){
-          const x0=pos.array[i], y0=pos.array[i+1], z0=pos.array[i+2];
-          const x1=x0+0.02, y1=y0, z1=z0;
-          pos.array[i]=x0; pos.array[i+1]=y0; pos.array[i+2]=z0;
-          pos.array[i+3]=x1; pos.array[i+4]=y1; pos.array[i+5]=z1;
-        }
-        pos.needsUpdate=true;
-      }
-    }
-
-    // =============== Hemodynamics (EOA + gradient, both leaflets) ===============
-    class HemodynamicsPlugin extends Plugin {
-      constructor(opts = {}) {
-        super();
-        this.opts = Object.assign({
-          planeY: 0.12, Rx: 0.18, Rz: 0.13,
-          samplesX: 28, samplesZ: 20, rayHeight: 0.28,
-          Cd: 0.85, rho: 1060, defaultFlowLpm: 5.0, updateEveryNFrames: 5
-        }, opts);
-      }
-      onInit(engine) {
-        this.engine = engine; this.scene = engine.scene;
-        this._collectMeshes();
-        this.ray = new THREE.Raycaster(); this.ray.firstHitOnly = true;
-        this._buildSamplingGrid(); this._buildAperturePoints();
-        this.flowLpm = this.opts.defaultFlowLpm; this._buildPanel();
-        this.EOA_m2 = 0; this.grad_mmHg = 0; this._frame = 0;
-      }
-      _collectMeshes(){
-        this.valveMeshes = this.engine._plugins.filter(p => p && p.mesh && /Leaflet/i.test(p.constructor.name)).map(p=>p.mesh);
-      }
-      _buildSamplingGrid(){
-        const { samplesX, samplesZ, Rx, Rz } = this.opts; const pts=[];
-        for (let iz=0; iz<samplesZ; iz++){
-          const vz=(iz+0.5)/samplesZ*2-1;
-          for (let ix=0; ix<samplesX; ix++){
-            const vx=(ix+0.5)/samplesX*2-1; const x=vx*Rx, z=vz*Rz;
-            if ((x*x)/(Rx*Rx)+(z*z)/(Rz*Rz) <= 1.0) pts.push({x,z,open:true});
-          }
-        }
-        this.samples=pts; this.annulusArea_m2=Math.PI*Rx*Rz;
-      }
-      _buildAperturePoints(){
-        const positions=new Float32Array(this.samples.length*3);
-        const colors=new Float32Array(this.samples.length*3);
-        const y=this.opts.planeY+0.001;
-        for (let i=0;i<this.samples.length;i++){
-          positions[i*3]=this.samples[i].x; positions[i*3+1]=y; positions[i*3+2]=this.samples[i].z;
-          colors[i*3]=0.2; colors[i*3+1]=0.95; colors[i*3+2]=0.4;
-        }
-        const geo=new THREE.BufferGeometry();
-        geo.setAttribute('position', new THREE.BufferAttribute(positions,3));
-        geo.setAttribute('color', new THREE.BufferAttribute(colors,3));
-        const mat=new THREE.PointsMaterial({ size:0.008, sizeAttenuation:true, vertexColors:true, transparent:true, opacity:0.9 });
-        this.aperturePoints=new THREE.Points(geo, mat); this.aperturePoints.renderOrder=2; this.scene.add(this.aperturePoints);
-      }
-      _buildPanel(){
-        const hud=document.querySelector('.hud'); const panel=document.createElement('div');
-        panel.className='panel'; panel.style.right='12px'; panel.style.bottom='12px'; panel.style.minWidth='320px'; panel.id='hemo-panel';
-        panel.innerHTML = `
-          <h3>Hemodynamics</h3>
-          <div class="body" style="display:grid; gap:10px;">
-            <div class="kv">
-              <div class="k">EOA</div><div class="v"><span id="hemo-eoa">—</span> cm²</div>
-              <div class="k">Mean ΔP</div><div class="v"><span id="hemo-grad">—</span> mmHg</div>
-            </div>
-            <div>
-              <label for="hemo-flow">Flow (L/min): </label>
-              <input id="hemo-flow" type="range" min="2" max="8" step="0.1" value="${this.opts.defaultFlowLpm}" style="width:160px; vertical-align:middle;">
-              <span id="hemo-flow-val" style="font-variant-numeric: tabular-nums;">${this.opts.defaultFlowLpm.toFixed(1)}</span>
-            </div>
-            <div style="opacity:.75; font-size:12px;">EOA via annular-plane aperture; Cd=0.85, ρ=1060 kg/m³.</div>
+    <div id="overlayMsg" style="display:none">
+      <div class="bubble">
+        <h3>Welcome — Mitral Valve Training Simulator</h3>
+        <p>This simulator provides an endoscopic view of the mitral valve for <b>repair</b> (annuloplasty, neo-chordae, posterior resection) and <b>replacement</b>. It models an annulus, anterior/posterior leaflets, papillary muscles, chordae, ring sizing/insertion, basic tissue collision/tearing, suturing, coaptation metrics, and a simulated TEE panel.</p>
+        <div class="grid3" style="margin-top:8px">
+          <div class="li"><b>Controls</b><br>
+            Orbit: LMB rotate • RMB pan • Wheel zoom<br>
+            <span class="kbd">1</span> Forceps • <span class="kbd">2</span> Needle • <span class="kbd">3</span> Scissors •
+            <span class="kbd">4</span> Sizer • <span class="kbd">5</span> Ring • <span class="kbd">6</span> Prosthesis<br>
+            <span class="kbd">Ctrl</span>+Click = place suture • <span class="kbd">Shift</span> = precision
           </div>
-        `;
-        hud.appendChild(panel);
-        const slider=panel.querySelector('#hemo-flow');
-        slider.addEventListener('input',(e)=>{ this.flowLpm=parseFloat(e.target.value); panel.querySelector('#hemo-flow-val').textContent=this.flowLpm.toFixed(1); this._frame=0; });
-        this._panelEOA=panel.querySelector('#hemo-eoa'); this._panelGrad=panel.querySelector('#hemo-grad');
+          <div class="li"><b>Assessment</b><br>
+            Coaptation area, annular dimensions, suture count/placement, ring size match, chordal tension, tissue trauma, time.</div>
+          <div class="li"><b>Notes</b><br>
+            Educational use only. No clinical decisions. Data export and video recording built-in.</div>
+        </div>
+        <div class="row" style="margin-top:10px; justify-content:flex-end">
+          <button class="btn green" id="btnGo">Got it — Start</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <aside style="grid-area:right">
+    <h2>Instruments</h2>
+    <div class="card">
+      <div class="row">
+        <button class="btn" data-tool="forceps">Forceps (1)</button>
+        <button class="btn" data-tool="needle">Needle/Suture (2)</button>
+        <button class="btn" data-tool="scissors">Scissors (3)</button>
+        <button class="btn" data-tool="sizer">Ring Sizer (4)</button>
+        <button class="btn" data-tool="ring">Annuloplasty Ring (5)</button>
+        <button class="btn" data-tool="prosthesis">Valve Prosthesis (6)</button>
+      </div>
+      <div class="sep"></div>
+      <div class="grid2">
+        <div class="kpi">
+          <h3>Annulus (AP × ML)</h3>
+          <div class="val"><span id="ap">0</span> × <span id="ml">0</span> mm</div>
+          <small>Auto-updates with beat</small>
+        </div>
+        <div class="kpi">
+          <h3>Coaptation Area</h3>
+          <div class="val"><span id="coa">0</span> mm²</div>
+          <small>Higher is better (repair)</small>
+        </div>
+        <div class="kpi">
+          <h3>Ring Size Suggest</h3>
+          <div class="val"><span id="ringSize">—</span></div>
+          <small>Based on AP/ML</small>
+        </div>
+        <div class="kpi">
+          <h3>Score</h3>
+          <div class="val"><span id="score">0</span></div>
+          <small>− trauma, + coaptation & sizing</small>
+        </div>
+      </div>
+    </div>
+
+    <h2>Procedure Log</h2>
+    <div class="card" style="max-height:40vh; overflow:auto" id="log"></div>
+  </aside>
+
+  <footer>
+    <div>© <span id="year"></span> ValveSim — Training & Education Only • <span class="warn">Not a medical device</span></div>
+    <div>Trouble deploying? Ensure this file is named <b>index.html</b> at the repo root and GitHub Pages is enabled for the <b>main</b> branch.</div>
+  </footer>
+</div>
+
+<script>
+(() => {
+  // ---------- DOM ----------
+  const $ = sel => document.querySelector(sel);
+  const logEl = $("#log");
+  const checklistEl = $("#checklist");
+  const simCanvas = $("#simCanvas");
+  const teeCanvas = $("#tee");
+  const teeWrap = $("#teeWrap");
+  const vignette = $("#vignette");
+  const toolName = $("#toolName");
+  const scnName = $("#scnName");
+  const apEl = $("#ap"), mlEl = $("#ml"), coaEl = $("#coa"), scoreEl = $("#score");
+  const tensionEl = $("#tension"), traumaEl = $("#trauma");
+  const yearEl = $("#year"); yearEl.textContent = new Date().getFullYear();
+
+  // ---------- UI State ----------
+  const state = {
+    scenario: "repair-annuloplasty",
+    tool: "forceps",
+    running: false,
+    heartbeat: true,
+    collisions: true,
+    vignette: true,
+    tee: false,
+    cinematic: false,
+    camMode: "scope",
+    timeStart: 0,
+    sessionLog: [],
+    trauma: 0,
+    score: 0,
+    sutures: [],
+    chordae: [],
+    grabbed: null,
+    placingSuture: null, // {from: Vector3, to: Vector3}
+    recorder: null,
+    mediaChunks: [],
+    annulus: {AP: 28, ML: 32}, // mm nominal
+  };
+
+  function log(msg){
+    const t = (performance.now() / 1000).toFixed(1);
+    const line = document.createElement("div");
+    line.textContent = `[${t}s] ${msg}`;
+    logEl.prepend(line);
+    state.sessionLog.push({t: +t, msg});
+  }
+
+  function setChecklist(items){
+    checklistEl.innerHTML = "";
+    items.forEach((it, i)=>{
+      const row = document.createElement("div");
+      row.style.display="flex"; row.style.gap="8px"; row.style.alignItems="center";
+      row.style.margin="6px 0";
+      const box = document.createElement("input");
+      box.type="checkbox"; box.id="cl_"+i;
+      box.addEventListener("change",()=>{
+        log((box.checked?"Completed":"Unchecked")+": "+it);
+        if(box.checked) bumpScore(5); else bumpScore(-5);
+      });
+      const label = document.createElement("label");
+      label.htmlFor="cl_"+i; label.textContent = it;
+      row.append(box,label);
+      checklistEl.append(row);
+    });
+  }
+
+  function bumpScore(delta){
+    state.score = Math.max(0, state.score + delta);
+    scoreEl.textContent = state.score.toFixed(0);
+  }
+
+  function setScenario(id){
+    state.scenario = id;
+    scnName.textContent = {
+      "repair-annuloplasty":"Repair: Annuloplasty + Neo-Chordae",
+      "repair-resection":"Repair: Posterior Resection + Ring",
+      "replacement":"Replacement: Bioprosthetic"
+    }[id] || id;
+    log("Scenario set: "+scnName.textContent);
+
+    if(id==="repair-annuloplasty"){
+      setChecklist([
+        "Evaluate leaflets & annulus",
+        "Measure AP/ML; choose ring size",
+        "Place neo-chordae to prolapsing segment",
+        "Annuloplasty ring sutures (8–12 evenly)",
+        "Seat and tie ring",
+        "Verify coaptation (>5 mm)",
+      ]);
+    } else if(id==="repair-resection"){
+      setChecklist([
+        "Identify P2/P3 prolapse",
+        "Mark resection area",
+        "Resect posterior wedge (virtual)",
+        "Approximate leaflet edges (sutures)",
+        "Ring sutures evenly spaced",
+        "Seat ring; confirm coaptation",
+      ]);
+    } else {
+      setChecklist([
+        "Excise native leaflets (virtual)",
+        "Measure annulus AP/ML",
+        "Select prosthesis size",
+        "Place sutures evenly (12)",
+        "Seat prosthesis; verify motion",
+        "TEE: gradients & opening",
+      ]);
+    }
+    // reset step-sensitive counters
+    state.sutures = [];
+    updateRingSuggestion();
+  }
+
+  // ---------- THREE Scene ----------
+  let renderer, scene, camera, controls, clock, scopeCam, topCam, teeCam, composer; // composer unused (no post) but left for future
+  let heartGroup, annulusMesh, leafletA, leafletP, papillaryL, papillaryR, chordaeGroup, toolGroup, ringSizer, ringMesh, prosthesis;
+  let raycaster, mouseNDC = new THREE.Vector2(), pickables = [];
+  const tmpV = new THREE.Vector3();
+
+  function init3D(){
+    renderer = new THREE.WebGLRenderer({canvas: simCanvas, antialias: true, alpha: true, powerPreference:"high-performance"});
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.setSize(simCanvas.clientWidth, simCanvas.clientHeight);
+
+    scene = new THREE.Scene();
+    scene.background = null;
+
+    camera = new THREE.PerspectiveCamera(50, simCanvas.clientWidth/simCanvas.clientHeight, 0.05, 100);
+    camera.position.set(0.1, 0.07, 0.32);
+
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.target.set(0,0,0);
+    controls.enableDamping = true;
+
+    clock = new THREE.Clock();
+
+    // Lights
+    const hemi = new THREE.HemisphereLight(0xbfd7ff, 0x203040, 0.9);
+    scene.add(hemi);
+    const key = new THREE.SpotLight(0xffffff, 2.4, 2.5, Math.PI/6, 0.3, 1.2);
+    key.position.set(0.3,0.4,0.3);
+    scene.add(key);
+    const rim = new THREE.DirectionalLight(0x88ccff, 0.8);
+    rim.position.set(-0.6,0.2,-0.2);
+    scene.add(rim);
+
+    // Floor soft reflection
+    const floorGeo = new THREE.CircleGeometry(1,64);
+    const floorMat = new THREE.MeshPhongMaterial({color:0x0b1622, shininess: 30, specular:0x224466, transparent:true, opacity:0.5});
+    const floor = new THREE.Mesh(floorGeo, floorMat);
+    floor.rotation.x = -Math.PI/2;
+    floor.position.y = -0.12;
+    scene.add(floor);
+
+    // Heart group (valve-centered)
+    heartGroup = new THREE.Group();
+    scene.add(heartGroup);
+
+    // Annulus (elliptical torus)
+    const annRadAP = 0.014; // meters ~ 28 mm / 2
+    const annRadML = 0.016; // ~ 32 mm / 2
+    const tube = 0.0025;
+    const annGeo = ellipticalTorus(annRadAP, annRadML, tube, 240, 16);
+    const annMat = new THREE.MeshStandardMaterial({
+      color:0xc1445b, roughness:0.45, metalness:0.1,
+      emissive: new THREE.Color(0x18060a), emissiveIntensity:0.2
+    });
+    annulusMesh = new THREE.Mesh(annGeo, annMat);
+    annulusMesh.name = "Annulus";
+    heartGroup.add(annulusMesh);
+    pickables.push(annulusMesh);
+
+    // Leaflets (simple param surfaces), anterior more curved, posterior shorter
+    leafletA = makeLeaflet({name:"Anterior", color:0xe36c7d, span:Math.PI*0.6, height:0.010, thickness:0.0018, offset:0.0006, hingeStart:-Math.PI*0.3, hingeEnd:Math.PI*0.3});
+    leafletP = makeLeaflet({name:"Posterior", color:0xd4576b, span:Math.PI*0.8, height:0.006, thickness:0.0016, offset:-0.0005, hingeStart:Math.PI*0.3, hingeEnd:Math.PI*1.2});
+    heartGroup.add(leafletA.mesh, leafletP.mesh);
+    pickables.push(leafletA.mesh, leafletP.mesh);
+
+    // Papillary muscles (anchors)
+    papillaryL = makePapillary(new THREE.Vector3(-0.008,-0.030, 0.008));
+    papillaryR = makePapillary(new THREE.Vector3( 0.010,-0.030,-0.006));
+    heartGroup.add(papillaryL, papillaryR);
+
+    // Chordae (lines from papillary to leaflet edge)
+    chordaeGroup = new THREE.Group();
+    heartGroup.add(chordaeGroup);
+    createChordae();
+
+    // Ring sizer (transparent gauge)
+    ringSizer = makeRingSizer(0.028); // default 28 mm
+    ringSizer.visible = false;
+    heartGroup.add(ringSizer);
+
+    // Annuloplasty ring & prosthesis (hidden until used)
+    ringMesh = makeAnnuloplastyRing(0.028);
+    ringMesh.visible = false;
+    heartGroup.add(ringMesh);
+
+    prosthesis = makeProsthesis(0.028);
+    prosthesis.visible = false;
+    heartGroup.add(prosthesis);
+
+    // Tool group (end-effector)
+    toolGroup = makeTool();
+    scene.add(toolGroup);
+
+    // Cameras for views
+    scopeCam = camera; // primary
+    topCam = new THREE.PerspectiveCamera(40, 1, 0.05, 100);
+    topCam.position.set(0,0.18,0.001); topCam.lookAt(0,0,0);
+    teeCam = new THREE.PerspectiveCamera(28, 1, 0.03, 100);
+    teeCam.position.set(0,-0.04,0); teeCam.lookAt(0,0,0); // subvalvular view
+
+    // Raycaster
+    raycaster = new THREE.Raycaster();
+
+    // Initial metrics
+    updateAnnulusMetrics();
+    updateRingSuggestion();
+
+    // Start loop
+    animate();
+    onResize();
+    window.addEventListener("resize", onResize);
+    renderer.domElement.addEventListener("pointermove", onPointerMove);
+    renderer.domElement.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKey);
+  }
+
+  // ---------- Geometry Helpers ----------
+  function ellipticalTorus(rx, rz, tube, segR, segT){
+    // Build parametric elliptical torus
+    const geo = new THREE.BufferGeometry();
+    const pos = [], nor=[], uv=[], idx=[];
+    for(let i=0;i<=segR;i++){
+      const u = i/segR; const th = u*2*Math.PI;
+      const cx = Math.cos(th), cz=Math.sin(th);
+      const center = new THREE.Vector3(rx*cx, 0, rz*cz);
+      // local tangent plane
+      const n = new THREE.Vector3(cx,0,cz).normalize();
+      const t = new THREE.Vector3(-cz,0,cx).normalize();
+      for(let j=0;j<=segT;j++){
+        const v = j/segT; const phi = v*2*Math.PI;
+        const r = Math.cos(phi)*t.clone().multiplyScalar(tube) + Math.sin(phi)*new THREE.Vector3(0,1,0).multiplyScalar(tube*0.6);
+        const p = center.clone().add(r);
+        pos.push(p.x,p.y,p.z);
+        const nn = r.clone().normalize();
+        nor.push(nn.x,nn.y,nn.z);
+        uv.push(u,v);
       }
-      _evaluateAperture(){
-        this._collectMeshes();
-        const y0=this.opts.planeY; const dirDown=new THREE.Vector3(0,-1,0); const origin=new THREE.Vector3();
-        const posAttr=this.aperturePoints.geometry.getAttribute('position'); const colAttr=this.aperturePoints.geometry.getAttribute('color');
-        let openCount=0, total=this.samples.length;
-        for (let i=0;i<total;i++){
-          const sx=this.samples[i].x, sz=this.samples[i].z; origin.set(sx, y0+this.opts.rayHeight, sz); this.ray.set(origin, dirDown);
-          const isects=this.ray.intersectObjects(this.valveMeshes||[], true); let blocked=false;
-          if (isects.length>0){ const yhit=isects[0].point.y; if (yhit>=y0-0.0005) blocked=true; }
-          if (!blocked) openCount++;
-          const r=blocked?0.95:0.2, g=blocked?0.25:0.95, b=blocked?0.3:0.4;
-          colAttr.array[i*3]=r; colAttr.array[i*3+1]=g; colAttr.array[i*3+2]=b;
-          posAttr.array[i*3+1]=y0+0.001;
-        }
-        colAttr.needsUpdate=true; posAttr.needsUpdate=true;
-        const openFrac=openCount/total; const EOA_m2=openFrac*this.annulusArea_m2; return { EOA_m2, openFrac };
+    }
+    for(let i=0;i<segR;i++){
+      for(let j=0;j<segT;j++){
+        const a = i*(segT+1)+j;
+        const b = a+segT+1;
+        idx.push(a, b, a+1, b, b+1, a+1);
       }
-      _computeGradient(EOA_m2){
-        const Cd=this.opts.Cd, rho=this.opts.rho; const Q=(this.flowLpm/60.0)*1e-3; const A=Math.max(EOA_m2,1e-6);
-        const v=Q/Math.max(Cd*A,1e-9); const dP_Pa=0.5*rho*v*v; return dP_Pa/133.322;
+    }
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos,3));
+    geo.setAttribute('normal', new THREE.Float32BufferAttribute(nor,3));
+    geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv,2));
+    geo.setIndex(idx);
+    geo.computeBoundingSphere();
+    return geo;
+  }
+
+  function makeLeaflet({name,color,span,height,thickness,offset,hingeStart,hingeEnd}){
+    const segmentsU=64, segmentsV=16;
+    const geo = new THREE.PlaneGeometry(1,1,segmentsU,segmentsV);
+    const pos = geo.attributes.position;
+    const annAP = 0.014, annML=0.016;
+    const start = hingeStart, end = hingeEnd;
+    for(let i=0;i<pos.count;i++){
+      const u = (pos.getX(i)+0.5); // 0..1
+      const v = (pos.getY(i)+0.5); // 0..1
+      const theta = start + u*(end-start);
+      const rad = 1.0; // param
+      const annX = annAP*Math.cos(theta);
+      const annZ = annML*Math.sin(theta);
+      const nn = new THREE.Vector3(Math.cos(theta),0,Math.sin(theta));
+      // Map v down from annulus toward atrium/ventricle
+      const y = -v*height + offset;
+      const outward = nn.clone().multiplyScalar((v*v)*0.004);
+      const x = annX + outward.x;
+      const z = annZ + outward.z;
+      pos.setXYZ(i, x, y, z);
+    }
+    geo.computeVertexNormals();
+    const mat = new THREE.MeshStandardMaterial({
+      color, roughness:0.65, metalness:0.02, side:THREE.DoubleSide,
+      polygonOffset:true, polygonOffsetFactor:1, polygonOffsetUnits:1,
+      transparent:true, opacity:0.97
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.name = name+" Leaflet";
+
+    // small rim
+    const rimGeo = new THREE.TubeGeometry(
+      new THREE.CatmullRomCurve3(sampleAnnulusCurve(start, end, 140)), 140, thickness*0.35, 8, false);
+    const rimMat = new THREE.MeshStandardMaterial({color:0xa83d4e, roughness:.5, metalness:.05});
+    const rim = new THREE.Mesh(rimGeo, rimMat);
+    mesh.add(rim);
+    return {mesh, start, end};
+  }
+
+  function sampleAnnulusCurve(start, end, n){
+    const arr=[];
+    const ap=0.014, ml=0.016;
+    for(let i=0;i<=n;i++){
+      const u=i/n;
+      const th=start + u*(end-start);
+      arr.push(new THREE.Vector3(ap*Math.cos(th), 0, ml*Math.sin(th)));
+    }
+    return arr;
+  }
+
+  function makePapillary(pos){
+    const geo = new THREE.ConeGeometry(0.004, 0.018, 24);
+    const mat = new THREE.MeshStandardMaterial({color:0x6c8599, roughness:.8, metalness:.1});
+    const m = new THREE.Mesh(geo, mat);
+    m.position.copy(pos);
+    m.rotation.x = Math.PI;
+    m.name = "Papillary";
+    return m;
+  }
+
+  function createChordae(){
+    chordaeGroup.clear();
+    state.chordae = [];
+    const leaflets = [leafletA, leafletP];
+    const paps = [papillaryL.position, papillaryR.position];
+    for(const L of leaflets){
+      const edgePoints = sampleAnnulusCurve(L.start, L.end, 14);
+      edgePoints.forEach((p,i)=>{
+        const toPap = i%2===0 ? paps[0] : paps[1];
+        const line = new THREE.Line(
+          new THREE.BufferGeometry().setFromPoints([p, toPap]),
+          new THREE.LineBasicMaterial({color:0xd7eaff, linewidth:2}));
+        chordaeGroup.add(line);
+        state.chordae.push({line, intact:true});
+      });
+    }
+  }
+
+  function makeRingSizer(diamMM){
+    const r = (diamMM/1000)/2;
+    const geo = new THREE.TorusGeometry(r, 0.0009, 16, 120);
+    const mat = new THREE.MeshStandardMaterial({color:0x7fd2ff, transparent:true, opacity:.35});
+    const m = new THREE.Mesh(geo, mat);
+    m.name = "Ring Sizer";
+    return m;
+  }
+
+  function makeAnnuloplastyRing(diamMM){
+    const r = (diamMM/1000)/2;
+    const geo = new THREE.TorusGeometry(r*0.95, 0.0016, 18, 200);
+    const mat = new THREE.MeshStandardMaterial({color:0x3bd69f, roughness:.5, metalness:.2});
+    const m = new THREE.Mesh(geo, mat);
+    m.name = "Annuloplasty Ring";
+    return m;
+  }
+
+  function makeProsthesis(diamMM){
+    const g = new THREE.Group();
+    const r = (diamMM/1000)/2;
+    const seat = new THREE.Mesh(new THREE.TorusGeometry(r*0.95, 0.0019, 18, 200),
+      new THREE.MeshStandardMaterial({color:0x6ee7b7, roughness:.5, metalness:.2}));
+    g.add(seat);
+    // tri-leaflet occluders (stylized)
+    for(let i=0;i<3;i++){
+      const leaf = new THREE.Mesh(new THREE.CylinderGeometry(0.0005, r*0.8, 0.0008, 24,1,true),
+        new THREE.MeshStandardMaterial({color:0xf1f5f9, roughness:.6, metalness:.05, side:THREE.DoubleSide}));
+      leaf.rotation.z = Math.PI/2;
+      leaf.rotation.y = i*(2*Math.PI/3);
+      g.add(leaf);
+    }
+    g.name = "Prosthesis";
+    return g;
+  }
+
+  function makeTool(){
+    const g = new THREE.Group();
+    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.001,0.001,0.22,16),
+      new THREE.MeshStandardMaterial({color:0x8099b0, roughness:.6}));
+    shaft.position.y = 0.08;
+    const tip = new THREE.Mesh(new THREE.ConeGeometry(0.0012,0.008,16),
+      new THREE.MeshStandardMaterial({color:0xcbd5e1, roughness:.3, metalness:.5}));
+    tip.rotation.x = -Math.PI/2;
+    tip.position.set(0, -0.02, 0);
+    g.add(shaft, tip);
+    g.position.set(0,0.06,0.18);
+    g.name = "Tool";
+    g.tip = tip;
+    return g;
+  }
+
+  // ---------- Simulation Loop ----------
+  function animate(){
+    const dt = clock.getDelta();
+    requestAnimationFrame(animate);
+    // Heartbeat
+    if(state.heartbeat){
+      const t = performance.now()/1000;
+      const bpm = 72;
+      const w = (bpm/60)*2*Math.PI;
+      const phase = Math.sin(w*t)*0.5+0.5;
+      const scale = 1 + (phase*0.02);
+      heartGroup.scale.setScalar(scale);
+      // leaflets pseudo-opening: anterior/posterior oscillate around hinge offset
+      const openA = 0.25 + 0.35*phase;
+      const openP = 0.32 + 0.28*phase;
+      leafletA.mesh.rotation.x = -openA;
+      leafletP.mesh.rotation.x =  openP;
+      updateAnnulusMetrics();
+      updateTEE();
+    }
+    // Tool subtle sway
+    toolGroup.rotation.z = Math.sin(performance.now()/700)*0.03;
+
+    controls.update();
+    renderer.render(scene, scopeCam);
+  }
+
+  function onResize(){
+    const w = simCanvas.clientWidth, h = simCanvas.clientHeight;
+    renderer.setSize(w,h,false);
+    scopeCam.aspect = w/h;
+    scopeCam.updateProjectionMatrix();
+    if(state.tee) updateTEE();
+  }
+
+  // ---------- Interaction ----------
+  function onPointerMove(e){
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouseNDC.set((e.clientX-rect.left)/rect.width*2-1, -(e.clientY-rect.top)/rect.height*2+1);
+    // Move tool toward mouse (projected at plane near valve)
+    const plane = new THREE.Plane(new THREE.Vector3(0,0,-1), 0.0);
+    raycaster.setFromCamera(mouseNDC, scopeCam);
+    const pt = new THREE.Vector3();
+    raycaster.ray.intersectPlane(plane, pt);
+    if(!pt) return;
+    // Smooth follow
+    toolGroup.position.lerp(new THREE.Vector3(pt.x, pt.y+0.02, pt.z+0.15), 0.25);
+    toolGroup.lookAt(0,0,0);
+    if(state.grabbed){
+      // Pulling on tissue increases tension & potential trauma
+      const d = state.grabbed.position.distanceTo(toolGroup.tip.getWorldPosition(tmpV));
+      updateTension(d*120); // simple proxy
+    } else {
+      updateTension(0);
+    }
+  }
+
+  function onPointerDown(e){
+    const isCtrl = e.ctrlKey || e.metaKey;
+    raycaster.setFromCamera(mouseNDC, scopeCam);
+    const hit = raycaster.intersectObjects(pickables, true)[0];
+    if(!hit){ return; }
+
+    if(isCtrl && state.tool==="needle"){
+      // Place suture: first click sets from, second sets to
+      if(!state.placingSuture){
+        state.placingSuture = {from: hit.point.clone()};
+        flash("Suture entry marked");
+      } else {
+        state.placingSuture.to = hit.point.clone();
+        placeSuture(state.placingSuture.from, state.placingSuture.to);
+        state.placingSuture = null;
       }
-      onBeforeRender(){
-        this._frame=(this._frame+1)%this.opts.updateEveryNFrames; if (this._frame!==0) return;
-        const { EOA_m2 }=this._evaluateAperture(); this.EOA_m2=EOA_m2; this.grad_mmHg=this._computeGradient(EOA_m2);
-        if (this._panelEOA) this._panelEOA.textContent=(EOA_m2*1e4).toFixed(2);
-        if (this._panelGrad) this._panelGrad.textContent=this.grad_mmHg.toFixed(2);
-      }
-      onAfterRender(){ this.aperturePoints.position.y=0; }
+      return;
     }
 
-    // =============== Bootstrap ===============
-    (async function main(){
-      try {
-        const canvas = document.getElementById('sim');
-        const engine = new Engine({ canvas, useWebGPU: false, fixedHz: 120 });        
-        engine.addPlugin(new SurgicalShellPlugin());
-        engine.addPlugin(new LeafletXPBDPlugin());            // posterior
-        engine.addPlugin(new NeedleDriverPlugin());           // tool
-        engine.addPlugin(new AnteriorLeafletXPBDPlugin());    // anterior + coaptation
-        engine.addPlugin(new HemodynamicsPlugin());           // EOA + gradient
-        engine.start();
-      } catch (err) {
-        console.error(err);
-        const box = document.getElementById('error');
-        document.getElementById('error-log').textContent = String(err?.stack || err);
-        box.style.display = 'block';
+    if(state.tool==="scissors"){
+      // Cut nearest chordae near hit
+      let cut=false;
+      for(const ch of state.chordae){
+        if(!ch.intact) continue;
+        const a = ch.line.geometry.attributes.position;
+        const p0 = new THREE.Vector3(a.getX(0),a.getY(0),a.getZ(0));
+        const p1 = new THREE.Vector3(a.getX(1),a.getY(1),a.getZ(1));
+        const d = distPointToSegment(hit.point, p0, p1);
+        if(d<0.0025){
+          ch.intact=false;
+          ch.line.material.color.setHex(0x999999);
+          log("Chordae cut");
+          bumpScore(-8);
+          trauma(3);
+          cut=true; break;
+        }
       }
-    })();
-  </script>
+      if(!cut) flash("No chordae at cursor", 900);
+      return;
+    }
+
+    if(state.tool==="sizer"){
+      ringSizer.visible = true;
+      ringSizer.position.set(0,0,0);
+      flash("Ring sizer placed");
+      return;
+    }
+
+    if(state.tool==="ring"){
+      ringMesh.visible = true;
+      ringMesh.position.set(0,0,0);
+      flash("Annuloplasty ring inserted (position & seat)");
+      bumpScore(5);
+      return;
+    }
+
+    if(state.tool==="prosthesis"){
+      prosthesis.visible = true;
+      prosthesis.position.set(0,0,0);
+      flash("Prosthesis inserted (position & seat)");
+      bumpScore(5);
+      return;
+    }
+
+    if(state.tool==="forceps" || state.tool==="needle"){
+      // Grab leaflet vertex near hit
+      state.grabbed = hit.object;
+      flash(state.tool==="forceps"?"Grasp tissue":"Needle engaged");
+      document.addEventListener("pointerup", onPointerUp, {once:true});
+    }
+  }
+
+  function onPointerUp(){
+    if(state.grabbed){
+      flash("Release");
+      state.grabbed = null;
+      updateTension(0);
+    }
+  }
+
+  function onKey(e){
+    if(e.repeat) return;
+    const map = {
+      "1":"forceps", "2":"needle", "3":"scissors", "4":"sizer", "5":"ring", "6":"prosthesis"
+    };
+    if(map[e.key]){
+      setTool(map[e.key]);
+    }
+    if(e.key==="h"||e.key==="H"){
+      $("#overlayMsg").style.display = "flex";
+    }
+  }
+
+  function setTool(name){
+    state.tool = name;
+    toolName.textContent = {
+      forceps:"Forceps", needle:"Needle/Suture", scissors:"Scissors",
+      sizer:"Ring Sizer", ring:"Annuloplasty Ring", prosthesis:"Valve Prosthesis"
+    }[name] || name;
+    log("Tool: "+toolName.textContent);
+  }
+
+  function updateTension(val){
+    tensionEl.textContent = val.toFixed(1);
+    if(val>8){
+      trauma( (val-8)*0.02 );
+    }
+  }
+
+  function placeSuture(a,b){
+    const curve = new THREE.QuadraticBezierCurve3(a, a.clone().add(b).multiplyScalar(0.5).add(new THREE.Vector3(0,0.004,0)), b);
+    const tube = new THREE.TubeGeometry(curve, 20, 0.0005, 6, false);
+    const mat = new THREE.MeshStandardMaterial({color:0xeff6ff, roughness:.6, metalness:.05});
+    const suture = new THREE.Mesh(tube, mat);
+    heartGroup.add(suture);
+    state.sutures.push(suture);
+    log("Suture placed");
+    bumpScore(2);
+    // Better coaptation if sutures approximate hinge line
+    updateCoaptation();
+  }
+
+  function trauma(amount){
+    state.trauma += amount;
+    const t = Math.min(100, state.trauma);
+    traumaEl.textContent = t.toFixed(0);
+    traumaEl.className = "danger";
+    bumpScore(-Math.ceil(amount));
+  }
+
+  function updateAnnulusMetrics(){
+    // Use annulus radii with heartbeat scale
+    const s = heartGroup.scale.x;
+    const AP = (0.028*s*1000).toFixed(0);
+    const ML = (0.032*s*1000).toFixed(0);
+    apEl.textContent = AP; mlEl.textContent = ML;
+    state.annulus.AP = +AP; state.annulus.ML = +ML;
+  }
+
+  function updateRingSuggestion(){
+    // Simple rule-of-thumb suggestion
+    const mean = (state.annulus.AP + state.annulus.ML)/2;
+    // Round to nearest even (e.g., 26/28/30/32)
+    const options = [26,28,30,32,34];
+    const pick = options.reduce((p,c)=> Math.abs(c-mean)<Math.abs(p-mean)?c:p, options[0]);
+    $("#ringSize").textContent = pick+" mm";
+    // Update sizer/ring/prosthesis diameter
+    ringSizer.geometry.dispose(); ringSizer.geometry = new THREE.TorusGeometry( (pick/1000)/2, 0.0009, 16, 120);
+    ringMesh.geometry.dispose(); ringMesh.geometry = new THREE.TorusGeometry( (pick/1000)/2*0.95, 0.0016, 18, 200);
+    prosthesis.children[0].geometry.dispose(); prosthesis.children[0].geometry = new THREE.TorusGeometry((pick/1000)/2*0.95, 0.0019, 18, 200);
+  }
+
+  function updateCoaptation(){
+    // Very rough coaptation metric based on leaflet rim distance near midline
+    const mid = new THREE.Vector3(0,0,0);
+    const a = leafletA.mesh.localToWorld(new THREE.Vector3(0, -0.004, 0)).distanceTo(mid);
+    const p = leafletP.mesh.localToWorld(new THREE.Vector3(0,  0.004, 0)).distanceTo(mid);
+    const area = Math.max(0, (0.008 - (a+p))*100000); // arbitrary scaling to mm²
+    coaEl.textContent = area.toFixed(0);
+    // Reward larger coaptation
+    bumpScore(area>100 ? 1 : 0);
+  }
+
+  function updateTEE(){
+    if(!state.tee) return;
+    const ctx = teeCanvas.getContext("2d");
+    const w = teeCanvas.width = teeWrap.clientWidth;
+    const h = teeCanvas.height = teeWrap.clientHeight;
+    // simple shaded disc + speckle noise
+    ctx.fillStyle = "#0a0f16"; ctx.fillRect(0,0,w,h);
+    const grd = ctx.createRadialGradient(w/2,h/2,h*0.1, w/2,h/2,h*0.52);
+    grd.addColorStop(0,"#d6e8ff"); grd.addColorStop(0.45,"#7ea5cc"); grd.addColorStop(1,"#0a0f16");
+    ctx.globalAlpha = 0.24; ctx.fillStyle = grd; ctx.beginPath(); ctx.arc(w/2,h/2,h*0.54,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1;
+    // Coaptation line (fake): oscillate with beat
+    const t = performance.now()/1000;
+    const y = h/2 + Math.sin(t*3.4)*6;
+    ctx.strokeStyle="#e8f3ff"; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(w*0.2,y); ctx.lineTo(w*0.8,y); ctx.stroke();
+    // Speckle
+    const img = ctx.createImageData(w,h);
+    for(let i=0;i<img.data.length;i+=4){
+      const n = Math.random()*30;
+      img.data[i]=img.data[i+1]=img.data[i+2]=n; img.data[i+3]=60;
+    }
+    ctx.putImageData(img,0,0);
+  }
+
+  function distPointToSegment(p, a, b){
+    const ab = b.clone().sub(a);
+    const t = Math.max(0, Math.min(1, p.clone().sub(a).dot(ab)/ab.lengthSq()));
+    const proj = a.clone().add(ab.multiplyScalar(t));
+    return proj.distanceTo(p);
+  }
+
+  // ---------- UI wiring ----------
+  $("#btnStart").onclick = start;
+  $("#btnGo").onclick = start;
+  $("#btnReset").onclick = () => { location.reload(); };
+  $("#btnHelp").onclick = () => { $("#overlayMsg").style.display = "flex"; };
+  $("#btnLighting").onclick = () => {
+    state.cinematic = !state.cinematic;
+    scene.traverse(o=>{
+      if(o.isLight && o.type!=="HemisphereLight"){
+        o.intensity = state.cinematic ? o.intensity*1.3 : o.intensity/1.3;
+      }
+    });
+  };
+  $("#btnScope").onclick = () => { state.camMode="scope"; };
+  $("#btnTop").onclick = () => { state.camMode="top"; controls.target.set(0,0,0); };
+
+  $("#toggleVignette").onchange = e => { vignette.style.display = e.target.checked?"block":"none"; };
+  $("#toggleTEE").onchange = e => { state.tee = e.target.checked; teeWrap.style.display = state.tee?"block":"none"; updateTEE(); };
+  $("#toggleBeat").onchange = e => { state.heartbeat = e.target.checked; };
+  $("#toggleCollisions").onchange = e => { state.collisions = e.target.checked; };
+
+  $("#btnRecord").onclick = () => {
+    if(state.recorder){
+      state.recorder.stop();
+      return;
+    }
+    const stream = simCanvas.captureStream(30);
+    const rec = new MediaRecorder(stream, {mimeType: "video/webm;codecs=vp9"});
+    state.mediaChunks = [];
+    rec.ondataavailable = e => { if(e.data.size>0) state.mediaChunks.push(e.data); };
+    rec.onstop = ()=>{
+      const blob = new Blob(state.mediaChunks, {type:"video/webm"});
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "valvesim_session.webm";
+      a.click();
+      state.recorder = null;
+      $("#btnRecord").textContent = "Record";
+    };
+    rec.start();
+    state.recorder = rec;
+    $("#btnRecord").textContent = "Stop Recording";
+    flash("Recording started");
+  };
+
+  $("#btnExport").onclick = ()=>{
+    const data = {
+      scenario: state.scenario,
+      score: state.score,
+      trauma: state.trauma,
+      annulus: state.annulus,
+      sutures: state.sutures.length,
+      log: state.sessionLog,
+      ts: new Date().toISOString()
+    };
+    const blob = new Blob([JSON.stringify(data,null,2)], {type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "valvesim_session.json";
+    a.click();
+  };
+
+  document.querySelectorAll("[data-scn]").forEach(b=>{
+    b.onclick = ()=> setScenario(b.getAttribute("data-scn"));
+  });
+
+  document.querySelectorAll("[data-tool]").forEach(b=>{
+    b.onclick = ()=> setTool(b.getAttribute("data-tool"));
+  });
+
+  function start(){
+    $("#overlayMsg").style.display = "none";
+    if(!state.running){
+      state.running = true;
+      state.timeStart = performance.now();
+      log("Simulation started");
+    }
+  }
+
+  function flash(msg, ms=1200){
+    const el = document.createElement("div");
+    el.textContent = msg;
+    el.style.position="absolute"; el.style.right="12px"; el.style.bottom="12px";
+    el.style.background="#0c1622"; el.style.border="1px solid #23405b"; el.style.padding="8px 12px";
+    el.style.borderRadius="10px"; el.style.boxShadow="var(--shadow)";
+    document.body.appendChild(el);
+    setTimeout(()=> el.remove(), ms);
+  }
+
+  // ---------- Boot ----------
+  setScenario(state.scenario);
+  setTool(state.tool);
+  init3D();
+
+  // ---------- END ----------
+})();
+</script>
 </body>
 </html>
