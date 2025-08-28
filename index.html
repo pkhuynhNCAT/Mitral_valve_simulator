@@ -2,402 +2,727 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Mitral Valve 2D — Minimal, Runs Anywhere</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MitralLab 2D Pro — Mitral Repair & Replacement Trainer (No libs)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
-  :root{ --bg:#0b0f14; --ink:#eaf2f8; --mut:#9fb3c4; --ok:#2ed573; --warn:#ffb020; --bad:#ff4d4f; --panel:#0f151d; }
-  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.4 ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial}
-  #wrap{display:grid;grid-template-rows:48px 1fr 36px;height:100%}
-  header{display:flex;align-items:center;gap:12px;padding:8px 12px;background:linear-gradient(180deg,#0e1520,#0b1218);border-bottom:1px solid #182330}
-  header h1{font-size:15px;margin:0;font-weight:600}
-  #ui{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-left:auto}
-  #ui label{color:var(--mut);font-size:12px}
-  #ui input[type=range]{width:150px}
-  #ui select,#ui button{background:#101825;color:#e6f0f6;border:1px solid #223243;border-radius:8px;padding:6px 8px}
-  main{position:relative}
+  :root{
+    --bg:#0b0f14; --ink:#eaf2f8; --mut:#9fb3c4; --ok:#2ed573; --warn:#ffb020; --bad:#ff4d4f;
+    --panel:#0f151d; --card:#0a1117; --line:#1f2b36; --accent:#52e2c0;
+    --mono: ui-monospace, Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial;
+  }
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.4 var(--sans)}
+  #app{display:grid;grid-template-rows:56px 1fr 32px;height:100%}
+
+  header{display:flex;align-items:center;gap:12px;padding:10px 14px;background:linear-gradient(180deg,#0e1520,#0b1218);border-bottom:1px solid #182330}
+  header h1{margin:0;font-size:16px;font-weight:700;letter-spacing:.2px}
+  #toolbar{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  #toolbar .group{display:flex;gap:10px;align-items:center;background:#0f1823;border:1px solid #1b2733;border-radius:10px;padding:6px 8px}
+  #toolbar label{color:var(--mut);font-size:12px}
+  #toolbar input[type=range]{width:140px}
+  select,button{background:#101825;color:#e6f0f6;border:1px solid #223243;border-radius:8px;padding:6px 10px;cursor:pointer}
+  button:active{transform:translateY(1px)}
+
+  main{display:grid;grid-template-columns:320px 1fr}
+  aside{background:var(--panel);border-right:1px solid #1b2733;padding:12px;overflow:auto}
+  aside h2{font-size:12px;letter-spacing:.1em;color:#a7bed1;text-transform:uppercase;margin:10px 0 8px}
+  .card{background:rgba(9,14,19,.82);border:1px solid var(--line);border-radius:12px;padding:10px 10px 8px;margin-bottom:10px}
+  .card small{color:#9bb0c1}
+  .pill{display:inline-block;border:1px solid #223243;border-radius:999px;padding:3px 8px;color:#a6c1d5;font-size:11px;margin:4px 4px 0 0}
+  .kpi{display:flex;justify-content:space-between;font-family:var(--mono);font-weight:700}
+
+  #stage{position:relative;background:radial-gradient(60% 70% at 50% 50%,#0c141b 0%,#0a1016 100%)}
   canvas{display:block;width:100%;height:100%}
-  #hud{position:absolute;top:8px;left:8px;display:grid;gap:6px}
-  .card{background:rgba(9,14,19,.8);border:1px solid #1f2b36;border-radius:8px;padding:6px 8px;backdrop-filter:blur(5px);min-width:200px}
-  .k{color:#a8bfd1;font-size:11px}
-  .v{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700}
-  footer{display:flex;align-items:center;padding:6px 10px;color:#8dadc1;border-top:1px solid #182330}
-  #status{margin-left:8px}
+  #hud{position:absolute;top:8px;left:8px;display:grid;gap:6px;pointer-events:none}
+  #hud .card{pointer-events:auto;min-width:220px;backdrop-filter:blur(5px)}
+  #tee{position:absolute;right:10px;bottom:10px;width:360px;height:240px;background:#04090e;border:1px solid #203040;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+  #teeBar{position:absolute;left:8px;right:8px;bottom:6px;display:flex;gap:8px}
+
+  footer{display:flex;gap:10px;align-items:center;padding:6px 10px;border-top:1px solid #182330;color:#8dadc1}
+  #status{color:#cfe8ff}
+
+  .ok{color:var(--ok)} .warn{color:var(--warn)} .bad{color:var(--bad)}
+  .toolbtn{display:flex;gap:6px;align-items:center;width:100%}
+  .toolbtn.active{outline:2px solid #3c5977}
 </style>
 </head>
 <body>
-<div id="wrap">
+<div id="app">
   <header>
-    <h1>Mitral Valve 2D — Minimal Simulation</h1>
-    <div id="ui">
-      <label>HR <input id="hr" type="range" min="40" max="140" value="70"></label>
-      <span id="hrV">70 bpm</span>
-      <label>ΔP_peak <input id="dP" type="range" min="40" max="140" step="5" value="100"></label>
-      <span id="dPV">100 mmHg</span>
-      <select id="case">
-        <option value="normal">Normal</option>
-        <option value="p2_flail">Degenerative — P2 flail</option>
-        <option value="functional">Functional — tethering</option>
-      </select>
-      <button id="reset">Load case</button>
-      <button id="pause">Pause</button>
+    <h1>MitralLab 2D Pro — Repair & Replacement Trainer</h1>
+    <div id="toolbar">
+      <div class="group">
+        <label>HR</label><input id="hr" type="range" min="40" max="140" value="70"><span id="hrV">70 bpm</span>
+      </div>
+      <div class="group">
+        <label>ΔP<sub>peak</sub></label><input id="dP" type="range" min="40" max="140" step="5" value="100"><span id="dPV">100 mmHg</span>
+      </div>
+      <div class="group">
+        <select id="case">
+          <option value="p2_flail">Degenerative — P2 flail</option>
+          <option value="barlow">Barlow — multi-scallop</option>
+          <option value="functional">Functional — tethering</option>
+        </select>
+        <button id="load">Load case</button>
+      </div>
+      <div class="group">
+        <button id="start">Start</button>
+        <button id="stop">Stop & export</button>
+      </div>
     </div>
   </header>
 
   <main>
-    <canvas id="cv"></canvas>
-    <div id="hud">
+    <aside>
+      <h2>Tools</h2>
       <div class="card">
-        <div class="k">EROA (per-beat)</div>
-        <div class="v" id="eroa">0.00 cm²</div>
+        <button class="toolbtn" id="tool_cursor">🖱️ Cursor / Inspect</button>
+        <button class="toolbtn" id="tool_neochord">🧵 Neochord: free-edge → papillary</button>
+        <button class="toolbtn" id="tool_tri">✂️ Posterior triangular resection</button>
+        <button class="toolbtn" id="tool_ringsizer">📏 Ring sizer (A2 & IC)</button>
+        <button class="toolbtn" id="tool_ring">🪄 Implant ring</button>
+        <button class="toolbtn" id="tool_replace">⚙️ Chordal-sparing replacement</button>
+        <button class="toolbtn" id="tool_revert">↩️ Revert to native</button>
       </div>
+
+      <h2>Ring</h2>
       <div class="card">
-        <div class="k">Regurg Volume / Fraction</div>
-        <div class="v" id="rv">0.0 ml • 0%</div>
+        <label>Size (mm)</label>
+        <input id="ringSize" type="range" min="24" max="40" value="32">
+        <div class="pill" id="ringSizeV">32</div>
+        <label>Stiffness</label>
+        <input id="ringStiff" type="range" min="0.40" max="1.00" step="0.05" value="0.85">
+        <div class="pill" id="ringStiffV">0.85</div>
       </div>
+
+      <h2>Display</h2>
       <div class="card">
-        <div class="k">Status</div>
-        <div class="v" id="simstatus">Running</div>
+        <label><input id="wire" type="checkbox"> Leaflet wireframe</label><br>
+        <label><input id="showTEE" type="checkbox" checked> Show TEE inset</label>
       </div>
-    </div>
+
+      <h2>Metrics</h2>
+      <div class="card">
+        <div class="kpi"><span>EROA (per beat)</span><span id="eroa">0.00 cm²</span></div>
+        <div class="kpi"><span>Regurg vol</span><span id="rv">0.0 ml</span></div>
+        <div class="kpi"><span>Regurg frac</span><span id="rf">0%</span></div>
+        <div class="kpi"><span>MR grade</span><span id="grade">None</span></div>
+      </div>
+
+      <h2>OSATS (proxy)</h2>
+      <div class="card">
+        <div class="kpi"><span>Overall</span><span id="osats">—</span></div>
+        <small>Proxy based on time, steps, tissue handling (educational only)</small>
+      </div>
+
+      <h2>Shortcuts</h2>
+      <div class="card">
+        <div class="pill">1/2/3: cases</div>
+        <div class="pill">N: neochord</div>
+        <div class="pill">T: triangular</div>
+        <div class="pill">A: ring</div>
+        <div class="pill">R: reload</div>
+        <div class="pill">Space: start/stop</div>
+      </div>
+    </aside>
+
+    <section id="stage">
+      <canvas id="cv"></canvas>
+      <div id="hud">
+        <div class="card"><div class="kpi"><span>Beat</span><span id="beatN">0</span></div></div>
+      </div>
+      <div id="tee" style="display:block">
+        <canvas id="teeCanvas" width="360" height="240"></canvas>
+        <div id="teeBar">
+          <input id="teeAngle" type="range" min="0" max="135" value="60" step="5" style="flex:1">
+          <div class="pill" id="teeAngleV">TEE: 60°</div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer>
-    <div>Pure Canvas 2D (no WebGL/CDNs). Educational demo — not a medical device.</div>
+    <div>Canvas 2D trainer — no external libraries. For education; not a medical device.</div>
     <div id="status"></div>
   </footer>
 </div>
 
 <script>
-/* ============================== Minimal Valve 2D ============================== */
-/* Pure Canvas 2D beating valve with two deformable leaflets + chordae.        */
-/* No external libs. Designed to run on GitHub Pages and any modern browser.   */
+/* ─────────────────────────────────────────────────────────────────────────────
+   High-fidelity 2D mitral trainer (Canvas only; runs on GitHub Pages/offline)
+   - Pressure-driven leaflets (systole/diastole)
+   - PBD-style constraints (anisotropic chordwise stiffness)
+   - Coaptation contact & chordae
+   - Interactive tools: neochord, triangular resection, ring sizer, ring, replacement
+   - Per-beat EROA, RV, RF & MR grade; OSATS-style proxy; session export
+   ────────────────────────────────────────────────────────────────────────────*/
 
-/* ---- Canvas setup ---- */
-const canvas = document.getElementById('cv');
-const ctx = canvas.getContext('2d');
-function resize(){ canvas.width = canvas.clientWidth; canvas.height = canvas.clientHeight; }
-window.addEventListener('resize', resize); resize();
+const el = id=>document.getElementById(id);
 
-/* ---- UI elements ---- */
-const el = (id)=>document.getElementById(id);
-const hrSl = el('hr'), dPSl = el('dP'), caseSel = el('case');
-const hrV = el('hrV'), dPV = el('dPV'), eroaV = el('eroa'), rvV = el('rv');
-const statusV = el('simstatus'), statusBar = el('status');
-const btnReset = el('reset'), btnPause = el('pause');
+// Canvas & sizing
+const canvas = el('cv'), ctx = canvas.getContext('2d');
+function fit(){ canvas.width=canvas.clientWidth; canvas.height=canvas.clientHeight; }
+window.addEventListener('resize', fit); fit();
 
-/* ---- Model constants (units: pixels ~ mm; 10 px ≈ 10 mm) ---- */
-const K = 60;                          // segments along annulus/leaflets
-const CENTER = ()=>({ x: canvas.width*0.5, y: canvas.height*0.55 });
-const R_ML = ()=>Math.min(canvas.width, canvas.height)*0.22;   // mediolateral radius
-const R_AP = ()=>Math.min(canvas.width, canvas.height)*0.17;   // anteroposterior radius
-const LEAF_LEN_ANT = 65;               // mm-ish (pixels)
-const LEAF_LEN_POST = 55;
-const DAMP = 0.04;                     // global damping
-const RAD_STIFF = 0.20;                // radial (hinge->free) stiffness
-const EDGE_STIFF = 0.12;               // neighbor smoothness
-const CHORDA_STIFF = 0.15;             // chordae stiffness
-const COAPT_GAP = 1.0;                 // minimal separation (mm-ish)
-const PRESSURE_GAIN = 0.02;            // px per mmHg per frame (tuned)
+// TEE inset (synthetic ultrasound tone)
+const tee = el('tee'), teeC = el('teeCanvas'), teeCtx = teeC.getContext('2d');
+const teeAngle = el('teeAngle'), teeAngleV = el('teeAngleV');
+teeAngle.oninput = ()=>{ teeAngleV.textContent = 'TEE: '+teeAngle.value+'°'; };
 
-/* ---- State ---- */
-let running = true;
-let HR = +hrSl.value;
-let DP = +dPSl.value;
-let CASE = caseSel.value;
-let t0 = performance.now();
-let lastBeat = t0;
-let beatLog = [];      // {eroa_cm2, rv_ml, rf}
+// UI elements
+const hrSl=el('hr'), dPSl=el('dP'), caseSel=el('case'), loadBtn=el('load'),
+      startBtn=el('start'), stopBtn=el('stop'), statusBar=el('status');
+const ringSizeSl=el('ringSize'), ringStiffSl=el('ringStiff'), ringSizeV=el('ringSizeV'), ringStiffV=el('ringStiffV');
+const wireCb=el('wire'), showTEECb=el('showTEE');
 
-/* ---- Geometry buffers ---- */
-let hinge = new Array(K);
-let normal = new Array(K);
-let ant = { free: new Array(K), prev: new Array(K), len: LEAF_LEN_ANT, side:-1, chordIdx:[] };
-let post= { free: new Array(K), prev: new Array(K), len: LEAF_LEN_POST, side:+1, chordIdx:[] };
-let papAL, papPM;
+// Tools
+const toolBtns = {
+  cursor: el('tool_cursor'),
+  neochord: el('tool_neochord'),
+  tri: el('tool_tri'),
+  ringsizer: el('tool_ringsizer'),
+  ring: el('tool_ring'),
+  replace: el('tool_replace'),
+  revert: el('tool_revert')
+};
+let tool = 'cursor';
+function setTool(t){
+  tool = t;
+  for(const k in toolBtns) toolBtns[k].classList.toggle('active', k===t);
+  hint(t);
+}
+for(const k in toolBtns) toolBtns[k].onclick = ()=> setTool(k);
 
-/* ---- Utility ---- */
-function lerp(a,b,t){ return a+(b-a)*t; }
-function len2(a,b){ const dx=a.x-b.x, dy=a.y-b.y; return Math.hypot(dx,dy); }
-function add(a,b){ return {x:a.x+b.x,y:a.y+b.y}; }
-function sub(a,b){ return {x:a.x-b.x,y:a.y-b.y}; }
-function mul(a,s){ return {x:a.x*s,y:a.y*s}; }
-function set(p,q){ p.x=q.x; p.y=q.y; }
+// Readouts
+const hrV=el('hrV'), dPV=el('dPV'), eroaV=el('eroa'), rvV=el('rv'), rfV=el('rf'),
+      gradeV=el('grade'), osatsV=el('osats'), beatV=el('beatN');
+
+// State
+let running=true, actions=[], history=[];
+let HR=+hrSl.value, DP=+dPSl.value, CASE=caseSel.value;
+let RING_SIZE=+ringSizeSl.value, RING_STIFF=+ringStiffSl.value;
+const now=()=>performance.now();
+
+// Geometry & physics
+const COLS=44, ROWS=16; // per leaflet (hinge row pinned)
+const COAPT_GAP=1.0;   // mm-ish
+const DAMP=0.02;
+const STIFF_CHORD=0.95, STIFF_RAD=0.82, STIFF_SHEAR=0.72;
+const PRESSURE_GAIN=0.018; // px per mmHg per frame (tuned)
+
+// Valve model
+const Valve = {
+  center(){ return {x: canvas.width*0.5, y: canvas.height*0.55}; },
+  R_ML(){ return Math.min(canvas.width,canvas.height)*0.24; },
+  R_AP(){ return Math.min(canvas.width,canvas.height)*0.18; },
+  annulus: [],
+  normal: [],
+  annIdx: [],
+
+  ant: { nodes:[], prev:[], len:66, side:-1, chordIdx:[], cut:false },
+  post:{ nodes:[], prev:[], len:56, side:+1, chordIdx:[], cut:false },
+
+  papAL:{x:0,y:0}, papPM:{x:0,y:0},
+  ringImplanted:false, replacement:false,
+
+  // heartbeat
+  t0: now(), lastBeat: now(), beat:0, beats:[],
+
+  // accumulators
+  eroaAcc_mm2:0, eroaN:0, rvAcc:0,
+
+  buildAnnulus(){
+    const c=this.center(), rx=this.R_ML(), ry=this.R_AP();
+    const K = COLS; this.annulus.length=K; this.normal.length=K; this.annIdx.length=K;
+    for(let i=0;i<K;i++){
+      const t=i/(K-1); const th = lerp(-Math.PI*0.95, Math.PI*0.95, t);
+      const px = c.x + rx*Math.cos(th), py = c.y + ry*Math.sin(th);
+      this.annulus[i] = {x:px,y:py};
+      const nx = (px-c.x), ny=(py-c.y); const L=Math.hypot(nx,ny)||1;
+      this.normal[i] = {x:nx/L, y:ny/L};
+    }
+    this.papAL = { x: c.x + rx*0.45, y: c.y + ry*1.45 };
+    this.papPM = { x: c.x - rx*0.48, y: c.y + ry*1.55 };
+  },
+
+  initLeaf(which){
+    const st = (which==='anterior') ? this.ant : this.post;
+    st.nodes.length = ROWS*COLS; st.prev.length=ROWS*COLS; st.cut=false;
+    for(let r=0;r<ROWS;r++){
+      for(let c=0;c<COLS;c++){
+        const u = c/(COLS-1);
+        const aIdx = Math.floor(u*(COLS-1));
+        const hinge = this.annulus[aIdx];
+        const n = this.normal[aIdx];
+        const target = { x: hinge.x + n.x * st.side * st.len, y: hinge.y + n.y * st.side * st.len };
+        const id = r*COLS+c;
+        // distribute from hinge (row 0) to free edge (row ROWS-1)
+        const v = r/(ROWS-1);
+        const p = { x: lerp(hinge.x, target.x, v), y: lerp(hinge.y, target.y, v) };
+        st.nodes[id] = p; st.prev[id] = {x:p.x, y:p.y};
+      }
+    }
+    // chordae: every 2nd free-edge column
+    st.chordIdx = [];
+    const free = ROWS-1;
+    for(let c=0;c<COLS;c+=2){ st.chordIdx.push(free*COLS + c); }
+  },
+
+  applyCase(){
+    // fresh build
+    this.buildAnnulus();
+    this.initLeaf('anterior'); this.initLeaf('posterior');
+
+    if(CASE==='p2_flail'){
+      // weaken posterior free-edge segment around mid columns
+      const mid=Math.floor(COLS*0.5), span=Math.floor(COLS*0.12);
+      const free=ROWS-1;
+      for(let c=mid-span;c<=mid+span;c++){
+        const id = free*COLS + c;
+        this.post.nodes[id].y += 16;
+        this.post.prev[id].y += 16;
+      }
+      // remove chordae in the flail band
+      this.post.chordIdx = this.post.chordIdx.filter(id=>{
+        const c = id%COLS; return !(c>=mid-span && c<=mid+span);
+      });
+    } else if(CASE==='barlow'){
+      // elongate chordae slightly and increase leaflet length
+      this.ant.len += 6; this.post.len += 6;
+      this.initLeaf('anterior'); this.initLeaf('posterior');
+    } else if(CASE==='functional'){
+      // annular dilation + papillary displacement
+      const c=this.center(); const scale = 1.12;
+      for(let i=0;i<this.annulus.length;i++){
+        const p=this.annulus[i];
+        p.x = c.x + (p.x-c.x)*scale; p.y = c.y + (p.y-c.y)*scale;
+      }
+      this.papAL.x += 6; this.papAL.y += 20;
+      this.papPM.x -= 6; this.papPM.y += 24;
+      this.post.len += 6; // tethering
+      this.initLeaf('anterior'); this.initLeaf('posterior');
+    }
+
+    this.ringImplanted=false; this.replacement=false;
+    this.beats.length=0; this.beat=0; this.eroaAcc_mm2=0; this.eroaN=0; this.rvAcc=0;
+  }
+};
+
+// Utility
+function lerp(a,b,t){ return a + (b-a)*t; }
 function clamp(x,a,b){ return Math.max(a,Math.min(b,x)); }
+function dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
+function sub(a,b){ return {x:a.x-b.x,y:a.y-b.y}; }
+function add(a,b){ return {x:a.x+b.x,y:a.y+b.y}; }
+function mul(a,s){ return {x:a.x*s,y:a.y*s}; }
 
-/* ---- Build annulus (ellipse) + normals ---- */
-function buildAnnulus(){
-  const c = CENTER(), rx = R_ML(), ry = R_AP();
-  for(let i=0;i<K;i++){
-    const t = i/(K-1);               // arc across LV–LA line (nearly 180°)
-    const ang = lerp(-Math.PI*0.9, Math.PI*0.9, t);
-    const p = { x: c.x + rx*Math.cos(ang), y: c.y + ry*Math.sin(ang) };
-    hinge[i] = p;
-    const nvec = { x: (p.x - c.x), y: (p.y - c.y) };
-    const L = Math.hypot(nvec.x, nvec.y) || 1;
-    normal[i] = { x: nvec.x/L, y: nvec.y/L };  // outward normal
-  }
-  papAL = { x: c.x + rx*0.45, y: c.y + ry*1.4 };   // anterolateral
-  papPM = { x: c.x - rx*0.48, y: c.y + ry*1.5 };   // posteromedial
+function beatPeriod(){ return 60000/HR; }
+function dP_mmHg(tMs){
+  const T=beatPeriod(); const t=(tMs%T)/T; const syst=0.38;
+  if(t<syst){ const x=t/syst; return DP*Math.sin(Math.PI*x); }
+  const d=(t-syst)/(1-syst); return -8*(1-Math.cos(Math.PI*d))*0.5;
 }
 
-/* ---- Initialize leaflets ---- */
-function initLeaf(side){
-  const st = (side<0) ? ant : post;
-  for(let i=0;i<K;i++){
-    const base = add(hinge[i], mul(normal[i], side * st.len));
-    st.free[i] = {x: base.x, y: base.y};
-    st.prev[i] = {x: base.x, y: base.y};
+// Physics: integrate leaflets (Verlet) + constraints + coaptation + chordae
+function integrateLeaf(st, normals, annulus, dt, pressure){
+  // intrinsic targets along normal with anisotropic recovery
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      const id=r*COLS+c;
+      const p=st.nodes[id], prev=st.prev[id];
+
+      // Verlet + damping
+      const vx=(p.x-prev.x)*(1-DAMP), vy=(p.y-prev.y)*(1-DAMP);
+      prev.x=p.x; prev.y=p.y;
+
+      // Hinge target (rest) along normal
+      const hinge=annulus[c], n=normals[c];
+      const rest = { x: lerp(hinge.x, hinge.x + n.x*st.side*st.len, r/(ROWS-1)),
+                     y: lerp(hinge.y, hinge.y + n.y*st.side*st.len, r/(ROWS-1)) };
+
+      // Pressure drives both leaflets toward each other during systole (ΔP>0)
+      const press = mul(n, -st.side * (PRESSURE_GAIN*pressure));
+
+      // integrate
+      p.x += vx + (rest.x - p.x)*STIFF_RAD + press.x;
+      p.y += vy + (rest.y - p.y)*STIFF_RAD + press.y;
+    }
   }
-  // chordae: every 3rd node goes to AL (left half) or PM (right half)
-  st.chordIdx = [];
-  for(let i=0;i<K;i+=3){
-    st.chordIdx.push(i);
+  // chordwise anisotropy (neighbor smoothing stronger along free-edge direction)
+  for(let r=0;r<ROWS;r++){
+    for(let c=1;c<COLS-1;c++){
+      const id=r*COLS+c, L=st.nodes[id-1], R=st.nodes[id+1], P=st.nodes[id];
+      P.x += ((L.x+R.x)*0.5 - P.x)*STIFF_CHORD;
+      P.y += ((L.y+R.y)*0.5 - P.y)*STIFF_CHORD;
+    }
+  }
+  // shear
+  for(let r=0;r<ROWS-1;r++){
+    for(let c=0;c<COLS-1;c++){
+      const A=st.nodes[r*COLS+c], B=st.nodes[(r+1)*COLS+(c+1)], C=st.nodes[r*COLS+(c+1)], D=st.nodes[(r+1)*COLS+c];
+      const cx = ((A.x+B.x)-(C.x+D.x))*0.25, cy=((A.y+B.y)-(C.y+D.y))*0.25;
+      A.x -= cx*STIFF_SHEAR; A.y -= cy*STIFF_SHEAR;
+      B.x -= cx*STIFF_SHEAR; B.y -= cy*STIFF_SHEAR;
+      C.x += cx*STIFF_SHEAR; C.y += cy*STIFF_SHEAR;
+      D.x += cx*STIFF_SHEAR; D.y += cy*STIFF_SHEAR;
+    }
+  }
+  // chordae to papillary anchors
+  for(const idx of st.chordIdx){
+    const p = st.nodes[idx];
+    const col = idx%COLS;
+    const anchor = (col < COLS/2) ? Valve.papAL : Valve.papPM;
+    const d = sub(anchor,p); const L=Math.hypot(d.x,d.y)||1;
+    const pull=0.12; // tuned
+    p.x += (d.x/L)*pull*8; p.y += (d.y/L)*pull*8;
   }
 }
 
-/* ---- Apply pathology presets ---- */
-function applyCase(){
-  // Reset geometry
-  buildAnnulus();
-  initLeaf(-1); // anterior
-  initLeaf(+1); // posterior
-
-  if(CASE === 'p2_flail'){
-    // "Cut" a band of posterior chordae around center
-    const mid = Math.floor(K/2), span = Math.floor(K*0.12);
-    for(let i=mid-span;i<=mid+span;i++){
-      // Move that free point farther out (flail) and weaken neighbor coupling
-      post.free[i].y += 15;
-      post.prev[i].y += 15;
-      // Remove its chordae by not treating it as chordIdx
+// Coaptation contact along free-edge pairs
+function coaptContact(dt){
+  const free=ROWS-1;
+  for(let c=0;c<COLS;c++){
+    const a=Valve.ant.nodes[free*COLS+c], p=Valve.post.nodes[free*COLS+c];
+    const dx=p.x-a.x, dy=p.y-a.y; const L=Math.hypot(dx,dy)||1;
+    const gap=L-COAPT_GAP;
+    if(gap<0){
+      const corr=(COAPT_GAP-L)*0.5, ux=dx/L, uy=dy/L;
+      a.x -= ux*corr; a.y -= uy*corr;
+      p.x += ux*corr; p.y += uy*corr;
     }
-    // Filter chordae indices to exclude the flail region
-    post.chordIdx = post.chordIdx.filter(i => i < mid-span || i > mid+span);
-  } else if(CASE === 'functional'){
-    // Shift papillary points apically and dilate the annulus slightly
-    const c = CENTER(); const scale = 1.10;
-    for(let i=0;i<K;i++){
-      hinge[i] = add(c, mul(sub(hinge[i], c), scale));
-      normal[i] = mul(normal[i], 1); // recalc not needed since direction preserved
-    }
-    papAL.y += 18; papPM.y += 22; papAL.x += 6; papPM.x -= 6;
-    // Tethering effect: increase posterior leaflet rest length a little
-    post.len += 6;
   }
 }
 
-/* ---- Heart cycle (ΔP over time) ---- */
-function beatPeriodMs(){ return 60000/HR; }
-function dP_mmHg(timeMs){
-  const T = beatPeriodMs(); const t = (timeMs % T)/T;
-  const syst = 0.38;
-  if(t < syst){ const x = t/syst; return DP * Math.sin(Math.PI*x); } // half-sine up/down
-  const d = (t - syst) / (1 - syst);
-  return -8 * (1 - Math.cos(Math.PI*d)) * 0.5; // small negative diastolic suction
+// Triangular resection (posterior): shorten free-edge band toward hinge & reduce width
+function applyTriangular(){
+  const st=Valve.post; const free=ROWS-1, mid=Math.floor(COLS*0.5), span=Math.floor(COLS*0.1);
+  if(st.cut) return;
+  for(let c=mid-span;c<=mid+span;c++){
+    const id=free*COLS+c;
+    const hinge=Valve.annulus[c], n=Valve.normal[c];
+    const target = { x: hinge.x + n.x*st.side*(st.len*0.7), y: hinge.y + n.y*st.side*(st.len*0.7) };
+    // pull that column’s free edge back (simulate wedge resection + plication)
+    st.nodes[id].x = target.x; st.nodes[id].y = target.y;
+  }
+  st.cut=true;
+  history.push({op:'tri'});
+  toast('Posterior triangular resection simulated.','ok');
 }
 
-/* ---- Physics step (Verlet + positional corrections) ---- */
-function step(dt){
-  const now = performance.now();
-  const dP = dP_mmHg(now);
-  const Ppush = PRESSURE_GAIN * dP;
-
-  function integrateLeaf(st){
-    for(let i=0;i<K;i++){
-      const p = st.free[i], prev = st.prev[i];
-
-      // Verlet integration with global damping
-      const vx = (p.x - prev.x) * (1 - DAMP);
-      const vy = (p.y - prev.y) * (1 - DAMP);
-      prev.x = p.x; prev.y = p.y;
-
-      // Pressure drives leaflets inward during systole, outward during diastole
-      // Direction: -side * normal (so both move towards hinge when dP > 0)
-      const dir = mul(normal[i], -st.side * Ppush);
-
-      p.x += vx + dir.x;
-      p.y += vy + dir.y;
-
-      // Radial spring towards (hinge + side*len*normal)
-      const target = add(hinge[i], mul(normal[i], st.side * st.len));
-      p.x += (target.x - p.x) * RAD_STIFF;
-      p.y += (target.y - p.y) * RAD_STIFF;
-    }
-
-    // Edge smoothness (neighbor coupling)
-    for(let i=1;i<K-1;i++){
-      const p = st.free[i], a = st.free[i-1], b = st.free[i+1];
-      p.x += ((a.x + b.x)/2 - p.x) * EDGE_STIFF;
-      p.y += ((a.y + b.y)/2 - p.y) * EDGE_STIFF;
-    }
-
-    // Chordae to papillary muscles
-    for(const idx of st.chordIdx){
-      const p = st.free[idx];
-      const anchor = (idx < K/2) ? papAL : papPM;
-      const d = sub(anchor, p);
-      const L = Math.hypot(d.x, d.y) || 1;
-      // Desired chord length is current; just pull slightly toward anchor (tension)
-      const pull = CHORDA_STIFF;
-      p.x += (d.x / L) * pull * 6;   // 6 px nominal
-      p.y += (d.y / L) * pull * 6;
-    }
+// Annuloplasty ring: warp hinge points to ring size & stiffen annular “springs”
+function implantRing(){
+  const scale = RING_SIZE/32;
+  const c=Valve.center(), rx=Valve.R_ML()*scale, ry=Valve.R_AP()*scale;
+  for(let i=0;i<COLS;i++){
+    const t=i/(COLS-1); const th=lerp(-Math.PI*0.95, Math.PI*0.95, t);
+    Valve.annulus[i].x = c.x + rx*Math.cos(th);
+    Valve.annulus[i].y = c.y + ry*Math.sin(th);
+    Valve.normal[i].x = (Valve.annulus[i].x-c.x)/rx;
+    Valve.normal[i].y = (Valve.annulus[i].y-c.y)/ry;
   }
-
-  // Integrate both leaflets
-  integrateLeaf(ant); integrateLeaf(post);
-
-  // Coaptation contact: keep a minimal gap (prevents interpenetration)
-  for(let i=0;i<K;i++){
-    const A = ant.free[i], P = post.free[i];
-    const d = sub(P, A);
-    const L = Math.hypot(d.x, d.y) || 1;
-    const gap = L - COAPT_GAP;
-    if(gap < 0){
-      // Move both half the correction along the line
-      const corr = (COAPT_GAP - L) * 0.5;
-      const ux = d.x / L, uy = d.y / L;
-      A.x -= ux * corr; A.y -= uy * corr;
-      P.x += ux * corr; P.y += uy * corr;
-    }
-  }
-
-  // Per-beat metrics (EROA & regurg stats)
-  accumulateBeatMetrics(dP, dt);
+  Valve.ringImplanted=true;
+  history.push({op:'ring', size:RING_SIZE, stiff:RING_STIFF});
+  toast('Annuloplasty ring implanted.','ok');
 }
 
-/* ---- Metrics ---- */
-let eroaAcc_mm2 = 0, eroaN = 0, rv_ml_acc = 0;
-function accumulateBeatMetrics(dP, dt){
-  // EROA estimate: sum positive gaps between free edges along arc
-  let area_mm2 = 0;
-  for(let i=0;i<K;i++){
-    const A = ant.free[i], P = post.free[i];
-    const L = len2(A, P);
-    const gap = Math.max(0, L - 1.0); // 1 mm tolerance for "coapted" line
-    // Arc spacing in mm-ish (approx)
-    const s = (R_ML()*Math.PI*1.8) / (K-1) / (Math.min(canvas.width, canvas.height)/300*10); // rough normalization
-    area_mm2 += gap * s;
+// Replacement view: hide leaflets, show prosthesis symbol
+function drawReplacement(){
+  const ctx2=ctx;
+  const c=Valve.center();
+  const r=Math.min(Valve.R_ML(),Valve.R_AP())*0.55;
+  ctx2.save();
+  ctx2.strokeStyle="#8896aa"; ctx2.lineWidth=4;
+  ctx2.beginPath(); ctx2.arc(c.x,c.y,r,0,Math.PI*2); ctx2.stroke();
+  // bileaflet disks
+  ctx2.lineWidth=3;
+  ctx2.beginPath(); ctx2.arc(c.x,c.y,r*0.92, -0.35, 0.35); ctx2.stroke();
+  ctx2.beginPath(); ctx2.arc(c.x,c.y,r*0.92, Math.PI-0.35, Math.PI+0.35); ctx2.stroke();
+  ctx2.restore();
+}
+
+// Metrics per beat
+function accumulateMetrics(dP, dt){
+  // instantaneous EROA estimate from free-edge gaps columns
+  let area_mm2=0; const span = (Valve.R_ML()*Math.PI*1.9)/(COLS-1)/(Math.min(canvas.width, canvas.height)/300*10);
+  const free=ROWS-1;
+  for(let c=0;c<COLS;c++){
+    const a=Valve.ant.nodes[free*COLS+c], p=Valve.post.nodes[free*COLS+c];
+    const gap = Math.max(0, Math.hypot(p.x-a.x,p.y-a.y) - 1.0);
+    area_mm2 += gap * span;
   }
-  const eroa_cm2_inst = area_mm2 / 100.0;
+  const eroa_cm2_inst = area_mm2/100.0;
+  const v_ms = dP>0? Math.sqrt(Math.max(0,dP)/4):0;
+  const flow_ml_s = eroa_cm2_inst * (v_ms*100);
 
-  // Jet velocity from echo rule: ΔP ≈ 4 v^2 → v ≈ sqrt(ΔP/4) m/s
-  const v_ms = dP>0 ? Math.sqrt(Math.max(0, dP)/4) : 0;
-  const flow_ml_s = eroa_cm2_inst * (v_ms * 100); // (cm² * cm/s) = ml/s
+  if(dP>2){ Valve.eroaAcc_mm2 += area_mm2; Valve.eroaN++; Valve.rvAcc += flow_ml_s*dt; }
 
-  // Accumulate during systole (dP>0)
-  if(dP > 2){
-    eroaAcc_mm2 += area_mm2;
-    eroaN += 1;
-    rv_ml_acc += flow_ml_s * dt;
-  }
-
-  // Beat boundary
-  const now = performance.now();
-  if(now - lastBeat >= beatPeriodMs()){
-    const eroa_cm2 = (eroaN>0) ? (eroaAcc_mm2/eroaN)/100.0 : 0;
-    const rv_ml = rv_ml_acc;
-    // Stroke volume ~ 4.5 L/min scaled by ΔP, crude; RF = RV/SV
+  const nowMs=now();
+  if(nowMs - Valve.lastBeat >= beatPeriod()){
+    const eroa_cm2 = (Valve.eroaN? (Valve.eroaAcc_mm2/Valve.eroaN)/100.0 : 0);
+    const rv_ml = Valve.rvAcc;
     const CO_ml_min = 4500 * clamp(DP/100, 0.7, 1.3);
     const SV_ml = CO_ml_min / HR;
-    const rf = clamp(SV_ml ? (rv_ml/SV_ml*100) : 0, 0, 95);
+    const rf = clamp(SV_ml? (rv_ml/SV_ml*100) : 0, 0, 95);
+    const severe = (CASE==='functional')? 0.20 : 0.40;
+    let grade='None';
+    if(eroa_cm2<0.10) grade='None';
+    else if(eroa_cm2<0.20) grade='Mild';
+    else if(eroa_cm2<severe) grade='Moderate';
+    else grade='Severe';
 
-    beatLog.push({ eroa_cm2, rv_ml, rf });
-    if(beatLog.length > 8) beatLog.shift();
+    Valve.beats.push({beat:++Valve.beat, eroa_cm2, rv_ml, rf, grade});
+    if(Valve.beats.length>12) Valve.beats.shift();
+    Valve.eroaAcc_mm2=0; Valve.eroaN=0; Valve.rvAcc=0; Valve.lastBeat += beatPeriod();
 
-    eroaV.textContent = eroa_cm2.toFixed(2) + ' cm²';
-    rvV.textContent   = rv_ml.toFixed(1) + ' ml • ' + Math.round(rf) + '%';
-
-    eroaAcc_mm2 = 0; eroaN = 0; rv_ml_acc = 0; lastBeat += beatPeriodMs();
+    // Update HUD once/beat
+    el('eroa').textContent = eroa_cm2.toFixed(2)+' cm²';
+    el('rv').textContent   = rv_ml.toFixed(1)+' ml';
+    el('rf').textContent   = Math.round(rf)+'%';
+    el('grade').textContent= grade;
+    el('beatN').textContent= Valve.beat;
   }
 }
 
-/* ---- Render ---- */
-function draw(){
+// OSATS-style proxy
+function osatsProxy(){
+  const mins = sessionRunning()? ((now()-sessionStart)/60000) : 0.0001;
+  const acts = actions.length;
+  const efficiency = clamp(5 - (mins*0.7 + acts*0.06), 1, 5);
+  const handling   = clamp(4.6 - (wireCb.checked?0.2:0) - (Valve.ringImplanted?0:0.1), 1, 5);
+  const flow       = clamp(2 + ((Valve.post.cut||Valve.ringImplanted||Valve.replacement)?2:0), 1, 5);
+  const knowledge  = clamp(3 + ((el('grade').textContent==='None'||el('grade').textContent==='Mild')?2:0), 1, 5);
+  const respect    = handling;
+  const overall    = Math.round(((efficiency+handling+flow+knowledge+respect)/5)*10)/10;
+  osatsV.textContent = overall.toFixed(1)+'/5';
+  return {efficiency,handling,flow,knowledge,respect,overall};
+}
+
+// Rendering
+function drawStage(){
   const w=canvas.width, h=canvas.height;
   ctx.clearRect(0,0,w,h);
 
-  // Backdrop grid
-  ctx.save();
-  ctx.strokeStyle = '#14202a';
-  ctx.lineWidth = 1;
+  // grid
+  ctx.save(); ctx.strokeStyle='#14202a'; ctx.lineWidth=1;
   for(let x=0;x<w;x+=40){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
   for(let y=0;y<h;y+=40){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
   ctx.restore();
 
-  // Annulus
-  ctx.save();
-  ctx.strokeStyle = '#95a9c4';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(hinge[0].x, hinge[0].y);
-  for(let i=1;i<K;i++) ctx.lineTo(hinge[i].x, hinge[i].y);
-  ctx.stroke();
-  ctx.restore();
+  // annulus
+  ctx.save(); ctx.strokeStyle='#95a9c4'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(Valve.annulus[0].x,Valve.annulus[0].y);
+  for(let i=1;i<COLS;i++) ctx.lineTo(Valve.annulus[i].x, Valve.annulus[i].y);
+  ctx.stroke(); ctx.restore();
 
-  // Leaflet fills (posterior then anterior)
-  function fillLeaf(leaf, color){
-    ctx.save();
-    ctx.fillStyle = color;
+  if(Valve.replacement){ drawReplacement(); drawTEE(); return; }
+
+  // leaflets fill
+  function drawLeaf(st, fill){
+    // build path: hinge → free edge → back
+    ctx.save(); ctx.fillStyle=fill; ctx.strokeStyle=wireCb.checked?'#26445f':'transparent'; ctx.lineWidth=wireCb.checked?0.7:0;
     ctx.beginPath();
-    ctx.moveTo(hinge[0].x, hinge[0].y);
-    for(let i=1;i<K;i++) ctx.lineTo(hinge[i].x, hinge[i].y);
-    for(let i=K-1;i>=0;i--) ctx.lineTo(leaf.free[i].x, leaf.free[i].y);
-    ctx.closePath();
-    ctx.fill();
+    ctx.moveTo(Valve.annulus[0].x, Valve.annulus[0].y);
+    for(let c=1;c<COLS;c++) ctx.lineTo(Valve.annulus[c].x, Valve.annulus[c].y);
+    for(let c=COLS-1;c>=0;c--) ctx.lineTo(st.nodes[(ROWS-1)*COLS + c].x, st.nodes[(ROWS-1)*COLS + c].y);
+    ctx.closePath(); ctx.fill(); if(wireCb.checked) ctx.stroke();
+
+    if(wireCb.checked){
+      // interior chordwise lines
+      for(let r=1;r<ROWS-1;r++){
+        ctx.beginPath();
+        for(let c=0;c<COLS;c++){
+          const p=st.nodes[r*COLS+c];
+          if(c===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y);
+        }
+        ctx.stroke();
+      }
+    }
     ctx.restore();
   }
-  fillLeaf(post, 'rgba(240,248,255,0.95)');
-  fillLeaf(ant , 'rgba(230,235,255,0.92)');
+  drawLeaf(Valve.post, 'rgba(240,248,255,0.95)');
+  drawLeaf(Valve.ant , 'rgba(230,235,255,0.92)');
 
-  // Chordae
-  ctx.save();
-  ctx.strokeStyle = '#6fa2ff';
-  ctx.lineWidth = 1;
-  for(const idx of post.chordIdx){
-    const a = post.free[idx], b = (idx<K/2)? papAL : papPM;
-    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+  // chordae
+  ctx.save(); ctx.strokeStyle='#6fa2ff'; ctx.lineWidth=1;
+  for(const id of Valve.ant.chordIdx){
+    const p=Valve.ant.nodes[id]; const col=id%COLS; const b=(col<COLS/2)?Valve.papAL:Valve.papPM;
+    ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(b.x,b.y); ctx.stroke();
   }
-  for(const idx of ant.chordIdx){
-    const a = ant.free[idx], b = (idx<K/2)? papAL : papPM;
-    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+  for(const id of Valve.post.chordIdx){
+    const p=Valve.post.nodes[id]; const col=id%COLS; const b=(col<COLS/2)?Valve.papAL:Valve.papPM;
+    ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(b.x,b.y); ctx.stroke();
   }
-  // Papillary markers
-  ctx.fillStyle = '#3e566e';
-  ctx.beginPath(); ctx.arc(papAL.x,papAL.y,4,0,Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(papPM.x,papPM.y,4,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#3e566e';
+  ctx.beginPath(); ctx.arc(Valve.papAL.x,Valve.papAL.y,4,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(Valve.papPM.x,Valve.papPM.y,4,0,Math.PI*2); ctx.fill();
   ctx.restore();
+
+  drawTEE();
 }
 
-/* ---- Main loop ---- */
-let last = performance.now();
-function loop(){
-  if(!running){ requestAnimationFrame(loop); return; }
-  const now = performance.now();
-  const dt = Math.min(1/60, (now-last)/1000);
-  step(dt);
-  draw();
-  last = now;
-  requestAnimationFrame(loop);
+// TEE inset: synthetic “ultrasound” with jet hint
+function drawTEE(){
+  tee.style.display = showTEECb.checked? 'block':'none';
+  if(!showTEECb.checked) return;
+  // backdrop grain
+  const w=teeC.width, h=teeC.height;
+  teeCtx.fillStyle='#04090e'; teeCtx.fillRect(0,0,w,h);
+  // faint concentric lines
+  teeCtx.strokeStyle='#0d1b28'; teeCtx.lineWidth=1;
+  for(let r=20;r<Math.min(w,h);r+=20){ teeCtx.beginPath(); teeCtx.arc(w*0.5,h*0.65,r,0,Math.PI*2); teeCtx.stroke(); }
+  // regurg “jet” proportional to current EROA inst (approx)
+  const free=ROWS-1; let jet=0;
+  for(let c=0;c<COLS;c++){
+    const a=Valve.ant.nodes[free*COLS+c], p=Valve.post.nodes[free*COLS+c];
+    jet += Math.max(0, Math.hypot(p.x-a.x,p.y-a.y)-1.0);
+  }
+  const J = clamp(jet/(COLS*2.2),0,18);
+  teeCtx.fillStyle='rgba(66,170,255,0.85)';
+  teeCtx.beginPath(); const cx=w*0.52, cy=h*0.45;
+  teeCtx.ellipse(cx, cy, 8+J, 12+J*1.4, 0, 0, Math.PI*2); teeCtx.fill();
+
+  // probe angle pointer
+  teeCtx.strokeStyle='#56799b'; teeCtx.lineWidth=2;
+  const ang = (parseInt(teeAngle.value)||60) * Math.PI/180;
+  teeCtx.beginPath(); teeCtx.moveTo(cx,cy); teeCtx.lineTo(cx+Math.cos(ang)*70, cy+Math.sin(ang)*70); teeCtx.stroke();
 }
 
-/* ---- UI wiring ---- */
-hrSl.oninput = ()=>{ HR = +hrSl.value; hrV.textContent = HR + ' bpm'; };
-dPSl.oninput = ()=>{ DP = +dPSl.value; dPV.textContent = DP + ' mmHg'; };
-btnReset.onclick = ()=>{ CASE = caseSel.value; applyCase(); statusBar.textContent = 'Loaded: '+CASE; };
-btnPause.onclick = ()=>{
-  running = !running;
-  statusV.textContent = running ? 'Running' : 'Paused';
-  btnPause.textContent = running ? 'Pause' : 'Resume';
-  if(running) last = performance.now();
-};
+// Loop
+let lastT = now(); let sessionStart = now();
+function sessionRunning(){ return running; }
+function tick(){
+  requestAnimationFrame(tick);
+  if(!running){ osatsProxy(); return; }
 
+  const t = now(); const dt = Math.min(1/60, (t-lastT)/1000); lastT=t;
+  const dP = dP_mmHg(t);
+
+  // integrate
+  integrateLeaf(Valve.ant , Valve.normal, Valve.annulus, dt, dP);
+  integrateLeaf(Valve.post, Valve.normal, Valve.annulus, dt, dP);
+  coaptContact(dt);
+
+  // metrics
+  accumulateMetrics(dP, dt);
+
+  // render
+  drawStage();
+  osatsProxy();
+}
+
+// Picking & tools
+const stage = el('stage');
+let picking=false, pickHandler=null;
+stage.addEventListener('mousedown', e=>{
+  const rect=canvas.getBoundingClientRect();
+  const px = (e.clientX-rect.left)*canvas.width/rect.width;
+  const py = (e.clientY-rect.top )*canvas.height/rect.height;
+
+  if(tool==='neochord'){ neochordTool(px,py); }
+  else if(tool==='tri'){ applyTriangular(); }
+  else if(tool==='ringsizer'){ ringSizerTool(px,py); }
+  else if(tool==='ring'){ implantRing(); }
+  else if(tool==='replace'){ Valve.replacement=true; history.push({op:'replace'}); toast('Replacement view enabled.','ok'); }
+  else if(tool==='revert'){ Valve.replacement=false; Valve.applyCase(); toast('Reverted to native.','ok'); }
+});
+
+function nearestFreeEdgeNode(px,py){
+  const free=ROWS-1; let best=null, bestD=1e9, leaf=null;
+  for(const st of [Valve.ant, Valve.post]){
+    for(let c=0;c<COLS;c++){
+      const id=free*COLS+c, p=st.nodes[id];
+      const d=Math.hypot(px-p.x, py-p.y);
+      if(d<bestD){ bestD=d; best={leaf:st, id, col:c}; leaf=st; }
+    }
+  }
+  return (bestD<30)? best : null;
+}
+
+function neochordTool(px,py){
+  const pick = nearestFreeEdgeNode(px,py);
+  if(!pick){ toast('Click closer to the free edge.','warn'); return; }
+  // decide papillary by column side
+  const pap = (pick.col<COLS/2)? Valve.papAL : Valve.papPM;
+  // add new chord by appending that node index to chordIdx (unique)
+  if(!pick.leaf.chordIdx.includes(pick.id)) pick.leaf.chordIdx.push(pick.id);
+  Valve.ant===pick.leaf? Valve.ant.chordIdx : Valve.post.chordIdx;
+  actions.push({t:now()-sessionStart, op:'neochord', id:pick.id});
+  toast('Neochord loop added.','ok');
+}
+
+function ringSizerTool(px,py){
+  // Two-step measurement: A2 height then intercommissural (IC) distance
+  // Here we just compute and toast nearest distances from click to hinge line for demo
+  const col = Math.round(COLS*0.5);
+  const free=ROWS-1;
+  const A2 = dist(Valve.ant.nodes[free*COLS+col], Valve.annulus[col]).toFixed(1);
+  const IC  = dist(Valve.annulus[4], Valve.annulus[COLS-5]).toFixed(1);
+  toast(`Sizer → A2 ≈ ${A2} mm, IC ≈ ${IC} mm.`, 'ok');
+  actions.push({t:now()-sessionStart, op:'ring_sizer', A2:+A2, IC:+IC});
+}
+
+// Session export
+function exportReport(){
+  const report = {
+    when: new Date().toISOString(),
+    case: CASE,
+    ring: Valve.ringImplanted? {size_mm:RING_SIZE, stiffness:RING_STIFF} : null,
+    replacement: Valve.replacement,
+    triangular: Valve.post.cut,
+    beats: Valve.beats,
+    final: Valve.beats.at(-1)||null,
+    osats: osatsProxy(),
+    actions
+  };
+  const blob=new Blob([JSON.stringify(report,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='mitrallab2d_session.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// UI wiring
+hrSl.oninput = ()=>{ HR=+hrSl.value; hrV.textContent=HR+' bpm'; };
+dPSl.oninput = ()=>{ DP=+dPSl.value; dPV.textContent=DP+' mmHg'; };
+ringSizeSl.oninput = ()=>{ RING_SIZE=+ringSizeSl.value; ringSizeV.textContent=RING_SIZE; };
+ringStiffSl.oninput = ()=>{ RING_STIFF=+ringStiffSl.value; ringStiffV.textContent=RING_STIFF.toFixed(2); };
+
+loadBtn.onclick = ()=>{ CASE=caseSel.value; Valve.applyCase(); history.push({op:'reset',case:CASE}); toast('Case loaded.','ok'); };
+startBtn.onclick = ()=>{ if(!running){ running=true; sessionStart=now(); toast('Session started.','ok'); }};
+stopBtn.onclick  = ()=>{ if(running){ running=false; exportReport(); toast('Exported JSON.','ok'); }};
+
+document.addEventListener('keydown', e=>{
+  if(e.key===' '){ running=!running; if(running) sessionStart=now(); }
+  if(e.key==='1'){ caseSel.value='p2_flail'; loadBtn.click(); }
+  if(e.key==='2'){ caseSel.value='barlow'; loadBtn.click(); }
+  if(e.key==='3'){ caseSel.value='functional'; loadBtn.click(); }
+  if(e.key==='n'||e.key==='N'){ setTool('neochord'); }
+  if(e.key==='t'||e.key==='T'){ setTool('tri'); applyTriangular(); }
+  if(e.key==='a'||e.key==='A'){ setTool('ring'); implantRing(); }
+  if(e.key==='r'||e.key==='R'){ loadBtn.click(); }
+});
+
+// Toast/status
+let toastTimer=null;
+function toast(msg, cls=''){ statusBar.innerHTML = `<span class="${cls}">${msg}</span>`; clearTimeout(toastTimer); toastTimer=setTimeout(()=>statusBar.textContent='',3500); }
+function hint(mode){
+  const msg = {
+    cursor:'Click to inspect.',
+    neochord:'Click a leaflet free edge; a neochord is added to the nearest papillary.',
+    tri:'Click once to simulate posterior triangular resection around P2.',
+    ringsizer:'Click anywhere to see A2 & intercommissural estimates.',
+    ring:'Click to implant ring with current size/stiffness.',
+    replace:'Click to visualize chordal-sparing replacement.',
+    revert:'Click to revert to native valve.'
+  }[mode];
+  toast(msg||'', '');
+}
+
+// Boot
 function boot(){
-  buildAnnulus();
-  initLeaf(-1); initLeaf(+1);
-  applyCase(); // default selection
-  running = true; statusV.textContent = 'Running';
-  loop();
+  Valve.applyCase();
+  setTool('cursor');
+  tick();
+  toast('Ready. Use tools on the left; sliders on top.', 'ok');
 }
 boot();
 </script>
