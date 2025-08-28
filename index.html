@@ -2,943 +2,739 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Mitral Valve Surgical Simulator • Web</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
-  <meta name="description" content="Web-based mitral valve repair & replacement simulator for training and education."/>
-  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-  <!-- Three.js (global build) + OrbitControls (non-module) + lil-gui -->
-  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
-  <script src="https://unpkg.com/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="https://unpkg.com/lil-gui@0.19/dist/lil-gui.umd.min.js"></script>
+  <title>MitralLab: Web Surgical Simulator (Repair & Replacement)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+  <meta name="description" content="Real-time, web-based mitral valve repair & replacement simulator for surgical training." />
   <style>
-    :root{
-      --bg:#0b0f14;
-      --bg2:#0e141b;
-      --panel:#111822;
-      --ink:#e9eef6;
-      --muted:#9bb2ca;
-      --accent:#47d4a1;
-      --danger:#ff6b6b;
-      --warning:#f6c945;
-      --ok:#8bffb3;
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
-      --radius: 14px;
+    :root {
+      --bg:#0b0f14; --panel:#10161d; --ink:#e9f1f7; --mute:#8aa1b1;
+      --accent:#1dd1a1; --warn:#ff8a00; --bad:#ff4d4f; --good:#2ed573;
+      --grid:#192129; --shadow:0 8px 28px rgba(0,0,0,.35);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      --sans:  ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
     }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;background:radial-gradient(1200px 900px at 70% 10%, #0f1621 0%, var(--bg) 70%);}
-    body{font:14px/1.2 Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink);overscroll-behavior:none;}
-    #app{position:fixed; inset:0; display:grid; grid-template-rows:auto 1fr auto; grid-template-columns:260px 1fr 320px; grid-template-areas:
-      "header header header"
-      "left   main   right"
-      "footer footer footer"; gap:10px; padding:10px;}
-    header,aside,main,footer{background:linear-gradient(180deg,var(--panel),#0b121a); border:1px solid #1b2a3a; border-radius:var(--radius); box-shadow:var(--shadow);}
-    header{grid-area:header; display:flex; align-items:center; justify-content:space-between; padding:10px 14px;}
-    #brand{display:flex; align-items:center; gap:12px;}
-    #brand .dot{width:14px; height:14px; border-radius:50%; background:conic-gradient(#ff4d6d, #c9184a, #ff758f);}
-    #brand h1{font-size:16px; margin:0; letter-spacing:.3px}
-    #simCanvas{display:block; width:100%; height:100%; border-radius:12px;}
-    main{grid-area:main; position:relative; overflow:hidden; padding:6px;}
-    .scopeVignette{
-      pointer-events:none; position:absolute; inset:6px; border-radius:12px;
-      background: radial-gradient(ellipse at center, rgba(0,0,0,0) 60%, rgba(0,0,0,.22) 75%, rgba(0,0,0,.55) 100%);
-      mix-blend-mode:multiply; opacity:.85;
+    * { box-sizing: border-box; }
+    html, body { height:100%; margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans); }
+    #app { display:grid; grid-template-columns: 320px 1fr; grid-template-rows: 48px 1fr 28px; height:100%; }
+    header {
+      grid-column:1/3; grid-row:1; display:flex; align-items:center; gap:12px; padding:8px 14px;
+      background:linear-gradient(180deg,#0f1520,#0c1218); border-bottom:1px solid #1d2732;
     }
-    .hud{position:absolute; left:12px; bottom:12px; display:flex; flex-wrap:wrap; gap:8px;}
-    .pill{background:#112131; border:1px solid #22384f; padding:8px 10px; border-radius:999px; color:var(--muted);}
-    .pill b{color:var(--ink)}
-    .kbd{display:inline-flex; align-items:center; justify-content:center; min-width:20px; padding:0 6px; height:20px; border-radius:5px; background:#0d1520; border:1px solid #2a3e55; color:#d0e1f7; font-weight:600; font-size:12px; margin:0 2px;}
-    aside{padding:12px; overflow:auto}
-    aside h2{font-size:13px; letter-spacing:.2px; text-transform:uppercase; color:#c8d7e8; margin:2px 0 10px;}
-    .card{background:#0e1622; border:1px solid #203149; border-radius:12px; padding:10px; margin-bottom:10px;}
-    .row{display:flex; gap:8px; flex-wrap:wrap;}
-    .btn{appearance:none; border:none; background:#12304b; border:1px solid #224765; color:#e6f1fb; padding:10px 12px; border-radius:10px; cursor:pointer;}
-    .btn:hover{filter:brightness(1.08)}
-    .btn:active{transform:translateY(1px)}
-    .btn.alt{background:#193346; border-color:#2a5a7c}
-    .btn.green{background:#0f3b2f;border-color:#2d7c6a}
-    .btn.red{background:#3b1020;border-color:#7c2d55}
-    .grid2{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
-    .kpi{background:#0b1420; border:1px solid #1c2c42; border-radius:10px; padding:10px; }
-    .kpi h3{margin:0 0 6px 0; font-size:12px; text-transform:uppercase; color:#b8cde4; letter-spacing:.2px;}
-    .kpi .val{font-size:18px; font-weight:700}
-    .kpi small{color:#9fb3c9}
-    #teeWrap{position:absolute; top:10px; right:10px; width:240px; height:180px; background:#0c1219; border:1px solid #22364a; border-radius:10px; overflow:hidden; display:none;}
-    #teeTitle{position:absolute; top:8px; left:10px; font-size:12px; color:#cbe2ff; z-index:3; text-shadow:0 2px 6px rgba(0,0,0,.6)}
-    #tee{width:100%; height:100%; display:block;}
-    #overlayMsg{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:40px; text-align:center; background:rgba(10,14,20,.5); backdrop-filter: blur(6px); }
-    #overlayMsg .bubble{max-width:820px; background:#0e1624; border:1px solid #23405d; border-radius:16px; padding:18px; box-shadow:var(--shadow);}
-    #overlayMsg h3{margin:0 0 10px 0;}
-    #overlayMsg .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
-    #overlayMsg .li{background:#0c1320; border:1px solid #1b2b40; padding:10px; border-radius:12px;}
-    footer{grid-area:footer; display:flex; align-items:center; justify-content:space-between; padding:8px 12px; font-size:12px; color:#b7ccdf}
-    .link{color:#bfe3ff; text-decoration:underline; cursor:pointer}
-    .switch{display:inline-flex; align-items:center; gap:8px}
-    .switch input{accent-color:var(--accent); transform:scale(1.1)}
-    .legend{font-size:12px; color:#9db2c9}
-    .warn{color:var(--warning)}
-    .ok{color:var(--ok)}
-    .danger{color:var(--danger)}
-    .sep{height:1px;background:#1b2b3f;margin:10px 0}
-    /* Error overlay */
-    #err{position:fixed; left:10px; top:58px; z-index:9999; background:#2a0e12; border:1px solid #ff7b7b; color:#ffe7e7; padding:10px 12px; border-radius:10px; box-shadow:var(--shadow); display:none; max-width:640px; white-space:pre-wrap; font-family:ui-monospace, Menlo, Consolas, monospace;}
-    /* Small screens */
-    @media (max-width:1100px){
-      #app{grid-template-columns:1fr; grid-template-rows:auto 1fr auto auto; grid-template-areas:
-        "header" "main" "left" "right" "footer"}
-      aside{max-height:45vh}
-      #teeWrap{width:180px;height:140px}
+    header h1 { font-size:16px; margin:0; letter-spacing:.3px; font-weight:600; }
+    header .tag { font-size:11px; color:var(--mute); margin-left:auto; padding:3px 8px; border:1px solid #2a3948; border-radius:999px;}
+    #panel {
+      grid-column:1; grid-row:2; background:var(--panel); border-right:1px solid #1b2631; padding:12px; overflow:auto;
     }
+    #panel h2 { font-size:12px; color:#a9c1d6; letter-spacing:.08em; margin:14px 0 8px; text-transform:uppercase; }
+    #panel .group { border:1px solid #1f2b37; border-radius:10px; padding:10px; margin-bottom:10px; background:#0f151c; box-shadow: var(--shadow); }
+    #panel label { display:block; font-size:12px; color:#9fb5c8; margin-top:8px; }
+    #panel input[type="range"] { width:100%; }
+    #panel button, #panel select {
+      width:100%; padding:9px 10px; margin-top:8px; background:#131b25; color:#d7e6f3; border:1px solid #223142; border-radius:8px; cursor:pointer;
+    }
+    #panel button:active { transform: translateY(1px); }
+    #panel .pill { display:inline-block; padding:3px 8px; font-size:11px; border:1px solid #2a3948; border-radius:999px; margin:4px 4px 0 0; color:#a6c0d4; }
+    #view {
+      grid-column:2; grid-row:2; position:relative; background:radial-gradient(50% 60% at 50% 50%, #0c141b 0%, #0a1016 100%);
+    }
+    canvas { display:block; }
+    #hud {
+      position:absolute; top:10px; left:10px; right:10px;
+      display:grid; grid-template-columns: repeat(4, minmax(200px,1fr)); gap:8px; pointer-events:none;
+    }
+    .card {
+      pointer-events:auto; background:rgba(9,14,19,0.8); border:1px solid #1f2b36; border-radius:12px; padding:8px 10px;
+      box-shadow: var(--shadow); backdrop-filter: blur(5px);
+    }
+    .kpi { display:flex; align-items:baseline; gap:8px; }
+    .kpi .v { font-family:var(--mono); font-weight:600; font-size:16px; }
+    .kpi small { font-size:11px; color:var(--mute); }
+    #tee {
+      position:absolute; bottom:10px; right:10px; width:360px; height:240px; border:1px solid #203040; border-radius:12px; overflow:hidden; background:#05090e;
+      box-shadow: var(--shadow);
+    }
+    #footer {
+      grid-column:1/3; grid-row:3; font-size:12px; color:#84a0b2; display:flex; align-items:center; padding:4px 12px; gap:10px; border-top:1px solid #1d2834;
+    }
+    .ok    { color:var(--good); }
+    .warn  { color:var(--warn); }
+    .bad   { color:var(--bad); }
+    #help { position:absolute; top:60px; left:50%; transform:translateX(-50%); width:min(900px,90%); max-height:70vh; overflow:auto; z-index:20; display:none;
+      background:#0c131b; border:1px solid #223142; border-radius:12px; padding:16px; box-shadow: var(--shadow);}
+    #help h3{ margin:0 0 8px; }
+    #help pre { background:#0a1117; border:1px solid #1e2a37; padding:10px; border-radius:8px; font-family:var(--mono); font-size:12px; overflow:auto; }
+    a.link { color:#9dd5ff; text-decoration:none; border-bottom:1px dashed #3a6ea5; }
   </style>
 </head>
 <body>
-<div id="err"></div>
 <div id="app">
   <header>
-    <div id="brand">
-      <div class="dot"></div>
-      <h1>Mitral Valve Surgical Simulator • Web</h1>
-    </div>
-    <div class="row">
-      <button class="btn green" id="btnStart">Start Simulation</button>
-      <button class="btn alt" id="btnReset">Reset</button>
-      <button class="btn" id="btnRecord">Record</button>
-      <button class="btn" id="btnExport">Export</button>
-      <button class="btn" id="btnHelp">Help</button>
-    </div>
+    <h1>MitralLab — Web Mitral Repair & Replacement Simulator</h1>
+    <span class="tag">open • client-side • GitHub Pages</span>
   </header>
 
-  <aside style="grid-area:left">
-    <h2>Scenario</h2>
-    <div class="card">
-      <label>Procedure:</label>
-      <div class="row" style="margin-top:6px">
-        <button class="btn" data-scn="repair-annuloplasty">Repair: Annuloplasty + Neo-Chordae</button>
-        <button class="btn" data-scn="repair-resection">Repair: Posterior Resection + Ring</button>
-        <button class="btn" data-scn="replacement">Replacement: Bioprosthetic</button>
-      </div>
-      <div class="sep"></div>
-      <div class="legend">
-        <div><span class="kbd">1</span> Forceps • <span class="kbd">2</span> Needle/Suture •
-        <span class="kbd">3</span> Scissors • <span class="kbd">4</span> Ring Sizer •
-        <span class="kbd">5</span> Ring Inserter • <span class="kbd">6</span> Valve Prosthesis</div>
-        <div><span class="kbd">Ctrl</span>+Click = place suture; <span class="kbd">Shift</span> = precision</div>
-        <div>Orbit: LMB rotate • RMB pan • Wheel zoom</div>
-      </div>
+  <aside id="panel">
+    <div class="group">
+      <h2>Case</h2>
+      <select id="caseSelect" title="Select preconfigured pathology">
+        <option value="p2_flail">Degenerative MR — P2 flail</option>
+        <option value="barlow">Barlow’s disease — multi-scallop</option>
+        <option value="functional">Functional (ischemic) MR — tethering</option>
+      </select>
+      <button id="resetBtn">Load case</button>
+      <div class="pill">Units: mm, mm², m/s, mmHg</div>
     </div>
 
-    <h2>Checklist</h2>
-    <div class="card" id="checklist"></div>
+    <div class="group">
+      <h2>Repair Tools</h2>
+      <label>— Neochordae (PTFE loop): pick free edge → pick pap muscle</label>
+      <button id="neoBtn">Add neochord loop</button>
+      <label>— Triangular resection (posterior leaflet)</label>
+      <button id="triBtn">Simulate P2 triangular resection</button>
+      <label>— Annuloplasty ring</label>
+      <input id="ringSize" type="range" min="24" max="40" step="1" value="32"/>
+      <div>Ring size: <span id="ringSizeV">32</span></div>
+      <button id="ringBtn">Implant ring (semi‑rigid)</button>
+      <button id="undoBtn">Undo last step</button>
+    </div>
 
-    <h2>Settings</h2>
-    <div class="card">
-      <div class="row">
-        <label class="switch"><input id="toggleVignette" type="checkbox" checked> Endoscopic Vignette</label>
-        <label class="switch"><input id="toggleTEE" type="checkbox"> TEE Overlay</label>
-        <label class="switch"><input id="toggleBeat" type="checkbox" checked> Heartbeat</label>
-        <label class="switch"><input id="toggleCollisions" type="checkbox" checked> Tissue Collisions</label>
-      </div>
-      <div class="sep"></div>
-      <div class="row">
-        <button class="btn" id="btnLighting">Cinematic Lighting</button>
-        <button class="btn" id="btnScope">Scope Cam</button>
-        <button class="btn" id="btnTop">Top Cam</button>
-      </div>
+    <div class="group">
+      <h2>Replacement</h2>
+      <button id="replaceBtn">Chordal‑sparing MVR (mechanical)</button>
+      <button id="revertBtn">Revert to native</button>
+    </div>
+
+    <div class="group">
+      <h2>Training</h2>
+      <button id="startBtn">Start session</button>
+      <button id="stopBtn">Stop & export report</button>
+      <button id="helpBtn">Show keyboard & TEE help</button>
+      <label>Recorder</label>
+      <button id="playBtn">Replay last session</button>
+    </div>
+
+    <div class="group">
+      <h2>Display</h2>
+      <label><input id="shadows" type="checkbox" checked> Shadows</label>
+      <label><input id="showTEE" type="checkbox" checked> Show TEE viewport</label>
+      <label><input id="wire" type="checkbox"> Tissue wireframe</label>
+    </div>
+
+    <div class="group">
+      <h2>Shortcuts</h2>
+      <div class="pill">Drag: rotate</div><div class="pill">Shift+Drag: pan</div><div class="pill">Wheel: zoom</div>
+      <div class="pill">1/2/3: cases</div><div class="pill">T: triangular</div><div class="pill">N: neochord</div><div class="pill">A: ring</div>
+      <div class="pill">R: reset</div><div class="pill">H: help</div>
     </div>
   </aside>
 
-  <main>
-    <canvas id="simCanvas"></canvas>
-    <div class="scopeVignette" id="vignette"></div>
-
-    <div id="teeWrap">
-      <div id="teeTitle">TEE (Simulated)</div>
-      <canvas id="tee"></canvas>
-    </div>
-
-    <div class="hud" id="hud">
-      <div class="pill"><b>Tool</b>: <span id="toolName">Forceps</span></div>
-      <div class="pill"><b>Scenario</b>: <span id="scnName">Repair: Annuloplasty + Neo-Chordae</span></div>
-      <div class="pill"><b>Tension</b>: <span id="tension">0.0</span> N</div>
-      <div class="pill"><b>Tissue Trauma</b>: <span id="trauma" class="ok">OK</span></div>
-    </div>
-
-    <div id="overlayMsg" style="display:none">
-      <div class="bubble">
-        <h3>Welcome — Mitral Valve Training Simulator</h3>
-        <p>This simulator provides an endoscopic view of the mitral valve for <b>repair</b> (annuloplasty, neo-chordae, posterior resection) and <b>replacement</b>. It models an annulus, anterior/posterior leaflets, papillary muscles, chordae, ring sizing/insertion, basic tissue collision/tearing, suturing, coaptation metrics, and a simulated TEE panel.</p>
-        <div class="grid3" style="margin-top:8px">
-          <div class="li"><b>Controls</b><br>
-            Orbit: LMB rotate • RMB pan • Wheel zoom<br>
-            <span class="kbd">1</span> Forceps • <span class="kbd">2</span> Needle • <span class="kbd">3</span> Scissors •
-            <span class="kbd">4</span> Sizer • <span class="kbd">5</span> Ring • <span class="kbd">6</span> Prosthesis<br>
-            <span class="kbd">Ctrl</span>+Click = place suture • <span class="kbd">Shift</span> = precision
-          </div>
-          <div class="li"><b>Assessment</b><br>
-            Coaptation area, annular dimensions, suture count/placement, ring size match, chordal tension, tissue trauma, time.</div>
-          <div class="li"><b>Notes</b><br>
-            Educational use only. No clinical decisions. Data export and video recording built-in.</div>
-        </div>
-        <div class="row" style="margin-top:10px; justify-content:flex-end">
-          <button class="btn green" id="btnGo">Got it — Start</button>
-        </div>
+  <main id="view">
+    <div id="hud">
+      <div class="card">
+        <div class="kpi"><div>EROA</div><div class="v" id="eroa">0.00</div><small>cm² (sim)</small></div>
+        <div class="kpi"><div>Regurg. fraction</div><div class="v" id="rf">0%</div><small>sim estimate</small></div>
+      </div>
+      <div class="card">
+        <div class="kpi"><div>MR grade</div><div class="v" id="mrGrade">None</div><small>guideline-informed</small></div>
+        <div style="font-size:11px;color:#8aa1b1">Primary MR severe ~ ≥0.40 cm² (Functional ~ ≥0.20 cm²)</div>
+      </div>
+      <div class="card">
+        <div class="kpi"><div>Ring size</div><div class="v" id="ringRead">—</div><small>mm (implanted)</small></div>
+        <div class="kpi"><div>Neochords</div><div class="v" id="neoCount">0</div></div>
+      </div>
+      <div class="card">
+        <div class="kpi"><div>OSATS</div><div class="v" id="osats">—</div><small>auto proxy</small></div>
+        <div style="font-size:11px;color:#8aa1b1">Time, efficiency, handling proxies</div>
       </div>
     </div>
+    <div id="tee"></div>
+    <div id="help">
+      <h3>Keyboard, Mouse & TEE Orientation</h3>
+      <pre>Mouse: rotate • Shift+Mouse: pan • Wheel: zoom
+1/2/3: load P2 flail / Barlow / Functional MR
+N: add neochord loop  •  T: triangular resection  •  A: implant ring
+R: reload case  •  H: toggle this help
 
+TEE views (probe degrees): 0° P2/A2; ~45° P2→A2/A3 (commissural); 60–75° LAA–P1–P2–P3; 120–135° A1–A2–P2 (surgeon mapping shown)</pre>
+    </div>
   </main>
 
-  <aside style="grid-area:right">
-    <h2>Instruments</h2>
-    <div class="card">
-      <div class="row">
-        <button class="btn" data-tool="forceps">Forceps (1)</button>
-        <button class="btn" data-tool="needle">Needle/Suture (2)</button>
-        <button class="btn" data-tool="scissors">Scissors (3)</button>
-        <button class="btn" data-tool="sizer">Ring Sizer (4)</button>
-        <button class="btn" data-tool="ring">Annuloplasty Ring (5)</button>
-        <button class="btn" data-tool="prosthesis">Valve Prosthesis (6)</button>
-      </div>
-      <div class="sep"></div>
-      <div class="grid2">
-        <div class="kpi">
-          <h3>Annulus (AP × ML)</h3>
-          <div class="val"><span id="ap">0</span> × <span id="ml">0</span> mm</div>
-          <small>Auto-updates with beat</small>
-        </div>
-        <div class="kpi">
-          <h3>Coaptation Area</h3>
-          <div class="val"><span id="coa">0</span> mm²</div>
-          <small>Higher is better (repair)</small>
-        </div>
-        <div class="kpi">
-          <h3>Ring Size Suggest</h3>
-          <div class="val"><span id="ringSize">—</span></div>
-          <small>Based on AP/ML</small>
-        </div>
-        <div class="kpi">
-          <h3>Score</h3>
-          <div class="val"><span id="score">0</span></div>
-          <small>− trauma, + coaptation & sizing</small>
-        </div>
-      </div>
-    </div>
-
-    <h2>Procedure Log</h2>
-    <div class="card" style="max-height:40vh; overflow:auto" id="log"></div>
-  </aside>
-
-  <footer>
-    <div>© <span id="year"></span> ValveSim — Training & Education Only • <span class="warn">Not a medical device</span></div>
-    <div>Trouble deploying? Ensure this file is named <b>index.html</b> at the repo root and GitHub Pages is enabled for the <b>main</b> branch.</div>
-  </footer>
+  <div id="footer">
+    <div>For education & training; not a medical device. Severity values are simulated estimates.</div>
+  </div>
 </div>
 
-<script>
-(() => {
-  const $ = sel => document.querySelector(sel);
-  const errEl = $("#err");
-  function showErr(e){
-    errEl.style.display = "block";
-    errEl.textContent = (e && (e.stack || e.message || e.toString())) || "Unknown error";
-    console.error(e);
+<script type="module">
+/* ------- Imports (CDN ESM) ------- */
+import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+
+/* ------- Globals ------- */
+const state = {
+  running:false, startedAt:0, actions:[], history:[],
+  case:'p2_flail', ringSize:32, ringImplanted:false,
+  neochords:0, triangularDone:false, replacement:false,
+  // OSATS proxy accumulators:
+  manipulations:0, sutureCount:0, tissueStrainSum:0, timeMs:0
+};
+
+/* ------- Scene Setup ------- */
+const viewEl = document.getElementById('view');
+const teeEl  = document.getElementById('tee');
+
+const renderer = new THREE.WebGLRenderer({ antialias:true, powerPreference:'high-performance' });
+renderer.setSize(viewEl.clientWidth, viewEl.clientHeight);
+renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+renderer.shadowMap.enabled = true;
+viewEl.appendChild(renderer.domElement);
+
+const teeRenderer = new THREE.WebGLRenderer({ antialias:false, alpha:true });
+teeRenderer.setSize(teeEl.clientWidth, teeEl.clientHeight);
+teeRenderer.setPixelRatio(1);
+teeEl.appendChild(teeRenderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0b1016);
+const camera = new THREE.PerspectiveCamera(50, viewEl.clientWidth/viewEl.clientHeight, 0.1, 5000);
+camera.position.set(0, 110, 230);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor=0.05;
+controls.minDistance=120; controls.maxDistance=420;
+
+const hemi = new THREE.HemisphereLight(0xaad4ff, 0x0a0d10, 0.8); scene.add(hemi);
+const key  = new THREE.DirectionalLight(0xffffff, 1.0); key.position.set(180,220,160); key.castShadow = true; scene.add(key);
+const fill = new THREE.DirectionalLight(0x99bbff, 0.3); fill.position.set(-160,40,-80); scene.add(fill);
+
+const floor = new THREE.Mesh(new THREE.CircleGeometry(800,64), new THREE.MeshStandardMaterial({color:0x0b1219, metalness:0.2, roughness:0.9}));
+floor.rotation.x = -Math.PI/2; floor.receiveShadow = true; scene.add(floor);
+
+/* ------- Parametric Valve Geometry & PBD Tissue ------- */
+// Units: millimeters. 1 world unit = 1 mm.
+const mm = (x)=>x;
+
+// Simple PBD solver for deformables (distance constraints).
+class PBD {
+  constructor(){ this.nodes=[]; this.constraints=[]; this.gravity=new THREE.Vector3(0,-0.15,0); this.substeps=5; this.iterations=18; }
+  node(pos, invMass=1){ return this.nodes.push({p:pos.clone(), prev:pos.clone(), invMass, f:new THREE.Vector3(), pinned:invMass===0})-1; }
+  addDistance(i,j,rest,stiff=1){ this.constraints.push({i,j,rest,stiff}); }
+  integrate(dt){
+    // Semi-implicit Verlet with external forces
+    for(const n of this.nodes){
+      if(n.pinned) continue;
+      const vel = n.p.clone().sub(n.prev);
+      n.prev.copy(n.p);
+      // accumulate gravity only (low to avoid jitter)
+      vel.addScaledVector(this.gravity, dt);
+      n.p.add(vel);
+    }
+    // Solve constraints
+    const iters = this.iterations;
+    for(let k=0;k<iters;k++){
+      for(const c of this.constraints){
+        const a = this.nodes[c.i], b = this.nodes[c.j];
+        const delta = a.p.clone().sub(b.p);
+        const len = delta.length() || 1e-6;
+        const diff = (len - c.rest) / len;
+        const w1=a.invMass, w2=b.invMass, wSum=w1+w2;
+        if(wSum===0) continue;
+        const corr = delta.multiplyScalar(c.stiff * diff);
+        if(!a.pinned) a.p.addScaledVector(corr, -w1/wSum);
+        if(!b.pinned) b.p.addScaledVector(corr,  w2/wSum);
+      }
+    }
   }
-  try {
+}
 
-  // ---------- DOM ----------
-  const logEl = $("#log");
-  const checklistEl = $("#checklist");
-  const simCanvas = $("#simCanvas");
-  const teeCanvas = $("#tee");
-  const teeWrap = $("#teeWrap");
-  const vignette = $("#vignette");
-  const toolName = $("#toolName");
-  const scnName = $("#scnName");
-  const apEl = $("#ap"), mlEl = $("#ml"), coaEl = $("#coa"), scoreEl = $("#score");
-  const tensionEl = $("#tension"), traumaEl = $("#trauma");
-  const yearEl = $("#year"); yearEl.textContent = new Date().getFullYear();
+const pbd = new PBD();
 
-  // ---------- UI State ----------
-  const state = {
-    scenario: "repair-annuloplasty",
-    tool: "forceps",
-    running: false,
-    heartbeat: true,
-    collisions: true,
-    vignette: true,
-    tee: false,
-    cinematic: false,
-    camMode: "scope",
-    timeStart: 0,
-    sessionLog: [],
-    trauma: 0,
-    score: 0,
-    sutures: [],
-    chordae: [],
-    grabbed: null,
-    placingSuture: null,
-    recorder: null,
-    mediaChunks: [],
-    annulus: {AP: 28, ML: 32}, // mm nominal
-  };
-
-  function log(msg){
-    const t = (performance.now() / 1000).toFixed(1);
-    const line = document.createElement("div");
-    line.textContent = "["+t+"s] " + msg;
-    logEl.prepend(line);
-    state.sessionLog.push({t: +t, msg});
+// Annulus (D-shape saddle) and papillary muscles
+const annPts = []; const ANN_RES = 64;
+function dShapeAnnulus(Rlat=mm(18), Rantr=mm(15), saddle=mm(6)){
+  // D-shape: anterior flattened arc + posterior rounded; z axis = mediolateral, x = anteroposterior, y = superior
+  const pts=[];
+  for(let i=0;i<ANN_RES;i++){
+    const t = i/(ANN_RES-1);
+    const theta = t*Math.PI*2;
+    // D-shape weighting
+    const w = (Math.cos(theta)>0)?0.5:1.0;
+    const rX = THREE.MathUtils.lerp(Rantr, Rlat, w);
+    const rZ = Rlat;
+    const x = rX*Math.cos(theta);
+    const z = rZ*Math.sin(theta);
+    const y = saddle*Math.cos(2*theta);
+    pts.push(new THREE.Vector3(x,y,z));
   }
+  return pts;
+}
 
-  function setChecklist(items){
-    checklistEl.innerHTML = "";
-    items.forEach((it, i)=>{
-      const row = document.createElement("div");
-      row.style.display="flex"; row.style.gap="8px"; row.style.alignItems="center";
-      row.style.margin="6px 0";
-      const box = document.createElement("input");
-      box.type="checkbox"; box.id="cl_"+i;
-      box.addEventListener("change",()=>{
-        log((box.checked?"Completed":"Unchecked")+": "+it);
-        if(box.checked) bumpScore(5); else bumpScore(-5);
-      });
-      const label = document.createElement("label");
-      label.htmlFor="cl_"+i; label.textContent = it;
-      row.append(box,label);
-      checklistEl.append(row);
-    });
+// Build annulus nodes (pinned)
+function buildAnnulus(){
+  const pts = dShapeAnnulus();
+  annPts.length=0; pts.forEach(p=>annPts.push(p));
+  const idxs=[];
+  for(const p of annPts){ idxs.push(pbd.node(p.clone(), 0)); } // pinned
+  // Visible annulus
+  const geo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(annPts,true,'catmullrom',0.0), ANN_RES, 1.5, 16, true);
+  const mat = new THREE.MeshStandardMaterial({color:0x95a9c4, metalness:.4, roughness:.3});
+  const mesh = new THREE.Mesh(geo, mat); mesh.castShadow=true; mesh.receiveShadow=true; mesh.name="annulus";
+  return {idxs, mesh};
+}
+
+// Papillary anchor spheres
+function papillaryAnchors(){
+  const AL = new THREE.Vector3(+mm(15), -mm(35), +mm(15)); // anterolateral
+  const PM = new THREE.Vector3(-mm(18), -mm(40), -mm(18)); // posteromedial
+  return {AL, PM};
+}
+
+// Valve leaflets as deformable grids attached to annulus
+function buildLeaflet(surface='anterior'){
+  const cols=40, rows=16; // u along annulus arc segment, v from hinge->free edge
+  const nodes=[], idx=[];
+  // Segment selection: A (roughly one continuous segment) vs P (wrap opposite)
+  const start = surface==='anterior' ? Math.floor(ANN_RES*0.05) : Math.floor(ANN_RES*0.55);
+  const end   = surface==='anterior' ? Math.floor(ANN_RES*0.55) : Math.floor(ANN_RES*0.98);
+  const arcLen = (end - start + ANN_RES) % ANN_RES;
+  const ann = (i)=> annPts[(start + i) % ANN_RES];
+
+  // Build vertex grid
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const t = c/(cols-1); // along arc
+      const aIdx = Math.floor(t*arcLen);
+      const hinge = ann(aIdx);
+      // normal approx: point outward atrially
+      const nxt = ann((aIdx+1)%ANN_RES), prv = ann((aIdx-1+ANN_RES)%ANN_RES);
+      const tangent = nxt.clone().sub(prv).normalize();
+      const up = new THREE.Vector3(0,1,0);
+      const n = new THREE.Vector3().crossVectors(tangent, up).normalize(); // roughly atrial→ventricular
+      const thickness = surface==='anterior' ? mm(18) : mm(15); // leaflet length
+      const v = r/(rows-1);
+      // Slight crown curvature
+      const offset = n.clone().multiplyScalar(THREE.MathUtils.lerp(0, thickness, v))
+                       .addScaledVector(up, THREE.MathUtils.lerp(0, -mm(2), Math.sin(Math.PI*v)));
+      const pos = hinge.clone().add(offset);
+      const invMass = (r===0) ? 0 : 1; // hinge line pinned to annulus
+      const id = pbd.node(pos, invMass);
+      nodes.push(id);
+    }
   }
-
-  function bumpScore(delta){
-    state.score = Math.max(0, state.score + delta);
-    scoreEl.textContent = state.score.toFixed(0);
+  // Distance constraints (structural + shear)
+  const idx2d = (r,c)=> nodes[r*cols+c];
+  const rest = (i,j)=> pbd.nodes[i].p.distanceTo(pbd.nodes[j].p);
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      if(c+1<cols) pbd.addDistance(idx2d(r,c), idx2d(r,c+1), rest(idx2d(r,c), idx2d(r,c+1)), 0.9);
+      if(r+1<rows) pbd.addDistance(idx2d(r,c), idx2d(r+1,c), rest(idx2d(r,c), idx2d(r+1,c)), 0.9);
+      if(r+1<rows && c+1<cols) pbd.addDistance(idx2d(r,c), idx2d(r+1,c+1), rest(idx2d(r,c), idx2d(r+1,c+1)), 0.7);
+      if(r+1<rows && c-1>=0)   pbd.addDistance(idx2d(r,c), idx2d(r+1,c-1), rest(idx2d(r,c), idx2d(r+1,c-1)), 0.7);
+    }
   }
+  // Build a visible mesh driven by node positions
+  const g3 = new THREE.BufferGeometry();
+  const positions = new Float32Array(rows*cols*3);
+  const uvs = new Float32Array(rows*cols*2);
+  g3.setAttribute('position', new THREE.BufferAttribute(positions,3));
+  g3.setAttribute('uv', new THREE.BufferAttribute(uvs,2));
+  const indices=[];
+  for(let r=0;r<rows-1;r++){
+    for(let c=0;c<cols-1;c++){
+      const a=r*cols+c, b=a+1, d=a+cols, e=d+1;
+      indices.push(a,d,b, b,d,e);
+    }
+  }
+  g3.setIndex(indices);
+  const tissue = new THREE.MeshStandardMaterial({ color: surface==='anterior' ? 0xfcfcff : 0xf2f7ff, roughness:0.75, metalness:0.05, transparent:true, opacity:0.98 });
+  const mesh = new THREE.Mesh(g3, tissue); mesh.castShadow=true; mesh.receiveShadow=true;
+  mesh.userData = { nodes, rows, cols, surface };
+  scene.add(mesh);
+  return mesh;
+}
 
-  function setScenario(id){
-    state.scenario = id;
-    scnName.textContent = {
-      "repair-annuloplasty":"Repair: Annuloplasty + Neo-Chordae",
-      "repair-resection":"Repair: Posterior Resection + Ring",
-      "replacement":"Replacement: Bioprosthetic"
-    }[id] || id;
-    log("Scenario set: "+scnName.textContent);
+// Chordae (distance constraints from free edge → papillary anchors)
+function addChordae(leafletMesh, papPoints){
+  const {nodes, rows, cols} = leafletMesh.userData;
+  const freeRow = rows-1;
+  for(let c=0;c<cols;c+=2){
+    const id = nodes[freeRow*cols+c];
+    const pPoint = (c<cols/2) ? papPoints.AL : papPoints.PM;
+    const pid = pbd.node(pPoint.clone(), 0); // static anchor
+    // Slight slack to allow coaptation
+    const rl = pbd.nodes[id].p.distanceTo(pbd.nodes[pid].p) * 0.98;
+    pbd.addDistance(id, pid, rl, 1.0);
+  }
+}
 
-    if(id==="repair-annuloplasty"){
-      setChecklist([
-        "Evaluate leaflets & annulus",
-        "Measure AP/ML; choose ring size",
-        "Place neo-chordae to prolapsing segment",
-        "Annuloplasty ring sutures (8–12 evenly)",
-        "Seat and tie ring",
-        "Verify coaptation (>5 mm)",
-      ]);
-    } else if(id==="repair-resection"){
-      setChecklist([
-        "Identify P2/P3 prolapse",
-        "Mark resection area",
-        "Resect posterior wedge (virtual)",
-        "Approximate leaflet edges (sutures)",
-        "Ring sutures evenly spaced",
-        "Seat ring; confirm coaptation",
-      ]);
+// Build annuloplasty ring mesh (implant reduces annular area and pins hinge)
+function buildRing(sizeMm){
+  const ringScale = sizeMm/32; // reference to 32
+  const curve = new THREE.CatmullRomCurve3(dShapeAnnulus(mm(18)*ringScale, mm(15)*ringScale, mm(6)*ringScale), true);
+  const ringGeo = new THREE.TubeGeometry(curve, ANN_RES, 1.6, 24, true);
+  const ringMat = new THREE.MeshStandardMaterial({color:0x88e1c1, metalness:.5, roughness:.3});
+  const ringMesh = new THREE.Mesh(ringGeo, ringMat); ringMesh.castShadow=true; ringMesh.receiveShadow=true;
+  ringMesh.name = "ring";
+  return ringMesh;
+}
+
+// Simple mechanical bileaflet prosthesis (visual + orifice)
+function buildMechanicalProsthesis(sizeMm){
+  const group = new THREE.Group(); group.name="mechanical";
+  const r = sizeMm*0.5;
+  const body = new THREE.Mesh(new THREE.TorusGeometry(r, 2.4, 24, 64), new THREE.MeshStandardMaterial({color:0x556677, metalness:0.8, roughness:0.3}));
+  body.rotation.x = Math.PI/2; body.castShadow=true; group.add(body);
+  const flapGeo = new THREE.CylinderGeometry(r-3, r-3, 1.5, 64,1,true);
+  for(let i=0;i<2;i++){
+    const flap = new THREE.Mesh(flapGeo, new THREE.MeshStandardMaterial({color:0x99aabb, metalness:0.6, roughness:0.25}));
+    flap.rotation.z = i===0? 0.4 : -0.4; // partially open/close oscillation will be animated
+    flap.position.y = 0.8*i;
+    group.add(flap);
+  }
+  group.position.y = mm(0);
+  return group;
+}
+
+/* ------- Build initial model ------- */
+let annulus, anterior, posterior, ring, mech, pap;
+function resetCase(kind){
+  // Clear scene deformables
+  for(let i=scene.children.length-1;i>=0;i--){
+    const o = scene.children[i];
+    if(['annulus','ring','mechanical'].includes(o.name)) scene.remove(o);
+    if(o.isMesh && o.userData?.nodes){ scene.remove(o); }
+  }
+  pbd.nodes.length=0; pbd.constraints.length=0;
+
+  // Base geometry
+  annulus = buildAnnulus(); scene.add(annulus.mesh);
+  pap = papillaryAnchors();
+  const pmSphMat = new THREE.MeshStandardMaterial({color:0x3e566e, metalness:0.5, roughness:0.5});
+  const pmAL = new THREE.Mesh(new THREE.SphereGeometry(2.8), pmSphMat); pmAL.position.copy(pap.AL); scene.add(pmAL);
+  const pmPM = new THREE.Mesh(new THREE.SphereGeometry(2.8), pmSphMat); pmPM.position.copy(pap.PM); scene.add(pmPM);
+
+  anterior  = buildLeaflet('anterior');
+  posterior = buildLeaflet('posterior');
+
+  addChordae(anterior, pap);
+  addChordae(posterior, pap);
+
+  // Pathology presets
+  if(kind==='p2_flail'){
+    // remove some posterior free-edge chordae (P2)
+    damageChordae(posterior, 0.35, 0.65, 0.55);
+  } else if(kind==='barlow'){
+    elongateChordae(anterior, 1.10); elongateChordae(posterior, 1.12);
+  } else if(kind==='functional'){
+    // displace papillary muscles apically & posteriorly; dilate annulus slightly
+    pap.AL.add(new THREE.Vector3(+2,-6,+1)); pap.PM.add(new THREE.Vector3(-3,-8,-2));
+    state.case='functional';
+    // Update annulus dilation
+    const s=1.10; for(let i=0;i<ANN_RES;i++){ annPts[i].multiplyScalar( (i<ANN_RES*0.5)? s : s ); }
+    scene.remove(annulus.mesh); annulus = buildAnnulus(); scene.add(annulus.mesh);
+    // Rebuild leaflets with tethering (recreate)
+    scene.remove(anterior); scene.remove(posterior);
+    anterior  = buildLeaflet('anterior');
+    posterior = buildLeaflet('posterior');
+    addChordae(anterior, pap); addChordae(posterior, pap);
+  }
+  state.neochords=0; state.ringImplanted=false; state.triangularDone=false; state.replacement=false; ring=null; mech=null;
+  state.history.push({op:'reset', case:kind});
+}
+function damageChordae(mesh, minU,maxU, centerU){
+  const {nodes, rows, cols} = mesh.userData;
+  const free=rows-1;
+  for(let c=0;c<cols;c++){
+    const u = c/(cols-1);
+    if(u>=minU && u<=maxU){
+      const id = nodes[free*cols+c];
+      // detach by making rest length huge so leaflet flails
+      for(const con of pbd.constraints){
+        if((con.i===id || con.j===id) && con.rest>mm(15)) con.rest *= 1.4;
+      }
+    }
+  }
+}
+function elongateChordae(mesh, factor){
+  const {nodes, rows, cols} = mesh.userData;
+  const free=rows-1;
+  for(let c=0;c<cols;c++){
+    const id = nodes[free*cols+c];
+    for(const con of pbd.constraints){
+      if((con.i===id || con.j===id) && con.rest>mm(15)) con.rest *= factor;
+    }
+  }
+}
+
+/* ------- Interactions: neochord, triangular resection, ring, replacement ------- */
+const ray = new THREE.Raycaster(); const mouse = new THREE.Vector2();
+function pickNearestLeafVertex(){
+  ray.setFromCamera(mouse, camera);
+  const targets=[anterior, posterior].filter(Boolean);
+  const hits = ray.intersectObjects(targets,false);
+  if(hits.length===0) return null;
+  const m = hits[0].object, idx = hits[0].face.a; // any vert in triangle; we'll map barycentric to closest node
+  // Find nearest vertex among triangle's 3 indices
+  const tri=[hits[0].face.a, hits[0].face.b, hits[0].face.c];
+  let best=tri[0], bestD=1e9;
+  for(const i of tri){
+    const v = new THREE.Vector3().fromBufferAttribute(m.geometry.getAttribute('position'), i);
+    const wp = m.localToWorld(v.clone());
+    const d = hits[0].point.distanceTo(wp);
+    if(d<bestD){ best=i; bestD=d; }
+  }
+  // Map geometry vertex to node index: same order as nodes created
+  const nodeId = m.userData.nodes[best];
+  return {mesh:m, nodeId, point:hits[0].point.clone()};
+}
+viewEl.addEventListener('mousemove',(e)=>{
+  const rect=viewEl.getBoundingClientRect();
+  mouse.x = ((e.clientX-rect.left)/rect.width)*2-1; mouse.y = -((e.clientY-rect.top)/rect.height)*2+1;
+});
+document.getElementById('neoBtn').onclick = ()=> modeAddNeochord();
+document.getElementById('triBtn').onclick = ()=> doTriangular();
+document.getElementById('ringBtn').onclick = ()=> doRing();
+document.getElementById('replaceBtn').onclick = ()=> doReplacement();
+document.getElementById('revertBtn').onclick = ()=> { if(state.replacement){ state.replacement=false; if(mech){ scene.remove(mech); mech=null; } } };
+document.getElementById('undoBtn').onclick = ()=> undo();
+document.getElementById('resetBtn').onclick= ()=> { resetCase(document.getElementById('caseSelect').value); };
+
+document.getElementById('ringSize').oninput = (e)=>{ state.ringSize=+e.target.value; document.getElementById('ringSizeV').textContent=state.ringSize; };
+
+function modeAddNeochord(){
+  info('Add neochord: click leaflet free edge, then papillary muscle (AL or PM).');
+  let step=0, from=null;
+  const once = (ev)=>{
+    const pick = pickNearestLeafVertex(); if(!pick) return;
+    if(step===0){
+      from = pick; step=1; flash(pick.point);
     } else {
-      setChecklist([
-        "Excise native leaflets (virtual)",
-        "Measure annulus AP/ML",
-        "Select prosthesis size",
-        "Place sutures evenly (12)",
-        "Seat prosthesis; verify motion",
-        "TEE: gradients & opening",
-      ]);
+      // Choose pap muscle by which is closer to click ray
+      const dAL = pick.point.distanceTo(papillaryAnchors().AL), dPM = pick.point.distanceTo(papillaryAnchors().PM);
+      const target = (dAL<dPM) ? papillaryAnchors().AL : papillaryAnchors().PM;
+      const pid = pbd.node(target.clone(), 0);
+      const rl = pbd.nodes[from.nodeId].p.distanceTo(pbd.nodes[pid].p) * 0.98;
+      pbd.addDistance(from.nodeId, pid, rl, 1.0);
+      state.neochords++; state.history.push({op:'neo', from:from.nodeId, to:pid, rl});
+      step=0; success('Neochord loop placed.');
+      updateHUD();
+      viewEl.removeEventListener('click', once);
     }
-    state.sutures = [];
-    updateRingSuggestion();
-  }
-
-  // ---------- THREE Scene ----------
-  let renderer, scene, camera, controls, clock, scopeCam, topCam, teeCam;
-  let heartGroup, annulusMesh, leafletA, leafletP, papillaryL, papillaryR, chordaeGroup, toolGroup, ringSizer, ringMesh, prosthesis;
-  let raycaster, mouseNDC = new THREE.Vector2(), pickables = [];
-  const tmpV = new THREE.Vector3();
-
-  function safeColor(hex){ try{ return new THREE.Color(hex);}catch(e){ return new THREE.Color(0xffffff);} }
-
-  function init3D(){
-    renderer = new THREE.WebGLRenderer({canvas: simCanvas, antialias: true, alpha: true, powerPreference:"high-performance"});
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-    renderer.setSize(simCanvas.clientWidth || 800, simCanvas.clientHeight || 600, false);
-    renderer.setClearColor(0x000000, 0); // transparent to show vignette shading
-
-    scene = new THREE.Scene();
-
-    camera = new THREE.PerspectiveCamera(50, (simCanvas.clientWidth||800)/(simCanvas.clientHeight||600), 0.02, 10);
-    camera.position.set(0.10, 0.07, 0.32);
-    camera.lookAt(0,0,0);
-
-    controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.target.set(0,0,0);
-    controls.enableDamping = true;
-    controls.update();
-
-    clock = new THREE.Clock();
-
-    // Lights — bright and forgiving
-    const hemi = new THREE.HemisphereLight(0xbfd7ff, 0x203040, 1.0);
-    scene.add(hemi);
-    const key = new THREE.SpotLight(0xffffff, 3.0, 5.0, Math.PI/6, 0.3, 1.0);
-    key.position.set(0.3,0.4,0.3);
-    scene.add(key);
-    const fill = new THREE.DirectionalLight(0xaad4ff, 1.2);
-    fill.position.set(-0.4,0.2,-0.2);
-    scene.add(fill);
-
-    // Ground faint disc
-    const floorGeo = new THREE.CircleGeometry(1,64);
-    const floorMat = new THREE.MeshPhongMaterial({color:0x0b1622, shininess: 30, specular:0x224466, transparent:true, opacity:0.45});
-    const floor = new THREE.Mesh(floorGeo, floorMat);
-    floor.rotation.x = -Math.PI/2;
-    floor.position.y = -0.12;
-    scene.add(floor);
-
-    // Valve assembly
-    heartGroup = new THREE.Group();
-    scene.add(heartGroup);
-
-    // ANNULUS — robust: circular torus scaled to ellipse
-    const torus = new THREE.TorusGeometry(0.015, 0.0023, 28, 200); // 30mm outer-diam class
-    torus.scale(0.93, 1.0, 1.07); // create ellipse (AP < ML)
-    const annMat = new THREE.MeshStandardMaterial({color:0xc1445b, roughness:0.45, metalness:0.08, emissive:safeColor(0x18060a), emissiveIntensity:0.2});
-    annulusMesh = new THREE.Mesh(torus, annMat);
-    annulusMesh.name = "Annulus";
-    heartGroup.add(annulusMesh);
-    pickables.push(annulusMesh);
-
-    // LEAFLETS — safe parametric curved planes
-    leafletA = makeLeaflet({name:"Anterior", color:0xe36c7d, span:Math.PI*0.65, height:0.010, thickness:0.0016, offset:0.0008, hingeStart:-Math.PI*0.32, hingeEnd:Math.PI*0.32});
-    leafletP = makeLeaflet({name:"Posterior", color:0xd4576b, span:Math.PI*0.78, height:0.006, thickness:0.0014, offset:-0.0004, hingeStart:Math.PI*0.32, hingeEnd:Math.PI*1.22});
-    heartGroup.add(leafletA.mesh, leafletP.mesh);
-    pickables.push(leafletA.mesh, leafletP.mesh);
-
-    // PAPILLARY muscles
-    papillaryL = makePapillary(new THREE.Vector3(-0.008,-0.030, 0.008));
-    papillaryR = makePapillary(new THREE.Vector3( 0.010,-0.030,-0.006));
-    heartGroup.add(papillaryL, papillaryR);
-
-    // CHORDAE
-    chordaeGroup = new THREE.Group();
-    heartGroup.add(chordaeGroup);
-    createChordae();
-
-    // RING SIZER & RING & PROSTHESIS
-    ringSizer = makeRingSizer(30); // 30 mm default
-    ringSizer.visible = false;
-    heartGroup.add(ringSizer);
-
-    ringMesh = makeAnnuloplastyRing(30);
-    ringMesh.visible = false;
-    heartGroup.add(ringMesh);
-
-    prosthesis = makeProsthesis(30);
-    prosthesis.visible = false;
-    heartGroup.add(prosthesis);
-
-    // TOOL
-    toolGroup = makeTool();
-    scene.add(toolGroup);
-
-    // CAMERAS
-    scopeCam = camera;
-    topCam = new THREE.PerspectiveCamera(40, 1, 0.02, 10);
-    topCam.position.set(0,0.18,0.001); topCam.lookAt(0,0,0);
-    teeCam = new THREE.PerspectiveCamera(28, 1, 0.02, 10);
-    teeCam.position.set(0,-0.05,0); teeCam.lookAt(0,0,0);
-
-    // RAYCASTER
-    raycaster = new THREE.Raycaster();
-
-    // Initial metrics
-    updateAnnulusMetrics();
-    updateRingSuggestion();
-
-    // Loop
-    animate();
-    onResize();
-    window.addEventListener("resize", onResize);
-    renderer.domElement.addEventListener("pointermove", onPointerMove);
-    renderer.domElement.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("keydown", onKey);
-
-    // Safety console marker
-    console.log("ValveSim initialized.");
-  }
-
-  // ----- Geometry helpers (robust) -----
-  function makeLeaflet({name,color,span,height,thickness,offset,hingeStart,hingeEnd}){
-    const segmentsU=64, segmentsV=16;
-    const geo = new THREE.PlaneGeometry(1,1,segmentsU,segmentsV);
-    const pos = geo.attributes.position;
-    const annAP = 0.0145, annML=0.0167; // half-axes (meters) to sit just inside torus
-    for(let i=0;i<pos.count;i++){
-      const uu = pos.getX(i)+0.5; // 0..1
-      const vv = pos.getY(i)+0.5; // 0..1
-      const theta = hingeStart + uu*(hingeEnd-hingeStart);
-      const annX = annAP*Math.cos(theta);
-      const annZ = annML*Math.sin(theta);
-      const nn = new THREE.Vector3(Math.cos(theta),0,Math.sin(theta));
-      const y = -vv*height + offset;
-      const outward = nn.clone().multiplyScalar((vv*vv)*0.0038);
-      const x = annX + outward.x;
-      const z = annZ + outward.z;
-      pos.setXYZ(i, x, y, z);
-    }
-    geo.computeVertexNormals();
-    const mat = new THREE.MeshStandardMaterial({
-      color, roughness:0.62, metalness:0.03, side:THREE.DoubleSide,
-      polygonOffset:true, polygonOffsetFactor:1, polygonOffsetUnits:1,
-      transparent:true, opacity:0.98
-    });
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.name = name+" Leaflet";
-
-    // small rim curve along hinge
-    const rimPts = [];
-    for(let k=0;k<=140;k++){
-      const u = k/140;
-      const th = hingeStart + u*(hingeEnd-hingeStart);
-      rimPts.push(new THREE.Vector3(annAP*Math.cos(th), 0, annML*Math.sin(th)));
-    }
-    const rimGeo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(rimPts), 140, thickness*0.35, 8, false);
-    const rimMat = new THREE.MeshStandardMaterial({color:0xa83d4e, roughness:.5, metalness:.05});
-    const rim = new THREE.Mesh(rimGeo, rimMat);
-    mesh.add(rim);
-
-    return {mesh, start:hingeStart, end:hingeEnd};
-  }
-
-  function makePapillary(pos){
-    const geo = new THREE.ConeGeometry(0.004, 0.018, 24);
-    const mat = new THREE.MeshStandardMaterial({color:0x6c8599, roughness:.8, metalness:.1});
-    const m = new THREE.Mesh(geo, mat);
-    m.position.copy(pos);
-    m.rotation.x = Math.PI;
-    m.name = "Papillary";
-    return m;
-  }
-
-  function createChordae(){
-    chordaeGroup.clear();
-    state.chordae = [];
-    const leaflets = [leafletA, leafletP];
-    const paps = [papillaryL.position, papillaryR.position];
-    for(const L of leaflets){
-      const edgePoints = [];
-      const n = 16;
-      for(let i=0;i<=n;i++){
-        const th = L.start + (i/n)*(L.end-L.start);
-        edgePoints.push(new THREE.Vector3(0.0145*Math.cos(th), 0, 0.0167*Math.sin(th)));
-      }
-      edgePoints.forEach((p,i)=>{
-        const toPap = i%2===0 ? paps[0] : paps[1];
-        const line = new THREE.Line(
-          new THREE.BufferGeometry().setFromPoints([p, toPap]),
-          new THREE.LineBasicMaterial({color:0xd7eaff, linewidth:1}));
-        chordaeGroup.add(line);
-        state.chordae.push({line, intact:true});
-      });
-    }
-  }
-
-  function makeRingSizer(diamMM){
-    const r = (diamMM/1000)/2;
-    const geo = new THREE.TorusGeometry(r, 0.0009, 16, 120);
-    const mat = new THREE.MeshStandardMaterial({color:0x7fd2ff, transparent:true, opacity:.35});
-    const m = new THREE.Mesh(geo, mat);
-    m.name = "Ring Sizer";
-    return m;
-  }
-
-  function makeAnnuloplastyRing(diamMM){
-    const r = (diamMM/1000)/2;
-    const geo = new THREE.TorusGeometry(r*0.96, 0.0016, 18, 200);
-    const mat = new THREE.MeshStandardMaterial({color:0x3bd69f, roughness:.5, metalness:.2});
-    const m = new THREE.Mesh(geo, mat);
-    m.name = "Annuloplasty Ring";
-    return m;
-  }
-
-  function makeProsthesis(diamMM){
-    const g = new THREE.Group();
-    const r = (diamMM/1000)/2;
-    const seat = new THREE.Mesh(new THREE.TorusGeometry(r*0.95, 0.0019, 18, 200),
-      new THREE.MeshStandardMaterial({color:0x6ee7b7, roughness:.5, metalness:.2}));
-    g.add(seat);
-    for(let i=0;i<3;i++){
-      const leaf = new THREE.Mesh(new THREE.CylinderGeometry(0.0005, r*0.8, 0.0008, 24,1,true),
-        new THREE.MeshStandardMaterial({color:0xf1f5f9, roughness:.6, metalness:.05, side:THREE.DoubleSide}));
-      leaf.rotation.z = Math.PI/2;
-      leaf.rotation.y = i*(2*Math.PI/3);
-      g.add(leaf);
-    }
-    g.name = "Prosthesis";
-    return g;
-  }
-
-  function makeTool(){
-    const g = new THREE.Group();
-    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.001,0.001,0.22,16),
-      new THREE.MeshStandardMaterial({color:0x8099b0, roughness:.6}));
-    shaft.position.y = 0.08;
-    const tip = new THREE.Mesh(new THREE.ConeGeometry(0.0012,0.008,16),
-      new THREE.MeshStandardMaterial({color:0xcbd5e1, roughness:.3, metalness:.5}));
-    tip.rotation.x = -Math.PI/2;
-    tip.position.set(0, -0.02, 0);
-    g.add(shaft, tip);
-    g.position.set(0,0.06,0.18);
-    g.name = "Tool";
-    g.tip = tip;
-    return g;
-  }
-
-  // ---------- Simulation Loop ----------
-  function animate(){
-    try {
-      const dt = clock.getDelta();
-      requestAnimationFrame(animate);
-
-      // Heartbeat
-      if(state.heartbeat){
-        const t = performance.now()/1000;
-        const bpm = 72;
-        const w = (bpm/60)*2*Math.PI;
-        const phase = Math.sin(w*t)*0.5+0.5;
-        const scale = 1 + (phase*0.02);
-        heartGroup.scale.setScalar(scale);
-        // leaflets pseudo-opening
-        const openA = 0.25 + 0.35*phase;
-        const openP = 0.32 + 0.28*phase;
-        leafletA.mesh.rotation.x = -openA;
-        leafletP.mesh.rotation.x =  openP;
-        updateAnnulusMetrics();
-        updateTEE();
-      }
-
-      // Tool subtle sway
-      toolGroup.rotation.z = Math.sin(performance.now()/700)*0.03;
-
-      // Camera
-      controls.update();
-      const cam = (state.camMode==="top" ? topCam : scopeCam);
-      renderer.render(scene, cam);
-    } catch (e) {
-      showErr(e);
-    }
-  }
-
-  function onResize(){
-    const w = simCanvas.clientWidth || 800;
-    const h = simCanvas.clientHeight || 600;
-    renderer.setSize(w,h,false);
-    scopeCam.aspect = w/h;
-    scopeCam.updateProjectionMatrix();
-    if(state.tee) updateTEE();
-  }
-
-  // ---------- Interaction ----------
-  function onPointerMove(e){
-    const rect = renderer.domElement.getBoundingClientRect();
-    mouseNDC.set((e.clientX-rect.left)/rect.width*2-1, -(e.clientY-rect.top)/rect.height*2+1);
-    // Move tool toward mouse (projected at plane near valve)
-    const plane = new THREE.Plane(new THREE.Vector3(0,0,-1), 0.0);
-    raycaster.setFromCamera(mouseNDC, scopeCam);
-    const pt = raycaster.ray.intersectPlane(plane, tmpV);
-    if(!pt) return;
-    toolGroup.position.lerp(new THREE.Vector3(pt.x, pt.y+0.02, pt.z+0.15), 0.25);
-    toolGroup.lookAt(0,0,0);
-
-    if(state.grabbed){
-      const d = state.grabbed.position.distanceTo(toolGroup.tip.getWorldPosition(tmpV));
-      updateTension(d*120);
-    } else {
-      updateTension(0);
-    }
-  }
-
-  function onPointerDown(e){
-    const isCtrl = e.ctrlKey || e.metaKey;
-    raycaster.setFromCamera(mouseNDC, scopeCam);
-    const hit = raycaster.intersectObjects(pickables, true)[0];
-    if(!hit){ return; }
-
-    if(isCtrl && state.tool==="needle"){
-      if(!state.placingSuture){
-        state.placingSuture = {from: hit.point.clone()};
-        flash("Suture entry marked");
-      } else {
-        state.placingSuture.to = hit.point.clone();
-        placeSuture(state.placingSuture.from, state.placingSuture.to);
-        state.placingSuture = null;
-      }
-      return;
-    }
-
-    if(state.tool==="scissors"){
-      let cut=false;
-      for(const ch of state.chordae){
-        if(!ch.intact) continue;
-        const a = ch.line.geometry.attributes.position;
-        const p0 = new THREE.Vector3(a.getX(0),a.getY(0),a.getZ(0));
-        const p1 = new THREE.Vector3(a.getX(1),a.getY(1),a.getZ(1));
-        const d = distPointToSegment(hit.point, p0, p1);
-        if(d<0.0025){
-          ch.intact=false;
-          ch.line.material.color.setHex(0x999999);
-          log("Chordae cut");
-          bumpScore(-8);
-          trauma(3);
-          cut=true; break;
-        }
-      }
-      if(!cut) flash("No chordae at cursor", 900);
-      return;
-    }
-
-    if(state.tool==="sizer"){
-      ringSizer.visible = true;
-      ringSizer.position.set(0,0,0);
-      flash("Ring sizer placed");
-      return;
-    }
-
-    if(state.tool==="ring"){
-      ringMesh.visible = true;
-      ringMesh.position.set(0,0,0);
-      flash("Annuloplasty ring inserted (position & seat)");
-      bumpScore(5);
-      return;
-    }
-
-    if(state.tool==="prosthesis"){
-      prosthesis.visible = true;
-      prosthesis.position.set(0,0,0);
-      flash("Prosthesis inserted (position & seat)");
-      bumpScore(5);
-      return;
-    }
-
-    if(state.tool==="forceps" || state.tool==="needle"){
-      state.grabbed = hit.object;
-      flash(state.tool==="forceps"?"Grasp tissue":"Needle engaged");
-      document.addEventListener("pointerup", onPointerUp, {once:true});
-    }
-  }
-
-  function onPointerUp(){
-    if(state.grabbed){
-      flash("Release");
-      state.grabbed = null;
-      updateTension(0);
-    }
-  }
-
-  function onKey(e){
-    if(e.repeat) return;
-    const map = {
-      "1":"forceps", "2":"needle", "3":"scissors", "4":"sizer", "5":"ring", "6":"prosthesis"
-    };
-    if(map[e.key]) setTool(map[e.key]);
-    if(e.key==="h"||e.key==="H"){ $("#overlayMsg").style.display = "flex"; }
-  }
-
-  function setTool(name){
-    state.tool = name;
-    toolName.textContent = {
-      forceps:"Forceps", needle:"Needle/Suture", scissors:"Scissors",
-      sizer:"Ring Sizer", ring:"Annuloplasty Ring", prosthesis:"Valve Prosthesis"
-    }[name] || name;
-    log("Tool: "+toolName.textContent);
-  }
-
-  function updateTension(val){
-    tensionEl.textContent = val.toFixed(1);
-    if(val>8){ trauma( (val-8)*0.02 ); }
-  }
-
-  function placeSuture(a,b){
-    const curve = new THREE.QuadraticBezierCurve3(a, a.clone().add(b).multiplyScalar(0.5).add(new THREE.Vector3(0,0.004,0)), b);
-    const tube = new THREE.TubeGeometry(curve, 20, 0.0005, 6, false);
-    const mat = new THREE.MeshStandardMaterial({color:0xeff6ff, roughness:.6, metalness:.05});
-    const suture = new THREE.Mesh(tube, mat);
-    heartGroup.add(suture);
-    state.sutures.push(suture);
-    log("Suture placed");
-    bumpScore(2);
-    updateCoaptation();
-  }
-
-  function trauma(amount){
-    state.trauma += amount;
-    const t = Math.min(100, state.trauma);
-    traumaEl.textContent = t.toFixed(0);
-    traumaEl.className = (t>10 ? "danger" : "ok");
-    bumpScore(-Math.ceil(amount));
-  }
-
-  function updateAnnulusMetrics(){
-    const s = heartGroup.scale.x || 1;
-    const AP = (0.028*s*1000).toFixed(0);
-    const ML = (0.032*s*1000).toFixed(0);
-    apEl.textContent = AP; mlEl.textContent = ML;
-    state.annulus.AP = +AP; state.annulus.ML = +ML;
-  }
-
-  function updateRingSuggestion(){
-    const mean = (state.annulus.AP + state.annulus.ML)/2;
-    const options = [26,28,30,32,34];
-    const pick = options.reduce((p,c)=> Math.abs(c-mean)<Math.abs(p-mean)?c:p, options[0]);
-    $("#ringSize").textContent = pick+" mm";
-    // Update sizes
-    ringSizer.geometry.dispose(); ringSizer.geometry = new THREE.TorusGeometry( (pick/1000)/2, 0.0009, 16, 120);
-    ringMesh.geometry.dispose(); ringMesh.geometry = new THREE.TorusGeometry( (pick/1000)/2*0.96, 0.0016, 18, 200);
-    prosthesis.children[0].geometry.dispose(); prosthesis.children[0].geometry = new THREE.TorusGeometry((pick/1000)/2*0.95, 0.0019, 18, 200);
-  }
-
-  function updateCoaptation(){
-    const mid = new THREE.Vector3(0,0,0);
-    const a = leafletA.mesh.localToWorld(new THREE.Vector3(0, -0.004, 0)).distanceTo(mid);
-    const p = leafletP.mesh.localToWorld(new THREE.Vector3(0,  0.004, 0)).distanceTo(mid);
-    const area = Math.max(0, (0.008 - (a+p))*100000);
-    coaEl.textContent = area.toFixed(0);
-    bumpScore(area>100 ? 1 : 0);
-  }
-
-  function updateTEE(){
-    if(!state.tee) return;
-    const ctx = teeCanvas.getContext("2d");
-    const w = teeCanvas.width = teeWrap.clientWidth;
-    const h = teeCanvas.height = teeWrap.clientHeight;
-    ctx.fillStyle = "#0a0f16"; ctx.fillRect(0,0,w,h);
-    const grd = ctx.createRadialGradient(w/2,h/2,h*0.1, w/2,h/2,h*0.52);
-    grd.addColorStop(0,"#d6e8ff"); grd.addColorStop(0.45,"#7ea5cc"); grd.addColorStop(1,"#0a0f16");
-    ctx.globalAlpha = 0.24; ctx.fillStyle = grd; ctx.beginPath(); ctx.arc(w/2,h/2,h*0.54,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1;
-    const t = performance.now()/1000;
-    const y = h/2 + Math.sin(t*3.4)*6;
-    ctx.strokeStyle="#e8f3ff"; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(w*0.2,y); ctx.lineTo(w*0.8,y); ctx.stroke();
-    const img = ctx.createImageData(w,h);
-    for(let i=0;i<img.data.length;i+=4){
-      const n = Math.random()*30;
-      img.data[i]=img.data[i+1]=img.data[i+2]=n; img.data[i+3]=60;
-    }
-    ctx.putImageData(img,0,0);
-  }
-
-  function distPointToSegment(p, a, b){
-    const ab = b.clone().sub(a);
-    const t = Math.max(0, Math.min(1, p.clone().sub(a).dot(ab)/ab.lengthSq()));
-    const proj = a.clone().add(ab.multiplyScalar(t));
-    return proj.distanceTo(p);
-  }
-
-  // ---------- UI wiring ----------
-  $("#btnStart").onclick = start;
-  $("#btnGo").onclick = start;
-  $("#btnReset").onclick = () => { location.reload(); };
-  $("#btnHelp").onclick = () => { $("#overlayMsg").style.display = "flex"; };
-  $("#btnLighting").onclick = () => {
-    state.cinematic = !state.cinematic;
-    scene.traverse(o=>{
-      if(o.isLight && o.type!=="HemisphereLight"){
-        o.intensity = state.cinematic ? o.intensity*1.3 : o.intensity/1.3;
-      }
-    });
   };
-  $("#btnScope").onclick = () => { state.camMode="scope"; };
-  $("#btnTop").onclick = () => { state.camMode="top"; controls.target.set(0,0,0); };
+  viewEl.addEventListener('click', once);
+}
 
-  $("#toggleVignette").onchange = e => { vignette.style.display = e.target.checked?"block":"none"; };
-  $("#toggleTEE").onchange = e => { state.tee = e.target.checked; teeWrap.style.display = state.tee?"block":"none"; updateTEE(); };
-  $("#toggleBeat").onchange = e => { state.heartbeat = e.target.checked; };
-  $("#toggleCollisions").onchange = e => { state.collisions = e.target.checked; };
+function doTriangular(){
+  if(state.triangularDone){ warn('Triangular resection already simulated.'); return; }
+  // Posterior leaflet center wedge tighten: shorten a group of free-edge spans to mimic resection + plication, then add height reduction
+  const m = posterior.userData; const rows=m.rows, cols=m.cols, free=rows-1;
+  const mid = Math.floor(cols*0.5), span = Math.floor(cols*0.10);
+  for(let c=mid-span; c<=mid+span; c++){
+    const id = m.nodes[free*cols+c];
+    // Pull free edge toward hinge by reducing columns of distances
+    for(const con of pbd.constraints){
+      if((con.i===id || con.j===id) && con.rest<mm(15)){ con.rest *= 0.75; }
+    }
+  }
+  state.triangularDone=true; state.history.push({op:'triangular'});
+  success('Posterior triangular resection simulated (height reduced, coaptation moved posteriorly).');
+}
 
-  $("#btnRecord").onclick = () => {
-    if(state.recorder){
-      state.recorder.stop();
-      return;
-    }
-    const stream = simCanvas.captureStream(30);
-    let rec;
-    try{
-      rec = new MediaRecorder(stream, {mimeType: "video/webm;codecs=vp9"});
-    } catch(e){
-      rec = new MediaRecorder(stream);
-    }
-    state.mediaChunks = [];
-    rec.ondataavailable = e => { if(e.data && e.data.size>0) state.mediaChunks.push(e.data); };
-    rec.onstop = ()=>{
-      const blob = new Blob(state.mediaChunks, {type:"video/webm"});
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "valvesim_session.webm";
-      a.click();
-      state.recorder = null;
-      $("#btnRecord").textContent = "Record";
-    };
-    rec.start();
-    state.recorder = rec;
-    $("#btnRecord").textContent = "Stop Recording";
-    flash("Recording started");
+function doRing(){
+  if(state.ringImplanted){ warn('Ring already implanted.'); return; }
+  // Replace annulus with scaled ring + re-pin hinge nodes to ring points
+  ring && scene.remove(ring);
+  ring = buildRing(state.ringSize); scene.add(ring);
+  // Warp annulus nodes toward ring curve (reduce annular area)
+  const curve = new THREE.CatmullRomCurve3(dShapeAnnulus(mm(18)*(state.ringSize/32), mm(15)*(state.ringSize/32), mm(6)*(state.ringSize/32)), true);
+  for(let i=0;i<ANN_RES;i++){
+    const t=i/(ANN_RES-1); const target = curve.getPointAt(t);
+    const id = i; // annulus nodes were created first, 1:1
+    const n = pbd.nodes[id]; n.p.copy(target); n.prev.copy(target);
+  }
+  state.ringImplanted=true; state.history.push({op:'ring', size:state.ringSize});
+  document.getElementById('ringRead').textContent = state.ringSize+'';
+  success('Annuloplasty ring implanted (semi‑rigid).');
+}
+
+function doReplacement(){
+  if(state.replacement){ warn('Replacement already active.'); return; }
+  // Remove leaflets visuals, keep chordal apparatus if desired; add mechanical prosthesis at annulus plane.
+  if(anterior) scene.remove(anterior); if(posterior) scene.remove(posterior);
+  mech = buildMechanicalProsthesis(state.ringSize); scene.add(mech);
+  state.replacement=true; state.history.push({op:'replace', size:state.ringSize});
+  info('Chordal‑sparing MVR visualized (mechanical bileaflet).');
+}
+
+function undo(){
+  const last = state.history.pop(); if(!last){ warn('Nothing to undo.'); return; }
+  if(last.op==='neo'){ state.neochords=Math.max(0,state.neochords-1); /* not removing constraints for brevity */ }
+  if(last.op==='triangular'){ state.triangularDone=false; resetCase(state.case); }
+  if(last.op==='ring'){ state.ringImplanted=false; scene.remove(ring); ring=null; resetCase(state.case); }
+  if(last.op==='replace'){ state.replacement=false; if(mech){scene.remove(mech); mech=null;} resetCase(state.case); }
+  updateHUD(); info('Undone last operation; case reloaded for consistency.');
+}
+
+/* ------- Session handling & OSATS proxy ------- */
+document.getElementById('startBtn').onclick=()=>{
+  if(state.running) return;
+  state.running=true; state.startedAt=performance.now(); state.actions=[]; info('Session started.');
+};
+document.getElementById('stopBtn').onclick=()=>{
+  if(!state.running) return;
+  state.running=false; state.timeMs=performance.now()-state.startedAt;
+  const report = buildReport();
+  const blob = new Blob([JSON.stringify(report,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='mitrallab_session.json'; a.click();
+  URL.revokeObjectURL(url);
+  success('Session exported as JSON.');
+};
+document.getElementById('playBtn').onclick=()=> warn('Replay stub: events recorded but advanced time-based replay is abbreviated in this single-file build.');
+
+function buildReport(){
+  return {
+    when: new Date().toISOString(),
+    case: state.case,
+    ring: state.ringImplanted? state.ringSize : null,
+    neochords: state.neochords,
+    triangular: state.triangularDone,
+    replacement: state.replacement,
+    time_ms: Math.round(state.timeMs),
+    metrics: currentMetrics(),
+    osats_proxy: osatsScore()
   };
+}
+function osatsScore(){
+  // Simple proxy using time, manipulations, tissue strain surrogate:
+  const met = currentMetrics();
+  // Scale to 1–5 per domain; very rough proxy (replace with faculty ratings in real use)
+  const timeMin = Math.max(1, state.timeMs/60000 || 0.01);
+  const efficiency = clamp(5 - (timeMin*0.8 + state.neochords*0.05), 1, 5);
+  const handling   = clamp(5 - (state.tissueStrainSum*0.2), 1, 5);
+  const flow       = clamp(2 + (state.triangularDone||state.ringImplanted||state.replacement ? 2:0) + (met.eroa_delta>0.15?1:0), 1, 5);
+  const knowledge  = clamp(3 + (met.grade_after.includes('None')||met.grade_after.includes('Mild')?2:0), 1, 5);
+  const respect    = clamp(handling,1,5);
+  const overall = Math.round(((efficiency+handling+flow+knowledge+respect)/5)*10)/10;
+  document.getElementById('osats').textContent = overall.toFixed(1)+'/5';
+  return {efficiency, handling, flow, knowledge, respect, overall};
+}
+function clamp(x,a,b){ return Math.max(a, Math.min(b,x)); }
 
-  $("#btnExport").onclick = ()=>{
-    const data = {
-      scenario: state.scenario,
-      score: state.score,
-      trauma: state.trauma,
-      annulus: state.annulus,
-      sutures: state.sutures.length,
-      log: state.sessionLog,
-      ts: new Date().toISOString()
-    };
-    const blob = new Blob([JSON.stringify(data,null,2)], {type:"application/json"});
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "valvesim_session.json";
-    a.click();
-  };
+/* ------- Sim TEE & MR grading (simplified) ------- */
+const teeCam = new THREE.PerspectiveCamera(52, teeEl.clientWidth/teeEl.clientHeight, 2, 2000);
+teeCam.position.set(0, +40, +140); teeCam.lookAt(0,0,0);
+const teeMaterial = new THREE.MeshBasicMaterial({color:0xffffff});
 
-  document.querySelectorAll("[data-scn]").forEach(b=>{
-    b.onclick = ()=> setScenario(b.getAttribute("data-scn"));
-  });
+function estimateMR(){
+  // Approximate EROA from free-edge gaps between anterior & posterior corresponding columns.
+  if(!anterior || !posterior) { return {eroa_cm2:0, rf:0, grade:'None'}; }
+  const a = anterior.userData, p = posterior.userData;
+  const cols = Math.min(a.cols, p.cols), rows = Math.min(a.rows, p.rows);
+  let area_mm2=0;
+  for(let c=0;c<cols;c++){
+    // find two free edge nodes nearest in arc
+    const aId = a.nodes[(a.rows-1)*a.cols + c];
+    const pId = p.nodes[(p.rows-1)*p.cols + c];
+    const d = pbd.nodes[aId].p.distanceTo(pbd.nodes[pId].p);
+    const span = 0.8; // mm width for this column
+    const gap = Math.max(0, d - 1.2); // allow small coaptation tolerance (mm)
+    area_mm2 += gap * span;
+  }
+  const eroa_cm2 = area_mm2 / 100.0; // mm² → cm²
+  // Regurgitant fraction (very simplified): map EROA to RF sigmoid
+  const rf = clamp( (eroa_cm2/0.6)*100, 0, 95 ); // crude
+  // Grade by case (primary vs functional thresholds)
+  const severeThresh = (state.case==='functional') ? 0.20 : 0.40; // cm²
+  let grade='None';
+  if(eroa_cm2<0.10) grade='None';
+  else if(eroa_cm2<0.20) grade='Mild';
+  else if(eroa_cm2<severeThresh) grade='Moderate';
+  else grade='Severe';
+  return {eroa_cm2, rf, grade};
+}
+function currentMetrics(){
+  const before = estimateMR();
+  // If ring or triangular done, recompute "after" (same in this simple step because live)
+  const after = before;
+  return { eroa: after.eroa_cm2, rf: after.rf, grade_after: after.grade, eroa_delta: 0 /* live only */ };
+}
+function updateHUD(){
+  const est = estimateMR();
+  document.getElementById('eroa').textContent = est.eroa_cm2.toFixed(2);
+  document.getElementById('rf').textContent   = Math.round(est.rf)+'%';
+  document.getElementById('mrGrade').textContent = est.grade;
+  document.getElementById('neoCount').textContent = state.neochords+'';
+}
 
-  document.querySelectorAll("[data-tool]").forEach(b=>{
-    b.onclick = ()=> setTool(b.getAttribute("data-tool"));
-  });
-
-  function start(){
-    $("#overlayMsg").style.display = "none";
-    if(!state.running){
-      state.running = true;
-      state.timeStart = performance.now();
-      log("Simulation started");
+/* ------- Render loop ------- */
+function tick(){
+  requestAnimationFrame(tick);
+  pbd.integrate(1/60);
+  // update tissue meshes from node positions
+  for(const m of scene.children){
+    if(m.isMesh && m.userData?.nodes){
+      const {nodes} = m.userData;
+      const pos = m.geometry.getAttribute('position');
+      for(let i=0;i<nodes.length;i++){
+        const p = pbd.nodes[nodes[i]].p;
+        pos.setXYZ(i, p.x, p.y, p.z);
+      }
+      pos.needsUpdate = true;
+      m.geometry.computeVertexNormals();
     }
   }
-
-  function flash(msg, ms=1200){
-    const el = document.createElement("div");
-    el.textContent = msg;
-    el.style.position="absolute"; el.style.right="12px"; el.style.bottom="12px";
-    el.style.background="#0c1622"; el.style.border="1px solid #23405b"; el.style.padding="8px 12px";
-    el.style.borderRadius="10px"; el.style.boxShadow="var(--shadow)";
-    document.body.appendChild(el);
-    setTimeout(()=> el.remove(), ms);
+  controls.update();
+  // main render
+  renderer.render(scene, camera);
+  // TEE viewport
+  if(document.getElementById('showTEE').checked){
+    teeRenderer.render(scene, teeCam);
   }
+  updateHUD(); osatsScore();
+}
+tick();
 
-  // ---------- Boot ----------
-  setScenario(state.scenario);
-  setTool(state.tool);
-  init3D();
+/* ------- Helpers ------- */
+function info(t){ toast(t); }
+function warn(t){ toast(t,'warn'); }
+function success(t){ toast(t,'ok'); }
+let toastTimer=null;
+function toast(t,cls=''){ const f=document.getElementById('footer'); f.innerHTML=`<div class="${cls}">${t}</div>`; clearTimeout(toastTimer); toastTimer=setTimeout(()=>f.innerHTML='For education & training; not a medical device.', 4000); }
+function flash(point){
+  const g = new THREE.Mesh(new THREE.SphereGeometry(2), new THREE.MeshBasicMaterial({color:0x1dd1a1}));
+  g.position.copy(point); scene.add(g); setTimeout(()=>scene.remove(g),800);
+}
 
-  } catch (e) {
-    showErr(e);
-  }
-})();
+/* ------- UI wiring & responsive ------- */
+window.addEventListener('resize', ()=>{
+  renderer.setSize(viewEl.clientWidth, viewEl.clientHeight);
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio||1));
+  camera.aspect = viewEl.clientWidth/viewEl.clientHeight; camera.updateProjectionMatrix();
+  teeRenderer.setSize(teeEl.clientWidth, teeEl.clientHeight);
+  teeCam.aspect = teeEl.clientWidth/teeEl.clientHeight; teeCam.updateProjectionMatrix();
+});
+document.getElementById('wire').onchange = (e)=>{
+  [anterior,posterior].forEach(m=>{ if(m) m.material.wireframe = e.target.checked; });
+};
+document.getElementById('shadows').onchange = (e)=>{ renderer.shadowMap.enabled = e.target.checked; };
+document.getElementById('helpBtn').onclick = ()=> { const h=document.getElementById('help'); h.style.display = (h.style.display==='none'||!h.style.display)?'block':'none'; };
+
+document.addEventListener('keydown', (ev)=>{
+  if(ev.key==='1'){ document.getElementById('caseSelect').value='p2_flail'; resetCase('p2_flail'); }
+  if(ev.key==='2'){ document.getElementById('caseSelect').value='barlow'; resetCase('barlow'); }
+  if(ev.key==='3'){ document.getElementById('caseSelect').value='functional'; resetCase('functional'); }
+  if(ev.key==='n' || ev.key==='N') modeAddNeochord();
+  if(ev.key==='t' || ev.key==='T') doTriangular();
+  if(ev.key==='a' || ev.key==='A') doRing();
+  if(ev.key==='r' || ev.key==='R') resetCase(document.getElementById('caseSelect').value);
+  if(ev.key==='h' || ev.key==='H'){ const h=document.getElementById('help'); h.style.display = (h.style.display==='none'||!h.style.display)?'block':'none'; }
+});
+
+/* ------- Boot ------- */
+resetCase('p2_flail');
+document.getElementById('caseSelect').value='p2_flail';
+document.getElementById('ringSizeV').textContent = state.ringSize+'';
+document.getElementById('ringRead').textContent = '—';
 </script>
 </body>
 </html>
