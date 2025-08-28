@@ -461,36 +461,48 @@
 
   // ---------- Geometry Helpers ----------
   function ellipticalTorus(rx, rz, tube, segR, segT){
-    // Build parametric elliptical torus
+    // Build parametric elliptical torus (correct vector math)
     const geo = new THREE.BufferGeometry();
-    const pos = [], nor=[], uv=[], idx=[];
-    for(let i=0;i<=segR;i++){
-      const u = i/segR; const th = u*2*Math.PI;
-      const cx = Math.cos(th), cz=Math.sin(th);
-      const center = new THREE.Vector3(rx*cx, 0, rz*cz);
-      // local tangent plane
-      const n = new THREE.Vector3(cx,0,cz).normalize();
-      const t = new THREE.Vector3(-cz,0,cx).normalize();
-      for(let j=0;j<=segT;j++){
-        const v = j/segT; const phi = v*2*Math.PI;
-        const r = Math.cos(phi)*t.clone().multiplyScalar(tube) + Math.sin(phi)*new THREE.Vector3(0,1,0).multiplyScalar(tube*0.6);
+    const pos = [], nor = [], uv = [], idx = [];
+    const UP = new THREE.Vector3(0,1,0);
+  
+    for (let i = 0; i <= segR; i++) {
+      const u = i / segR;
+      const th = u * 2 * Math.PI;
+      const cx = Math.cos(th), cz = Math.sin(th);
+  
+      const center = new THREE.Vector3(rx * cx, 0, rz * cz);
+      const tangent = new THREE.Vector3(-cz, 0, cx).normalize();
+  
+      for (let j = 0; j <= segT; j++) {
+        const v = j / segT;
+        const phi = v * 2 * Math.PI;
+  
+        // r = cos(phi)*tangent*tube + sin(phi)*UP*(tube*0.6)
+        const r = tangent.clone().multiplyScalar(Math.cos(phi) * tube)
+          .add(UP.clone().multiplyScalar(Math.sin(phi) * tube * 0.6));
+  
         const p = center.clone().add(r);
-        pos.push(p.x,p.y,p.z);
-        const nn = r.clone().normalize();
-        nor.push(nn.x,nn.y,nn.z);
-        uv.push(u,v);
+        pos.push(p.x, p.y, p.z);
+  
+        const n = r.clone().normalize();
+        nor.push(n.x, n.y, n.z);
+  
+        uv.push(u, v);
       }
     }
-    for(let i=0;i<segR;i++){
-      for(let j=0;j<segT;j++){
-        const a = i*(segT+1)+j;
-        const b = a+segT+1;
-        idx.push(a, b, a+1, b, b+1, a+1);
+  
+    for (let i = 0; i < segR; i++) {
+      for (let j = 0; j < segT; j++) {
+        const a = i * (segT + 1) + j;
+        const b = a + segT + 1;
+        idx.push(a, b, a + 1, b, b + 1, a + 1);
       }
     }
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos,3));
-    geo.setAttribute('normal', new THREE.Float32BufferAttribute(nor,3));
-    geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv,2));
+  
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    geo.setAttribute('normal',   new THREE.Float32BufferAttribute(nor, 3));
+    geo.setAttribute('uv',       new THREE.Float32BufferAttribute(uv, 2));
     geo.setIndex(idx);
     geo.computeBoundingSphere();
     return geo;
