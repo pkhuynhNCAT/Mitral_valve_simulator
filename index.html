@@ -1,730 +1,732 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<title>Mitral Suture Trainer — P2 Triangular Resection (Teach • Practice • Assess)</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<meta charset="utf-8">
+<title>Mitral Valve Suturing — Single-File Simulator</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <style>
-  :root{
-    --bg:#0b0f14; --ink:#eaf2f8; --mut:#9fb3c4; --ok:#2ed573; --warn:#ffb020; --bad:#ff4d4f;
-    --panel:#0f151d; --line:#1f2b36; --accent:#52e2c0; --accent2:#ffeb99; --accent3:#6fa2ff;
-    --mono: ui-monospace, Menlo, Consolas, "Liberation Mono", monospace;
-    --sans: ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial;
-  }
-  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.45 var(--sans)}
-  #app{display:grid;grid-template-rows:60px 1fr 32px;height:100%}
-  header{display:flex;gap:12px;align-items:center;padding:10px 14px;background:linear-gradient(180deg,#0e1520,#0b1218);border-bottom:1px solid #182330}
-  header h1{margin:0;font-size:16px;font-weight:800;letter-spacing:.2px}
-  #toolbar{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-  .grp{display:flex;gap:10px;align-items:center;background:#0f1823;border:1px solid #1b2733;border-radius:10px;padding:6px 8px}
-  label{color:var(--mut);font-size:12px}
-  select,button{background:#101825;color:#e6f0f6;border:1px solid #223243;border-radius:8px;padding:6px 10px;cursor:pointer}
-  button:active{transform:translateY(1px)}
-  main{display:grid;grid-template-columns:380px 1fr}
-  aside{background:var(--panel);border-right:1px solid #1b2733;padding:12px;overflow:auto}
-  aside h2{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#a7bed1;margin:12px 0 8px}
-  .card{background:rgba(9,14,19,.82);border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:10px;backdrop-filter:blur(6px)}
-  .kpi{display:flex;justify-content:space-between;font-family:var(--mono);font-weight:700}
-  .pill{display:inline-block;border:1px solid #223243;border-radius:999px;padding:3px 8px;color:#a6c1d5;font-size:11px;margin:4px 4px 0 0}
-  .toolbtn{display:flex;gap:6px;align-items:center;width:100%}
-  .toolbtn.active{outline:2px solid #3c5977}
-  .coach{background:#0d1621;border-left:4px solid #3b82f6;padding:10px;border-radius:8px}
-  .ok{color:var(--ok)} .warn{color:var(--warn)} .bad{color:var(--bad)} .mut{color:#9fb3c4}
-
-  #stage{position:relative;background:radial-gradient(60% 70% at 50% 50%,#0c141b 0%,#0a1016 100%)}
-  canvas{display:block;width:100%;height:100%}
-  #hud{position:absolute;top:10px;left:10px;display:grid;gap:8px;pointer-events:none}
-  #hud .card{pointer-events:auto;min-width:300px}
-  #tensionBox{position:absolute;left:12px;bottom:12px;background:rgba(9,14,19,.88);border:1px solid #1f2b36;border-radius:8px;padding:6px 8px;color:#cfe8ff;display:none}
-  #tensionBox input[type=range]{width:200px}
-  #coachBox{position:absolute;right:12px;top:12px;width:min(460px,38vw);max-height:62vh;overflow:auto;background:rgba(9,14,19,.88);border:1px solid #1f2b36;border-radius:12px;padding:12px;display:none}
-  #ghostNext{position:absolute;right:12px;bottom:12px;background:rgba(12,18,27,.88);border:1px dashed #335; padding:6px 10px;border-radius:10px;color:#cfe8ff;display:none}
-
-  /* HTML callouts anchored to world space */
-  #callouts{position:absolute;left:0;top:0;right:0;bottom:0;pointer-events:none}
-  .callout{position:absolute;max-width:320px;background:rgba(17,26,35,.96);border:1px solid #203040;border-radius:10px;padding:8px 10px;color:#dff0ff;box-shadow:0 10px 30px rgba(0,0,0,.5)}
-  .nub{position:absolute;width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-top:12px solid rgba(17,26,35,.96);left:18px;transform:translateY(-1px)}
-
-  /* setup overlay (when local libs are missing) */
-  #setup{position:absolute;inset:0;background:rgba(3,8,14,.9);color:#e6f0f6;display:none}
-  #setup .panel{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(880px,92vw);background:#0f1823;border:1px solid #1b2733;border-radius:12px;padding:16px}
-  #setup pre{background:#0b1219;border:1px solid #1b2733;border-radius:8px;padding:10px;overflow:auto}
-
-  footer{display:flex;gap:10px;align-items:center;padding:6px 10px;border-top:1px solid #182330;color:#8dadc1}
-  #status{color:#cfe8ff}
+  html, body { height:100%; margin:0; background:#0b0f12; color:#e9eef2; font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, sans-serif; }
+  #wrap { position:fixed; inset:0; }
+  #gl { width:100%; height:100%; display:block; }
+  .ui { position:fixed; inset:0; pointer-events:none; }
+  .panel { pointer-events:auto; background:rgba(12,16,20,.64); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:10px 12px; backdrop-filter: blur(8px); }
+  .top-left { position:absolute; top:10px; left:10px; max-width:380px; }
+  .top-right { position:absolute; top:10px; right:10px; max-width:380px; }
+  .bottom-right { position:absolute; bottom:10px; right:10px; max-width:360px; }
+  .btn { padding:8px 12px; border-radius:8px; border:1px solid #2a3947; background:#12202b; color:#cde0f0; cursor:pointer; }
+  .btn:hover { filter:brightness(1.2); }
+  .badge { display:inline-block; padding:2px 6px; border-radius:6px; border:1px solid #2b3b49; background:#10191f; font-size:12px; color:#9ec5ff; }
+  .meter { height:8px; background:#0f1a21; border:1px solid #2a3845; border-radius:999px; overflow:hidden; }
+  .meter>i { display:block; height:100%; background:linear-gradient(90deg,#3bb273,#5cd1a6); width:0%; }
+  ul { margin:6px 0; padding-left:18px; }
+  a { color:#7fc6ff; }
+  canvas#radar { width:220px; height:120px; background:rgba(255,255,255,0.03); border-radius:8px; display:block; }
 </style>
-
-<!-- Import map: **local files only** -->
-<script type="importmap">
-{
-  "imports": {
-    "three": "./lib/three.module.js",
-    "three/examples/jsm/controls/OrbitControls.js": "./lib/controls.OrbitControls.js",
-    "three/examples/jsm/lines/Line2.js": "./lib/lines.Line2.js",
-    "three/examples/jsm/lines/LineGeometry.js": "./lib/lines.LineGeometry.js",
-    "three/examples/jsm/lines/LineMaterial.js": "./lib/lines.LineMaterial.js"
-  }
-}
-</script>
 </head>
 <body>
-<div id="app">
-  <header>
-    <h1>Mitral Suture Trainer — P2 Triangular Resection Closure</h1>
-    <div id="toolbar">
-      <div class="grp">
-        <label>Mode</label>
-        <select id="mode">
-          <option value="teach">Teach (step‑gated)</option>
-          <option value="practice">Practice (AI Copilot)</option>
-          <option value="assess">Assess (scored)</option>
-        </select>
+<div id="wrap">
+  <canvas id="gl"></canvas>
+  <div class="ui">
+    <div class="panel top-left">
+      <h3 style="margin:6px 0 8px">Mitral Valve Suturing — <span id="modeLabel">TUTORIAL</span></h3>
+      <div style="display:flex; gap:8px; flex-wrap:wrap">
+        <button class="btn" id="btnTutorial">Tutorial</button>
+        <button class="btn" id="btnPractice">Practice</button>
+        <button class="btn" id="btnExam">Exam</button>
+        <button class="btn" id="btnReset">Reset</button>
       </div>
-      <div class="grp">
-        <label>Case</label>
-        <select id="case">
-          <option value="p2_mid">P2 central wedge</option>
-          <option value="p2_wide">P2 wide wedge</option>
-          <option value="p2_small">P2 small wedge</option>
-        </select>
-        <button id="load">Load case</button>
+      <p style="opacity:.8;margin-top:8px">Left-move: move driver • Right-drag: rotate • Space: clamp • Enter: take stitch</p>
+      <div style="display:grid; grid-template-columns:auto auto; gap:6px 12px; align-items:center">
+        <span class="badge">Bite depth</span><strong id="hudDepth">—</strong>
+        <span class="badge">Entry angle</span><strong id="hudAngle">—</strong>
+        <span class="badge">Tension</span><strong id="hudTension">—</strong>
       </div>
-      <div class="grp">
-        <button id="start">Start</button>
-        <button id="reset">Reset</button>
-        <button id="export">Export JSON</button>
-      </div>
+      <div class="meter" style="margin-top:8px"><i id="tensionBar" style="width:0%"></i></div>
     </div>
-  </header>
-
-  <main>
-    <aside>
-      <h2>Tools</h2>
-      <div class="card">
-        <button class="toolbtn" id="tool_place">🪡 Place bite (entry → exit)</button>
-        <button class="toolbtn" id="tool_tension">🎯 Tighten knot (set tension)</button>
-        <button class="toolbtn" id="tool_remove">🧹 Remove last bite</button>
-        <button class="toolbtn" id="tool_finish">✅ Finish & score</button>
+    <div class="panel top-right">
+      <h4 style="margin:6px 0">AI Co-Pilot</h4>
+      <ul id="adviceList"><li style="opacity:.7">Take a stitch (Enter) to receive feedback.</li></ul>
+      <p style="opacity:.6;font-size:12px;margin-top:8px">Tips appear after each stitch. In Exam mode, only safety alerts.</p>
+    </div>
+    <div class="panel bottom-right">
+      <h4 style="margin:6px 0">Performance</h4>
+      <canvas id="radar" width="220" height="120"></canvas>
+      <div style="display:flex; gap:12px; margin-top:8px">
+        <div><div class="badge">Stitches</div><div id="sumStitches" style="margin-top:4px;font-weight:700">0</div></div>
+        <div><div class="badge">Score</div><div id="sumScore" style="margin-top:4px;font-weight:700">—</div></div>
       </div>
-
-      <h2>Targets (clinical)</h2>
-      <div class="card">
-        <ul class="mut" style="margin:0 0 6px 16px; padding:0">
-          <li><b>Depth:</b> 4–6 mm from cut edge (both sides)</li>
-          <li><b>Angle:</b> ~60° ±15° to edge (drive perpendicular)</li>
-          <li><b>Spacing:</b> ~4–5 mm, uniform</li>
-          <li><b>Symmetry:</b> entry ≈ exit depth</li>
-          <li><b>Tension:</b> edges flush, no strangulation</li>
-        </ul>
-        <div class="pill">Edges are banded 2–8 mm; gold zone is 4–6 mm</div>
-      </div>
-
-      <h2>Session metrics</h2>
-      <div class="card">
-        <div class="kpi"><span>Bites</span><span id="biteN">0</span></div>
-        <div class="kpi"><span>Depth err</span><span id="depthErr">—</span></div>
-        <div class="kpi"><span>Angle err</span><span id="angleErr">—</span></div>
-        <div class="kpi"><span>Spacing CV</span><span id="spacing">—</span></div>
-        <div class="kpi"><span>Symmetry err</span><span id="sym">—</span></div>
-        <div class="kpi"><span>Residual gap</span><span id="gap">—</span></div>
-        <div class="kpi"><span>Tissue stress</span><span id="stress">—</span></div>
-        <div class="kpi"><span>Time</span><span id="time">—</span></div>
-        <div class="kpi"><span>Overall</span><span id="overall">—</span></div>
-      </div>
-
-      <h2>Coach log</h2>
-      <div class="card coach" id="coachFeed" style="white-space:pre-wrap">—</div>
-
-      <h2>Overlays</h2>
-      <div class="card">
-        <label><input id="ov_depth" type="checkbox" checked> Depth bands & ruler</label><br>
-        <label><input id="ov_angle" type="checkbox" checked> Angle protractor</label><br>
-        <label><input id="ov_heat"  type="checkbox" checked> Spacing heatmap</label><br>
-        <label><input id="ov_labels" type="checkbox" checked> Edge labels & ticks</label>
-      </div>
-
-      <h2>Shortcuts</h2>
-      <div class="card">
-        <div class="pill">Click: place entry/exit</div>
-        <div class="pill">Z: undo last • F: finish</div>
-        <div class="pill">Drag: orbit • Shift+Drag: pan • Wheel: zoom</div>
-      </div>
-    </aside>
-
-    <section id="stage">
-      <div id="setup">
-        <div class="panel">
-          <h3>Local Three.js files not found</h3>
-          <p>This trainer uses WebGL but <b>does not use CDNs</b>. Add these files once and refresh:</p>
-          <pre><code>mkdir lib
-# Windows PowerShell
-$ProgressPreference='SilentlyContinue'
-Invoke-WebRequest https://unpkg.com/three@0.160.0/build/three.module.js -OutFile lib/three.module.js
-Invoke-WebRequest https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js -OutFile lib/controls.OrbitControls.js
-Invoke-WebRequest https://unpkg.com/three@0.160.0/examples/jsm/lines/Line2.js -OutFile lib/lines.Line2.js
-Invoke-WebRequest https://unpkg.com/three@0.160.0/examples/jsm/lines/LineGeometry.js -OutFile lib/lines.LineGeometry.js
-Invoke-WebRequest https://unpkg.com/three@0.160.0/examples/jsm/lines/LineMaterial.js -OutFile lib/lines.LineMaterial.js
-
-# macOS / Linux
-mkdir -p lib
-curl -L https://unpkg.com/three@0.160.0/build/three.module.js -o lib/three.module.js
-curl -L https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js -o lib/controls.OrbitControls.js
-curl -L https://unpkg.com/three@0.160.0/examples/jsm/lines/Line2.js -o lib/lines.Line2.js
-curl -L https://unpkg.com/three@0.160.0/examples/jsm/lines/LineGeometry.js -o lib/lines.LineGeometry.js
-curl -L https://unpkg.com/three@0.160.0/examples/jsm/lines/LineMaterial.js -o lib/lines.LineMaterial.js</code></pre>
-          <p>Commit <code>lib/</code> to your repo so GitHub Pages can serve these files.</p>
-        </div>
-      </div>
-
-      <div id="hud">
-        <div class="card">
-          <div style="font-weight:800;margin-bottom:6px">Step</div>
-          <div id="stepText">Click left edge (entry)</div>
-        </div>
-        <div class="card">
-          <div style="font-weight:800;margin-bottom:6px">Realtime feedback</div>
-          <div id="fb">—</div>
-        </div>
-      </div>
-
-      <div id="tensionBox">Tension <input id="tens" type="range" min="0.70" max="1.00" step="0.01" value="1.00"> <span id="tv">loose</span></div>
-      <div id="coachBox" class="coach">
-        <h3 id="coachTitle">Teaching Mode</h3>
-        <div id="coachText">Place the <b>apex bite</b>: entry on LEFT, exit on RIGHT, depth ~5 mm (gold), angle ~60°.</div>
-        <div style="margin-top:8px"><button id="coachPrev">◀ Back</button> <button id="coachNext">Next ▶</button></div>
-      </div>
-
-      <div id="ghostNext">Next target shown as <span style="color:#FFEB99">gold dot</span>. Keep 4–6 mm depth and ~5 mm spacing.</div>
-      <div id="callouts"></div>
-    </section>
-  </main>
-
-  <footer>
-    <div>Local‑only Three.js • Surgeon view • Needle arc + suture tension • Tissue draw‑in • Teach/Practice/Assess. For education; not a medical device.</div>
-    <div id="status"></div>
-  </footer>
+      <p style="opacity:.7; font-size:12px; margin-top:8px">Radar = normalized deviations from targets.</p>
+    </div>
+  </div>
 </div>
 
-<script type="module">
-/* ================= utilities / status ================= */
-const clamp = (x,a,b)=>Math.max(a,Math.min(b,x));
-const now   = ()=>performance.now();
-const setStatus = (t, cls='')=>{ const el=document.getElementById('status'); el.textContent=t; el.className=cls; };
-
-/* ================= dynamic local import (no CDNs) ================= */
-let THREE, OrbitControls, Line2, LineGeometry, LineMaterial;
-try {
-  // Import map maps "three" → ./lib/three.module.js etc.
-  THREE        = await import('three');
-  ({ OrbitControls } = await import('three/examples/jsm/controls/OrbitControls.js'));
-  ({ Line2 }        = await import('three/examples/jsm/lines/Line2.js'));
-  ({ LineGeometry } = await import('three/examples/jsm/lines/LineGeometry.js'));
-  ({ LineMaterial } = await import('three/examples/jsm/lines/LineMaterial.js'));
-  document.getElementById('setup').style.display='none';
-  setStatus('3D engine loaded (local).','ok');
-} catch (e) {
-  // show setup panel; do not throw (so the UI remains visible with instructions)
-  console.error(e);
-  document.getElementById('setup').style.display='block';
-  setStatus('Local Three.js files missing. See setup panel.','bad');
-  // Abort the rest of the script:
-  throw e;
-}
-
-/* ================= scene / camera / renderer ================= */
-const stage = document.getElementById('stage');
-const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
-renderer.setSize(stage.clientWidth, stage.clientHeight);
-renderer.setPixelRatio(Math.min(2, window.devicePixelRatio||1));
-stage.appendChild(renderer.domElement);
-
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0b1016);
-
-const camera = new THREE.PerspectiveCamera(50, stage.clientWidth/stage.clientHeight, 0.1, 5000);
-camera.position.set(0, 70, 160);
-
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true; controls.dampingFactor=0.06; controls.minDistance=90; controls.maxDistance=260;
-
-const hemi = new THREE.HemisphereLight(0xbfdcff, 0x0a0d10, 0.9);
-const key  = new THREE.DirectionalLight(0xffffff, 1.25); key.position.set(220,240,180); key.castShadow=true;
-const fill = new THREE.DirectionalLight(0xaaccff, 0.35); fill.position.set(-160,40,-80);
-scene.add(hemi,key,fill);
-
-const floor = new THREE.Mesh(new THREE.CircleGeometry(800,64), new THREE.MeshStandardMaterial({color:0x0b1219, metalness:0.15, roughness:0.95}));
-floor.rotation.x = -Math.PI/2; floor.receiveShadow = true; scene.add(floor);
-
-/* ================= anatomy (surgeon view) ================= */
-const mm = v=>v;
-const ANN_RES=96;
-function dShapePoints(Rlat=mm(18), Rantr=mm(15), saddle=mm(6)){
-  const pts=[];
-  for(let i=0;i<ANN_RES;i++){
-    const t=i/ANN_RES, th=t*Math.PI*2, w=(Math.cos(th)>0)?0.5:1.0;
-    const rX=THREE.MathUtils.lerp(Rantr,Rlat,w), rZ=Rlat;
-    const x=rX*Math.cos(th), z=rZ*Math.sin(th), y=saddle*Math.cos(2*th);
-    pts.push(new THREE.Vector3(x,y,z));
+<script>
+/* ===== Tiny linear algebra (vec3/mat4) ===== */
+const v3 = {
+  create: (x=0,y=0,z=0)=>new Float32Array([x,y,z]),
+  set: (o,x,y,z)=>{o[0]=x;o[1]=y;o[2]=z;return o;},
+  add:(o,a,b)=>{o[0]=a[0]+b[0];o[1]=a[1]+b[1];o[2]=a[2]+b[2];return o;},
+  sub:(o,a,b)=>{o[0]=a[0]-b[0];o[1]=a[1]-b[1];o[2]=a[2]-b[2];return o;},
+  scale:(o,a,s)=>{o[0]=a[0]*s;o[1]=a[1]*s;o[2]=a[2]*s;return o;},
+  cross:(o,a,b)=>{const ax=a[0],ay=a[1],az=a[2],bx=b[0],by=b[1],bz=b[2];o[0]=ay*bz-az*by;o[1]=az*bx-ax*bz;o[2]=ax*by-ay*bx;return o;},
+  dot:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],
+  len:(a)=>Math.hypot(a[0],a[1],a[2]),
+  norm:(o,a)=>{const L=v3.len(a)||1;return v3.scale(o,a,1/L);}
+};
+const m4 = {
+  create:()=>new Float32Array([1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]),
+  mul:(o,a,b)=>{const r=new Float32Array(16);
+    for(let i=0;i<4;i++){for(let j=0;j<4;j++){r[i*4+j]=a[i*4+0]*b[0*4+j]+a[i*4+1]*b[1*4+j]+a[i*4+2]*b[2*4+j]+a[i*4+3]*b[3*4+j];}}
+    o.set(r);return o;},
+  translate:(o,a,x,y,z)=>{o.set(a);o[12]+=x;o[13]+=y;o[14]+=z;return o;},
+  rotX:(o,a,rad)=>{const c=Math.cos(rad),s=Math.sin(rad);const r=m4.create();
+    r[5]=c;r[6]=s;r[9]=-s;r[10]=c;return m4.mul(o,a,r);},
+  rotY:(o,a,rad)=>{const c=Math.cos(rad),s=Math.sin(rad);const r=m4.create();
+    r[0]=c;r[2]=-s;r[8]=s;r[10]=c;return m4.mul(o,a,r);},
+  scale:(o,a,x,y,z)=>{const r=m4.create();r[0]=x;r[5]=y;r[10]=z;return m4.mul(o,a,r);},
+  perspective:(o,fovy,aspect,near,far)=>{const f=1/Math.tan(fovy/2);o.fill(0);
+    o[0]=f/aspect;o[5]=f;o[10]=(far+near)/(near-far);o[11]=-1;o[14]=(2*far*near)/(near-far);return o;},
+  lookAt:(o,eye,center,up)=>{
+    const z=v3.create(); v3.sub(z,eye,center); v3.norm(z,z);
+    const x=v3.create(); v3.cross(x,up,z); v3.norm(x,x);
+    const y=v3.create(); v3.cross(y,z,x);
+    o.set([x[0],y[0],z[0],0, x[1],y[1],z[1],0, x[2],y[2],z[2],0, -v3.dot(x,eye),-v3.dot(y,eye),-v3.dot(z,eye),1]); return o;
   }
-  return pts;
+};
+function mulPos(m, x,y,z){ const w= m[3]*x+m[7]*y+m[11]*z+m[15]; return [
+  (m[0]*x+m[4]*y+m[8]*z+m[12])/(w||1),
+  (m[1]*x+m[5]*y+m[9]*z+m[13])/(w||1),
+  (m[2]*x+m[6]*y+m[10]*z+m[14])/(w||1)
+];}
+function deg(rad){return rad*180/Math.PI;}
+function rad(deg){return deg*Math.PI/180;}
+/* ===== WebGL helpers ===== */
+const vsTri = `
+precision highp float;
+attribute vec3 aPos, aNorm;
+uniform mat4 uModel, uView, uProj;
+varying vec3 vN, vW;
+void main(){
+  vec4 wpos = uModel * vec4(aPos,1.0);
+  vW = wpos.xyz;
+  vN = mat3(uModel) * aNorm;
+  gl_Position = uProj * uView * wpos;
+}`;
+const fsTri = `
+precision highp float;
+varying vec3 vN, vW;
+uniform vec3 uEye;
+uniform vec3 uColor;
+uniform vec3 uHemiSky, uHemiGround;
+uniform vec3 uDirL; uniform float uDirI;
+void main(){
+  vec3 N = normalize(vN);
+  float hemi = 0.5 + 0.5*N.y;
+  vec3 hemiCol = mix(uHemiGround, uHemiSky, hemi);
+  float ndl = max(dot(N, normalize(uDirL)), 0.0);
+  vec3 L = hemiCol*0.6 + uDirI*ndl*vec3(1.0);
+  vec3 base = uColor;
+  vec3 V = normalize(uEye - vW);
+  vec3 H = normalize(normalize(uDirL)+V);
+  float spec = pow(max(dot(N,H),0.0), 32.0)*0.25;
+  gl_FragColor = vec4(base*L + spec, 1.0);
+}`;
+const vsLine = `
+precision highp float;
+attribute vec3 aPos;
+uniform mat4 uModel, uView, uProj;
+void main(){ gl_Position = uProj * uView * uModel * vec4(aPos,1.0); }`;
+const fsLine = `precision highp float; uniform vec3 uColor; void main(){ gl_FragColor=vec4(uColor,1.0); }`;
+
+function makeProgram(gl, vs, fs){
+  function compile(type, src){ const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s;}
+  const p = gl.createProgram();
+  const v = compile(gl.VERTEX_SHADER, vs), f = compile(gl.FRAGMENT_SHADER, fs);
+  gl.attachShader(p,v); gl.attachShader(p,f); gl.linkProgram(p);
+  if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+  return p;
 }
-const annPts = dShapePoints(18,15,6);
-const annCurve = new THREE.CatmullRomCurve3(annPts,true);
-const annulus = new THREE.Mesh(new THREE.TubeGeometry(annCurve, ANN_RES, 1.35, 32, true), new THREE.MeshStandardMaterial({color:0x8fa6c2, metalness:.45, roughness:.35}));
-annulus.castShadow=annulus.receiveShadow=true; scene.add(annulus);
-
-// papillary muscles (context)
-const papAL = new THREE.Mesh(new THREE.ConeGeometry(3.4, 16, 24), new THREE.MeshStandardMaterial({color:0x405a70, metalness:.4, roughness:.55}));
-const papPM = papAL.clone(); papAL.position.set(+15,-36,+15); papPM.position.set(-18,-40,-18); papAL.rotation.x=papPM.rotation.x=Math.PI; scene.add(papAL,papPM);
-
-// leaflet “fabric” texture (procedural)
-function makeLeafletTexture(){
-  const c=document.createElement('canvas'); c.width=512; c.height=512; const g=c.getContext('2d');
-  const grd=g.createLinearGradient(0,0,0,512); grd.addColorStop(0,'#eef5ff'); grd.addColorStop(1,'#e7eefc'); g.fillStyle=grd; g.fillRect(0,0,512,512);
-  g.globalAlpha=0.18; g.strokeStyle='#c9d7ef'; for(let i=0;i<220;i++){ const x=Math.random()*512, y=Math.random()*512, R=8+Math.random()*28; g.beginPath(); g.ellipse(x,y,R,R*0.35,Math.random()*Math.PI,0,Math.PI*2); g.stroke(); }
-  const img=g.getImageData(0,0,512,512); for(let i=0;i<img.data.length;i+=4){ img.data[i]+= (Math.random()*8)|0; img.data[i+1]+= (Math.random()*8)|0; img.data[i+2]+= (Math.random()*6)|0; } g.putImageData(img,0,0);
-  const tex=new THREE.CanvasTexture(c); tex.wrapS=tex.wrapT=THREE.RepeatWrapping; tex.repeat.set(2,1); return tex;
+function makeMesh(gl, positions, normals, triProg){
+  const vao = {}; // simple holder
+  vao.vb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vao.vb); gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+  vao.nb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vao.nb); gl.bufferData(gl.ARRAY_BUFFER, normals, gl.STATIC_DRAW);
+  vao.count = positions.length/3;
+  vao.draw = (model, color)=>{
+    gl.useProgram(triProg);
+    // pos
+    gl.bindBuffer(gl.ARRAY_BUFFER, vao.vb);
+    const locPos = gl.getAttribLocation(triProg, 'aPos'); gl.enableVertexAttribArray(locPos); gl.vertexAttribPointer(locPos,3,gl.FLOAT,false,0,0);
+    // norm
+    gl.bindBuffer(gl.ARRAY_BUFFER, vao.nb);
+    const locN = gl.getAttribLocation(triProg, 'aNorm'); gl.enableVertexAttribArray(locN); gl.vertexAttribPointer(locN,3,gl.FLOAT,false,0,0);
+    // uniforms
+    gl.uniformMatrix4fv(gl.getUniformLocation(triProg,'uModel'),false,model);
+    gl.uniform3fv(gl.getUniformLocation(triProg,'uColor'),color);
+    gl.drawArrays(gl.TRIANGLES, 0, vao.count);
+  };
+  return vao;
 }
-const leafletTex = makeLeafletTexture();
+function makeLines(gl, positions, lineProg, dynamic=false){
+  const vbo = gl.createBuffer();
+  const data = positions instanceof Float32Array ? positions : new Float32Array(positions);
+  gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+  gl.bufferData(gl.ARRAY_BUFFER, data, dynamic? gl.DYNAMIC_DRAW: gl.STATIC_DRAW);
+  const obj = { vbo, count: data.length/3, data };
+  obj.draw = (model, color)=>{
+    gl.useProgram(lineProg);
+    gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+    const loc = gl.getAttribLocation(lineProg,'aPos'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,3,gl.FLOAT,false,0,0);
+    gl.uniformMatrix4fv(gl.getUniformLocation(lineProg,'uModel'), false, model);
+    gl.uniform3fv(gl.getUniformLocation(lineProg,'uColor'), color);
+    gl.drawArrays(gl.LINE_STRIP, 0, obj.count);
+  };
+  obj.update = ()=>{ gl.bindBuffer(gl.ARRAY_BUFFER, vbo); gl.bufferSubData(gl.ARRAY_BUFFER, 0, obj.data); };
+  return obj;
+}
 
-const EDGE_SEGS=64;
-const STRIP_W   = mm(8);
-let gapDZ = mm(6);   // case‑dependent
+/* ===== Scene setup ===== */
+const canvas = document.getElementById('gl');
+const gl = canvas.getContext('webgl', {antialias:true, alpha:false});
+if(!gl){ alert('WebGL not available'); throw new Error('WebGL not available'); }
 
-function posteriorEdgeCurve(){
-  const pts=[];
-  for(let i=ANN_RES*0.55;i<ANN_RES*0.98;i+= (ANN_RES*0.43)/EDGE_SEGS ){
-    const p=annPts[Math.floor(i)%ANN_RES].clone();
-    p.y -= 1.5*Math.cos((i/(ANN_RES*0.43))*Math.PI);
-    pts.push(p);
+let W=0,H=0, aspect=1;
+function resize(){
+  const dpr = Math.min(devicePixelRatio||1, 2);
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  if (w!==W || h!==H){
+    W=w; H=h; aspect = w/h;
+    canvas.width = Math.max(1, (w*dpr)|0);
+    canvas.height= Math.max(1, (h*dpr)|0);
+    gl.viewport(0,0,canvas.width, canvas.height);
   }
-  return new THREE.CatmullRomCurve3(pts,false);
 }
-let basePosterior = posteriorEdgeCurve();
+window.addEventListener('resize', resize); resize();
 
-function offsetCurve(curve, dz){ return new THREE.CatmullRomCurve3(curve.getPoints(EDGE_SEGS).map(p=>p.clone().add(new THREE.Vector3(0,0,dz)))); }
+const progTri = makeProgram(gl, vsTri, fsTri);
+const progLine= makeProgram(gl, vsLine, fsLine);
+gl.enable(gl.DEPTH_TEST);
 
-function stripFromCurve(curve, color, alpha=0.95, paintDepth=false){
-  const pts = curve.getPoints(EDGE_SEGS);
-  const geom = new THREE.BufferGeometry();
-  const vtx = new Float32Array((EDGE_SEGS+1)*2*3), uv=new Float32Array((EDGE_SEGS+1)*2*2), idx=[];
-  for(let i=0;i<=EDGE_SEGS;i++){
-    const p=pts[i];
-    const dir=(i<EDGE_SEGS? pts[i+1].clone().sub(pts[i]) : pts[i].clone().sub(pts[i-1])).normalize();
-    const up=new THREE.Vector3(0,1,0);
-    const n=new THREE.Vector3().crossVectors(dir, up).normalize(); // lateral
-    const a=p.clone().add(n.clone().multiplyScalar(STRIP_W/2));
-    const b=p.clone().add(n.clone().multiplyScalar(-STRIP_W/2));
-    vtx.set([a.x,a.y,a.z], i*6+0); vtx.set([b.x,b.y,b.z], i*6+3);
-    uv.set([0, i/EDGE_SEGS], i*4+0); uv.set([1, i/EDGE_SEGS], i*4+2);
-    if(i<EDGE_SEGS){ const k=i*2; idx.push(k,k+1,k+2, k+1,k+3,k+2); }
-  }
-  geom.setAttribute('position', new THREE.BufferAttribute(vtx,3));
-  geom.setAttribute('uv', new THREE.BufferAttribute(uv,2));
-  geom.setIndex(idx); geom.computeVertexNormals();
+/* Global uniforms (set once per frame) */
+const U = {
+  view: m4.create(), proj: m4.create(),
+  eye: v3.create(0,140,280),
+  sky: new Float32Array([0.8,0.9,1.0]),
+  ground: new Float32Array([0.12,0.16,0.2]),
+  dirL: new Float32Array([0.6,1.0,0.5]), dirI: 1.0
+};
+function setFrameUniforms(){
+  gl.useProgram(progTri);
+  gl.uniformMatrix4fv(gl.getUniformLocation(progTri,'uView'), false, U.view);
+  gl.uniformMatrix4fv(gl.getUniformLocation(progTri,'uProj'), false, U.proj);
+  gl.uniform3fv(gl.getUniformLocation(progTri,'uEye'), U.eye);
+  gl.uniform3fv(gl.getUniformLocation(progTri,'uHemiSky'), U.sky);
+  gl.uniform3fv(gl.getUniformLocation(progTri,'uHemiGround'), U.ground);
+  gl.uniform3fv(gl.getUniformLocation(progTri,'uDirL'), U.dirL);
+  gl.uniform1f(gl.getUniformLocation(progTri,'uDirI'), U.dirI);
 
-  let mat;
-  if(paintDepth){
-    const c=document.createElement('canvas'); c.width=256; c.height=1024; const g=c.getContext('2d');
-    g.fillStyle='rgba(240,248,255,0.97)'; g.fillRect(0,0,256,1024);
-    g.strokeStyle='rgba(60,90,150,0.55)'; g.lineWidth=2;
-    for(let x=16;x<256;x+= (STRIP_W/6)*(256/STRIP_W) ){ g.beginPath(); g.moveTo(x,0); g.lineTo(x,1024); g.stroke(); }
-    const mm2px=256/STRIP_W; const x1=Math.round((STRIP_W/2-6)*mm2px), x2=Math.round((STRIP_W/2-4)*mm2px);
-    g.fillStyle='rgba(255,235,153,0.35)'; g.fillRect(x1,0,(x2-x1),1024);
-    const tex=new THREE.CanvasTexture(c); tex.wrapS=tex.wrapT=THREE.RepeatWrapping; tex.repeat.set(1,1);
-    mat=new THREE.MeshStandardMaterial({map:tex, color, metalness:.06, roughness:.82, side:THREE.DoubleSide, transparent:true, opacity:alpha});
-  } else {
-    mat=new THREE.MeshStandardMaterial({map:leafletTex, color, metalness:.06, roughness:.82, side:THREE.DoubleSide, transparent:true, opacity:alpha});
-  }
-  const mesh=new THREE.Mesh(geom,mat); mesh.castShadow=mesh.receiveShadow=true; return mesh;
+  gl.useProgram(progLine);
+  gl.uniformMatrix4fv(gl.getUniformLocation(progLine,'uView'), false, U.view);
+  gl.uniformMatrix4fv(gl.getUniformLocation(progLine,'uProj'), false, U.proj);
 }
 
-let leftCurve  = basePosterior.clone();
-let rightCurve = offsetCurve(basePosterior, gapDZ);
-let leftStrip  = stripFromCurve(leftCurve, 0xf1f7ff, 0.98, true);
-let rightStrip = stripFromCurve(rightCurve,0xe7efff, 0.95, true);
-scene.add(leftStrip,rightStrip);
-
-// anterior context surface
-(function anteriorSurface(){
-  const pts=[]; for(let i=ANN_RES*0.05;i<ANN_RES*0.55;i+= (ANN_RES*0.5)/42 ){
-    const p=annPts[Math.floor(i)%ANN_RES].clone();
-    const n=annPts[(Math.floor(i+1))%ANN_RES].clone().sub(annPts[(Math.floor(i-1+ANN_RES))%ANN_RES]).normalize();
-    const lat=new THREE.Vector3().crossVectors(n,new THREE.Vector3(0,1,0)).normalize();
-    p.addScaledVector(lat,-mm(18)); p.y -= mm(2)*Math.sin(i); pts.push(p);
-  }
-  const curve=new THREE.CatmullRomCurve3(pts);
-  const g=new THREE.TubeGeometry(curve, 42, 9, 32, false);
-  const m=new THREE.MeshStandardMaterial({map:leafletTex, color:0xf7fbff, metalness:.06, roughness:.82, transparent:true, opacity:0.22, side:THREE.DoubleSide});
-  const mesh=new THREE.Mesh(g,m); mesh.receiveShadow=true; scene.add(mesh);
-})();
-
-/* ================= labels ================= */
-function addLabel(text,pos){
-  const c=document.createElement('canvas'); c.width=256; c.height=64; const g=c.getContext('2d');
-  g.fillStyle='#cfe8ff'; g.font='bold 36px Segoe UI'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(text,128,32);
-  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c), transparent:true}));
-  s.scale.set(12,3,1); s.position.copy(pos.clone().add(new THREE.Vector3(0,6,0))); scene.add(s); return s;
-}
-const leftLabel  = addLabel('P2 left edge',  leftCurve.getPoint(0.62));
-const rightLabel = addLabel('P2 right edge', rightCurve.getPoint(0.62));
-
-/* ================= needle & suture ================= */
-const needleGroup = new THREE.Group(); scene.add(needleGroup);
-function makeNeedle(radius=mm(8), span=Math.PI*3/8){
-  const tube = new THREE.TorusGeometry(radius, 0.5, 18, 96, span);
-  const mat  = new THREE.MeshStandardMaterial({color:0xa0b8cd, metalness:.8, roughness:.25});
-  const mesh = new THREE.Mesh(tube, mat); mesh.rotation.y = Math.PI/2; return mesh;
-}
-function computeNeedleBasis(entry, exit){
-  const mid = entry.clone().add(exit).multiplyScalar(0.5);
-  const chord = exit.clone().sub(entry); const L=chord.length();
-  const up = new THREE.Vector3(0,1,0);
-  const n = new THREE.Vector3().crossVectors(chord, up).normalize();
-  const z = chord.clone().normalize();
-  const x = new THREE.Vector3().crossVectors(n, z).normalize();
-  const y = new THREE.Vector3().crossVectors(z, x).normalize();
-  return {mid, x,y,z, R:Math.max(mm(6), L/1.8), span: Math.PI*0.8};
-}
-let BUSY=false;
-function animateNeedle(entry, exit, onDone){
-  BUSY=true; needleGroup.clear();
-  const B=computeNeedleBasis(entry,exit);
-  const mesh=makeNeedle(B.R, B.span); needleGroup.add(mesh);
-  const basis=new THREE.Matrix4().makeBasis(B.x,B.y,B.z), pos=new THREE.Matrix4().makeTranslation(B.mid.x,B.mid.y,B.mid.z);
-  mesh.matrixAutoUpdate=false; let t=0;
-  (function tick(){
-    t += 0.03; const angle = -B.span/2 + B.span*Math.min(1,t);
-    mesh.matrix = pos.clone().multiply(basis).multiply(new THREE.Matrix4().makeRotationX(angle));
-    renderer.render(scene,camera);
-    if(t<1){ requestAnimationFrame(tick); } else { BUSY=false; onDone && onDone(); }
-  })();
+/* Camera control (simple orbit on right-drag) */
+const cam = { rx: rad(-10), ry: 0, dist: 320, target: v3.create(0,0,0) };
+let rotating=false;
+canvas.addEventListener('pointerdown',(e)=>{ if(e.button===2) rotating=true; });
+window.addEventListener('pointerup',()=>rotating=false);
+window.addEventListener('contextmenu',e=>e.preventDefault());
+canvas.addEventListener('pointermove',(e)=>{
+  if(rotating){ cam.ry += e.movementX*0.005; cam.rx += e.movementY*0.005; cam.rx = Math.max(rad(-80), Math.min(rad(10), cam.rx)); }
+});
+function updateCamera(){
+  const cx = cam.target[0] + cam.dist*Math.cos(cam.rx)*Math.sin(cam.ry);
+  const cy = cam.target[1] + cam.dist*Math.sin(cam.rx);
+  const cz = cam.target[2] + cam.dist*Math.cos(cam.rx)*Math.cos(cam.ry);
+  v3.set(U.eye, cx,cy,cz);
+  m4.lookAt(U.view, U.eye, cam.target, v3.create(0,1,0));
+  m4.perspective(U.proj, rad(45), aspect, 0.1, 4000);
 }
 
-class Rope {
-  constructor(a,b,segments=18){
-    this.nodes=[]; for(let i=0;i<=segments;i++) this.nodes.push(a.clone().lerp(b, i/segments));
-    this.restLen = this.totalLength(); this.targetScale = 1.0;
-    this.line = this.buildLine();
-  }
-  totalLength(){ let L=0; for(let i=1;i<this.nodes.length;i++) L+=this.nodes[i].distanceTo(this.nodes[i-1]); return L; }
-  tighten(scale){ this.targetScale = clamp(scale,0.7,1.0); }
-  step(){
-    const want=this.restLen*this.targetScale, have=this.totalLength(), excess=have-want;
-    if(Math.abs(excess)<0.01) return;
-    const perSeg = excess/(this.nodes.length-1);
-    for(let i=1;i<this.nodes.length-1;i++){
-      const prev=this.nodes[i-1], cur=this.nodes[i], nxt=this.nodes[i+1];
-      const u1 = cur.clone().sub(prev).normalize();
-      const u2 = nxt.clone().sub(cur).normalize();
-      cur.addScaledVector(u1, -perSeg*0.25).addScaledVector(u2, perSeg*0.25);
+/* ===== Geometry builders ===== */
+function buildPosteriorLeaflet(width=80, depth=24, segX=40, segZ=12){
+  // Make a curved ribbon (saddle-ish), y is up.
+  const vx = segX+1, vz = segZ+1;
+  const positions = [];
+  for(let iz=0; iz<vz; iz++){
+    const tz = iz/segZ, z = (tz-0.5)*depth;
+    for(let ix=0; ix<vx; ix++){
+      const tx = ix/segX, x = (tx-0.5)*width;
+      const y = -0.12*(z*z)/(depth*0.5) + 0.06*(x*x)/(width*0.5);
+      positions.push(x,y,z);
     }
   }
-  buildLine(){
-    const geo=new LineGeometry(); geo.setPositions(this.nodes.flatMap(p=>[p.x,p.y,p.z]));
-    const mat=new LineMaterial({ color:0xfff2c2, linewidth:2, worldUnits:true });
-    const line=new Line2(geo,mat); line.computeLineDistances(); return line;
+  const tris = [];
+  function idx(ix,iz){ return iz*vx + ix; }
+  for(let iz=0; iz<segZ; iz++){
+    for(let ix=0; ix<segX; ix++){
+      const a=idx(ix,iz), b=idx(ix+1,iz), c=idx(ix,iz+1), d=idx(ix+1,iz+1);
+      tris.push(a,b,c,  b,d,c);
+    }
   }
-  updateLine(){
-    this.line.geometry.setPositions(this.nodes.flatMap(p=>[p.x,p.y,p.z])); this.line.geometry.needsUpdate=true;
+  // positions & normals
+  const P = new Float32Array(tris.length*3);
+  const N = new Float32Array(tris.length*3);
+  const tempA=v3.create(), tempB=v3.create(), tempC=v3.create(), n=v3.create();
+  for(let i=0;i<tris.length;i+=3){
+    const ia=tris[i]*3, ib=tris[i+1]*3, ic=tris[i+2]*3;
+    v3.set(tempA, positions[ia], positions[ia+1], positions[ia+2]);
+    v3.set(tempB, positions[ib], positions[ib+1], positions[ib+2]);
+    v3.set(tempC, positions[ic], positions[ic+1], positions[ic+2]);
+    const e1=v3.create(), e2=v3.create(); v3.sub(e1,tempB,tempA); v3.sub(e2,tempC,tempA);
+    v3.cross(n,e1,e2); v3.norm(n,n);
+    P.set(tempA, (i+0)*3); P.set(tempB, (i+1)*3); P.set(tempC, (i+2)*3);
+    N.set(n, (i+0)*3); N.set(n, (i+1)*3); N.set(n, (i+2)*3);
   }
+  return { P, N, width, depth };
 }
-
-/* ================= overlays (HTML callouts anchored to 3D) ============= */
-const callouts = []; // {el, world:THREE.Vector3, tEnd:number}
-function addCallout(world, text, ms=6000){
-  const root=document.getElementById('callouts'); const box=document.createElement('div');
-  box.className='callout'; box.innerText=text; const nub=document.createElement('div'); nub.className='nub'; box.appendChild(nub);
-  root.appendChild(box); callouts.push({el:box, world:world.clone(), tEnd:performance.now()+ms});
+function buildBox(w,h,d){
+  const x=w/2,y=h/2,z=d/2;
+  const p=[ // 12 tris
+    // +X
+    x,-y,-z,  x,y,-z,  x,y,z,   x,-y,-z,  x,y,z,  x,-y,z,
+    // -X
+    -x,-y,-z, -x,-y,z, -x,y,z,  -x,-y,-z, -x,y,z, -x,y,-z,
+    // +Y
+    -x,y,-z,  -x,y,z,  x,y,z,   -x,y,-z,  x,y,z,  x,y,-z,
+    // -Y
+    -x,-y,-z, x,-y,-z, x,-y,z,  -x,-y,-z, x,-y,z, -x,-y,z,
+    // +Z
+    -x,-y,z,  x,-y,z,  x,y,z,   -x,-y,z,  x,y,z,  -x,y,z,
+    // -Z
+    -x,-y,-z, -x,y,-z, x,y,-z,  -x,-y,-z, x,y,-z, x,-y,-z
+  ];
+  const n=[ // per-face normals
+    1,0,0, 1,0,0, 1,0,0,  1,0,0, 1,0,0, 1,0,0,
+    -1,0,0,-1,0,0,-1,0,0, -1,0,0,-1,0,0,-1,0,0,
+    0,1,0, 0,1,0, 0,1,0,  0,1,0, 0,1,0, 0,1,0,
+    0,-1,0,0,-1,0,0,-1,0, 0,-1,0,0,-1,0,0,-1,0,
+    0,0,1, 0,0,1, 0,0,1,  0,0,1, 0,0,1, 0,0,1,
+    0,0,-1,0,0,-1,0,0,-1, 0,0,-1,0,0,-1,0,0,-1
+  ];
+  return {P:new Float32Array(p), N:new Float32Array(n)};
 }
-function updateCallouts(){
-  const rootRect=stage.getBoundingClientRect();
-  for(let i=callouts.length-1;i>=0;i--){
-    const c=callouts[i]; if(performance.now()>c.tEnd){ c.el.remove(); callouts.splice(i,1); continue; }
-    const p=c.world.clone().project(camera); // NDC
-    const x=(p.x*0.5+0.5)*rootRect.width, y=(-p.y*0.5+0.5)*rootRect.height;
-    c.el.style.left = `${x+12}px`; c.el.style.top = `${y-12}px`;
+function buildArcTube(radius=10, arcDeg=135, tubeR=0.8, seg=64, ring=6){
+  // Thin tube along arc for needle
+  const P=[], N=[];
+  for(let i=0;i<seg;i++){
+    const t0=i/seg, t1=(i+1)/seg;
+    const a0=rad(-arcDeg/2 + t0*arcDeg), a1=rad(-arcDeg/2 + t1*arcDeg);
+    const c0=[radius*Math.cos(a0), 0, radius*Math.sin(a0)];
+    const c1=[radius*Math.cos(a1), 0, radius*Math.sin(a1)];
+    for(let j=0;j<ring;j++){
+      const th0=j/ring*Math.PI*2, th1=(j+1)/ring*Math.PI*2;
+      const n0=[Math.cos(th0), Math.sin(th0), 0], n1=[Math.cos(th1), Math.sin(th1), 0];
+      const p00=[c0[0]+n0[0]*tubeR, n0[1]*tubeR, c0[2]+n0[2]*tubeR];
+      const p01=[c0[0]+n1[0]*tubeR, n1[1]*tubeR, c0[2]+n1[2]*tubeR];
+      const p10=[c1[0]+n0[0]*tubeR, n0[1]*tubeR, c1[2]+n0[2]*tubeR];
+      const p11=[c1[0]+n1[0]*tubeR, n1[1]*tubeR, c1[2]+n1[2]*tubeR];
+      // two tris
+      P.push(...p00,...p10,...p11,  ...p00,...p11,...p01);
+      N.push(...n0,...n0,...n1,     ...n0,...n1,...n1);
+    }
   }
+  return {P:new Float32Array(P), N:new Float32Array(N)};
 }
-
-/* ================= picking & measurement ================= */
-const ray = new THREE.Raycaster(); const mouse = new THREE.Vector2();
-renderer.domElement.addEventListener('pointermove',(e)=> {
-  const r = renderer.domElement.getBoundingClientRect();
-  mouse.x = ((e.clientX-r.left)/r.width)*2-1; mouse.y = -((e.clientY-r.top)/r.height)*2+1;
-});
-renderer.domElement.addEventListener('pointerdown', onClick);
-
-function nearestOnCurve(curve, p){
-  let bestT=0, bestD=1e9;
-  for(let i=0;i<=EDGE_SEGS;i++){ const t=i/EDGE_SEGS, q=curve.getPoint(t), d=q.distanceTo(p); if(d<bestD){ bestD=d; bestT=t; } }
-  const pos=curve.getPoint(bestT), tangent=curve.getTangent(bestT).normalize();
-  const lateral=new THREE.Vector3().crossVectors(tangent,new THREE.Vector3(0,1,0)).normalize();
-  return {t:bestT,pos,tangent,lateral};
-}
-function depthFromEdge(curve, p){
-  const pr=nearestOnCurve(curve,p); const d=p.clone().sub(pr.pos);
-  const depth = Math.abs(d.dot(pr.lateral)); return {depth, base:pr.pos, tangent:pr.tangent, lateral:pr.lateral, t:pr.t};
-}
-function angleErrorDegrees(edgeTangent, chordVec){
-  const edge=edgeTangent.clone().normalize(); const chord=chordVec.clone().normalize();
-  const d = clamp(Math.abs(edge.dot(chord)), 0, 1); const ang = Math.acos(d)*180/Math.PI; return Math.abs(ang - 60);
-}
-
-/* ================= tissue draw‑in (local coaptation) ================= */
-function applyDrawIn(idxT, amount, sigma){
-  const Lpts = leftCurve.getPoints(EDGE_SEGS);
-  const Rpts = rightCurve.getPoints(EDGE_SEGS);
-  const idx = Math.round(idxT*EDGE_SEGS);
-  for(let i=0;i<=EDGE_SEGS;i++){
-    const w = Math.exp(-((i-idx)*(i-idx))/(2*sigma*sigma));
-    const l=Lpts[i], r=Rpts[i];
-    const dir = r.clone().sub(l).normalize();
-    l.addScaledVector(dir,  amount*w*0.5);
-    r.addScaledVector(dir, -amount*w*0.5);
+function buildLineLoopEllipse(rx, rz, steps=128){
+  const pts=[];
+  for(let i=0;i<=steps;i++){
+    const a=i/steps*Math.PI*2;
+    pts.push(rx*Math.cos(a), 0, rz*Math.sin(a));
   }
-  // Rebuild curves and strips from modified samples
-  leftCurve  = new THREE.CatmullRomCurve3(Lpts,false);
-  rightCurve = new THREE.CatmullRomCurve3(Rpts,false);
-  scene.remove(leftStrip,rightStrip);
-  leftStrip  = stripFromCurve(leftCurve,  0xf1f7ff, 0.98, true);
-  rightStrip = stripFromCurve(rightCurve, 0xe7efff, 0.95, true);
-  scene.add(leftStrip,rightStrip);
+  return new Float32Array(pts);
 }
 
-/* ================= UI state & wiring ================= */
-const ui = {
-  mode: qs('#mode'), caseSel: qs('#case'), loadBtn: qs('#load'), startBtn: qs('#start'),
-  resetBtn: qs('#reset'), exportBtn: qs('#export'),
-  tool_place: qs('#tool_place'), tool_tension: qs('#tool_tension'), tool_remove: qs('#tool_remove'), tool_finish: qs('#tool_finish'),
-  stepText: qs('#stepText'), fb: qs('#fb'),
-  biteN: qs('#biteN'), depthErr: qs('#depthErr'), angleErr: qs('#angleErr'), spacing: qs('#spacing'),
-  sym: qs('#sym'), gap: qs('#gap'), stress: qs('#stress'), time: qs('#time'), overall: qs('#overall'),
-  tensionBox: qs('#tensionBox'), tens: qs('#tens'), tv: qs('#tv'),
-  coachFeed: qs('#coachFeed'), coachBox: qs('#coachBox'), coachTitle: qs('#coachTitle'), coachText: qs('#coachText'),
-  coachPrev: qs('#coachPrev'), coachNext: qs('#coachNext'),
-  ghostNext: qs('#ghostNext'),
-  ovDepth: qs('#ov_depth'), ovAngle: qs('#ov_angle'), ovHeat: qs('#ov_heat'), ovLabels: qs('#ov_labels')
+/* ===== Leaflet + annulus ===== */
+const leaflet = buildPosteriorLeaflet(80,24,40,12);
+const meshLeaflet = makeMesh(gl, leaflet.P, leaflet.N, progTri);
+const annulus = makeLines(gl, buildLineLoopEllipse(80*0.6, 24*0.8, 160), progLine, false);
+const edge = makeLines(gl, new Float32Array([-leaflet.width/2,0,-leaflet.depth/2,  leaflet.width/2,0,-leaflet.depth/2]), progLine, false);
+
+/* ===== Instrument (needle driver + needle) ===== */
+const handleBox = buildBox(40, 4, 4);
+const jawBox = buildBox(8, 2, 14);
+const meshHandle = makeMesh(gl, handleBox.P, handleBox.N, progTri);
+const meshJawL = makeMesh(gl, jawBox.P, jawBox.N, progTri);
+const meshJawR = makeMesh(gl, jawBox.P, jawBox.N, progTri);
+const needleGeo = buildArcTube(10,135,0.8,70,8);
+const meshNeedle = makeMesh(gl, needleGeo.P, needleGeo.N, progTri);
+const tool = {
+  pos: v3.create(0,40,120),
+  rx: 0, ry: 0,
+  clamped: false,
+  needleLocal: m4.create(), jawL: m4.create(), jawR: m4.create(), handle: m4.create(),
+  group: m4.create(),
+  rotate(dx,dy){ this.ry += dx*0.01; this.rx += dy*0.01; },
+  setClamp(b){ this.clamped=b; }
 };
-function qs(s){return document.querySelector(s)}
-let tool='place'; setTool('place');
-ui.tool_place.onclick  = ()=> setTool('place');
-ui.tool_tension.onclick= ()=> setTool('tension');
-ui.tool_remove.onclick = removeLastBite;
-ui.tool_finish.onclick = finalize;
-document.addEventListener('keydown',(e)=>{ if(e.key==='z'||e.key==='Z') removeLastBite(); if(e.key==='f'||e.key==='F') finalize(); });
-
-/* cases & framing */
-function loadCase(kind){
-  gapDZ = (kind==='p2_wide'? mm(8): kind==='p2_small'? mm(4): mm(6));
-  basePosterior = posteriorEdgeCurve(); leftCurve = basePosterior.clone(); rightCurve = offsetCurve(basePosterior, gapDZ);
-  scene.remove(leftStrip,rightStrip); leftStrip=stripFromCurve(leftCurve,0xf1f7ff,0.98,true); rightStrip=stripFromCurve(rightCurve,0xe7efff,0.95,true); scene.add(leftStrip,rightStrip);
-  frameView(); clearAll(); ui.fb.textContent='Case loaded.';
+function composeTool(){
+  const G = m4.create(); m4.translate(G,G,tool.pos[0],tool.pos[1],tool.pos[2]); m4.rotY(G,G,tool.ry); m4.rotX(G,G,tool.rx);
+  tool.group.set(G);
+  // handle
+  const H = m4.create(); H.set(G); m4.rotZ&&(m4.rotZ); // (no rotZ helper; not needed)
+  m4.scale(H,H, 1,1,1); // center
+  m4.translate(H,H, 0, 0, 0);
+  tool.handle.set(H);
+  // jaws
+  const JL = m4.create(); JL.set(G);
+  m4.translate(JL,JL, 0, 0, 10);
+  m4.rotY(JL,JL, tool.clamped? 0.2 : 0.8);
+  tool.jawL.set(JL);
+  const JR = m4.create(); JR.set(G);
+  m4.translate(JR,JR, 0, 0, -10);
+  m4.rotY(JR,JR, tool.clamped? -0.2 : -0.8);
+  tool.jawR.set(JR);
+  // needle (centered at group origin)
+  const N = m4.create(); N.set(G);
+  tool.needleLocal.set(N);
 }
-function frameView(){
-  const box = new THREE.Box3().setFromObject(leftStrip).union(new THREE.Box3().setFromObject(rightStrip));
-  const c = box.getCenter(new THREE.Vector3()); controls.target.copy(c); camera.position.set(c.x, c.y+60, c.z+160);
+tool.handle = m4.create(); tool.jawL = m4.create(); tool.jawR = m4.create(); tool.needleLocal = m4.create(); composeTool();
+
+/* ===== Suture rope (PBD) ===== */
+const rope = {
+  count: 60,
+  p: new Float32Array(60*3),
+  q: new Float32Array(60*3),
+  inv: new Float32Array(60).fill(1),
+  segLen: 2.0
+};
+function ropeSet(i,x,y,z){ rope.p[i*3]=x; rope.p[i*3+1]=y; rope.p[i*3+2]=z; }
+function ropeInit(){
+  const tip = needleTipWorld();
+  for(let i=0;i<rope.count;i++){ ropeSet(i, tip[0], tip[1]-i*rope.segLen, tip[2]); rope.q.set(rope.p); }
+  rope.inv[0]=0;
 }
-
-/* ================= task state & modes ================= */
-let step=0;  // 0 entry (left), 1 exit (right)
-let entryP=null, exitP=null, activeIdx=-1, sessionStart=now();
-const bites=[]; // records
-
-const TEACH_STEPS=[
-  { id:'intro', title:'Orientation', text:'Posterior wedge edges are depth‑banded (2–8 mm). Target is 4–6 mm (gold). Start with the apex bite.', gate:()=>true },
-  { id:'apex',  title:'Apex', text:'LEFT entry → RIGHT exit, both ~5 mm and ~60°, symmetric.', gate:()=> bites.length>=1 && within(bites[0],{depth:[4,6], angle:15, sym:1.0}) },
-  { id:'second',title:'Second bite', text:'Place the second bite ~5 mm from apex. Same criteria.', gate:()=> bites.length>=2 && within(bites[1],{depth:[4,6], angle:15, sym:1.0}) },
-  { id:'series',title:'Series', text:'Complete with even spacing (~4–5 mm). Then tighten.', gate:()=> bites.length>=4 },
-  { id:'tension',title:'Tension', text:'Switch to “Tighten knot”. Adjust to minimize residual gap without strangulation.', gate:()=> avgResidual()<=2.0 }
-];
-let teachIdx=0;
-function within(b, lim){ const okD=(b.depthL>=lim.depth[0]&&b.depthL<=lim.depth[1]&&b.depthR>=lim.depth[0]&&b.depthR<=lim.depth[1]);
-  const okA=(b.angleErr<=lim.angle); const okS=(Math.abs(b.depthL-b.depthR)<=lim.sym); return okD&&okA&&okS; }
-function avgResidual(){ if(!bites.length) return 999; return bites.reduce((s,x)=>s+x.residual,0)/bites.length; }
-function showCoach(){ if(ui.mode.value!=='teach'){ ui.coachBox.style.display='none'; return; } ui.coachBox.style.display='block';
-  ui.coachTitle.textContent=`Teaching — Step ${teachIdx+1}/${TEACH_STEPS.length}: ${TEACH_STEPS[teachIdx].title}`; ui.coachText.textContent=TEACH_STEPS[teachIdx].text; }
-ui.coachPrev.onclick=()=>{ teachIdx=Math.max(0,teachIdx-1); showCoach(); };
-ui.coachNext.onclick=()=>{ if(TEACH_STEPS[teachIdx].gate()) teachIdx=Math.min(teachIdx+1,TEACH_STEPS.length-1); showCoach(); };
-
-/* ================= clicking workflow ================= */
-function onClick(){
-  if(BUSY || tool!=='place') return;
-  ray.setFromCamera(mouse, camera);
-  const hitL = ray.intersectObject(leftStrip, false)[0];
-  const hitR = ray.intersectObject(rightStrip,false)[0];
-
-  if(step===0){
-    if(!hitL || hitL.object!==leftStrip){ ui.fb.textContent='Place ENTRY on LEFT edge (gold 4–6 mm).'; return; }
-    entryP = hitL.point.clone(); step=1; ui.stepText.textContent='Click right edge (exit)'; ui.fb.textContent='Good. Now EXIT on RIGHT edge.';
-    flash(entryP, 0xFFEB99);
-  } else {
-    if(!hitR || hitR.object!==rightStrip){ ui.fb.textContent='Place EXIT on RIGHT edge.'; return; }
-    exitP = hitR.point.clone();
-    BUSY=true;
-    animateNeedle(entryP, exitP, ()=>{
-      const rope=new Rope(entryP, exitP, 18); scene.add(rope.line);
-      // measure
-      const dL=depthFromEdge(leftCurve , entryP); const dR=depthFromEdge(rightCurve, exitP);
-      const chord = exitP.clone().sub(entryP);
-      const angErr=angleErrorDegrees(dL.tangent, chord);
-      const symErr=Math.abs(dL.depth - dR.depth);
-      const spacing=bites.length? entryP.distanceTo(bites.at(-1).entry):NaN;
-      const bite={
-        entry:entryP.clone(), exit:exitP.clone(), rope,
-        tLeft:dL.t, tRight:dR.t,
-        depthL:+dL.depth.toFixed(2), depthR:+dR.depth.toFixed(2),
-        angleErr:+angErr.toFixed(1), symmetry:+symErr.toFixed(2),
-        spacingFromPrev: spacing? +spacing.toFixed(2) : NaN,
-        get tension(){ return 1.0 - rope.targetScale; },
-        get residual(){ // current gap in mm near left t
-          const L=leftCurve.getPoint(dL.t), R=rightCurve.getPoint(dL.t); return L.distanceTo(R);
-        }
-      };
-      bites.push(bite); activeIdx=bites.length-1; showTensionFor(bite);
-      if(ui.mode.value==='practice') coachSay(aiAdvice(bite));
-      if(ui.mode.value==='teach'    && TEACH_STEPS[teachIdx].gate()) { teachIdx=Math.min(teachIdx+1,TEACH_STEPS.length-1); showCoach(); }
-      step=0; entryP=null; exitP=null; BUSY=false;
-      ui.stepText.textContent='Click left edge (entry)'; ui.fb.textContent='Bite placed.';
-      refreshScore(); updateHeat(); addCallout(bite.entry, coachLast); // anchor advice
-    });
+ropeInit();
+const ropeLines = makeLines(gl, rope.p, progLine, true);
+function ropeIntegrate(dt){
+  for(let i=0;i<rope.count;i++){
+    const idx=i*3, inv=rope.inv[i]; if(inv===0) continue;
+    const x=rope.p[idx], y=rope.p[idx+1], z=rope.p[idx+2];
+    const px=rope.q[idx], py=rope.q[idx+1], pz=rope.q[idx+2];
+    const vx=x-px, vy=y-py, vz=z-pz;
+    rope.q[idx]=x; rope.q[idx+1]=y; rope.q[idx+2]=z;
+    const gx=0, gy=-9.81, gz=0;
+    rope.p[idx]=x+vx+gx*dt*dt; rope.p[idx+1]=y+vy+gy*dt*dt; rope.p[idx+2]=z+vz+gz*dt*dt;
   }
 }
-function flash(p, color=0xFFEB99){
-  const m=new THREE.Mesh(new THREE.SphereGeometry(1.4), new THREE.MeshBasicMaterial({color}));
-  m.position.copy(p); scene.add(m); setTimeout(()=>scene.remove(m), 900);
-}
-
-/* ================= AI copilot ================= */
-let coachLast='—';
-function coachSay(msg){ coachLast=msg; ui.coachFeed.textContent=msg; }
-function aiAdvice(b){
-  const out=[];
-  if(b.angleErr>25) out.push('Angle too parallel — roll wrist to drive more perpendicular (~60°).');
-  else if(b.angleErr>15) out.push('Angle slightly shallow — bias more perpendicular.');
-  if(b.depthL<4 || b.depthR<4) out.push('Depth shallow — move into gold band (4–6 mm).');
-  if(b.depthL>6 || b.depthR>6) out.push('Depth deep — stay within 4–6 mm.');
-  if(Math.abs(b.depthL-b.depthR)>1.2) out.push('Asymmetric entry/exit — adjust exit ~1–2 mm to match.');
-  if(bites.length>1){
-    const s=b.spacingFromPrev; if(s<3.2) out.push('Bites too close — target 4–5 mm.'); if(s>6.0) out.push('Bites too far — target 4–5 mm.');
+function ropeProject(iter=6){
+  for(let k=0;k<iter;k++){
+    for(let i=0;i<rope.count-1;i++){
+      const a=i,b=i+1, ia=a*3, ib=b*3;
+      let dx=rope.p[ib]-rope.p[ia], dy=rope.p[ib+1]-rope.p[ia+1], dz=rope.p[ib+2]-rope.p[ia+2];
+      const L=Math.hypot(dx,dy,dz)||1; const w1=rope.inv[a], w2=rope.inv[b], wsum=w1+w2||1e-6;
+      const corr=(L-rope.segLen)/wsum; dx/=L; dy/=L; dz/=L;
+      if(w1>0){ rope.p[ia]+=dx*corr*w1; rope.p[ia+1]+=dy*corr*w1; rope.p[ia+2]+=dz*corr*w1; }
+      if(w2>0){ rope.p[ib]-=dx*corr*w2; rope.p[ib+1]-=dy*corr*w2; rope.p[ib+2]-=dz*corr*w2; }
+    }
   }
-  if(b.tension>0.35) out.push('Tension high — risk of tissue stress; back off slightly.');
-  if(!out.length) out.push('Nice bite. Maintain this pattern.');
-  return out.join('\n');
 }
 
-/* ================= tension UI ================= */
-function showTensionFor(b){
-  ui.tensionBox.style.display='block';
-  const slider=ui.tens, label=ui.tv; slider.value=b.rope.targetScale.toFixed(2);
-  const update=()=>{ const t=1-parseFloat(slider.value); label.textContent=(t<0.05?'loose': t>0.25?'tight':'ok'); label.style.color=(t<0.05?'#9fb3c4': t>0.25?'#ffb020':'#2ed573'); };
-  slider.oninput=()=>{
-    b.rope.tighten(parseFloat(slider.value));
-    // convert tightening into local tissue draw‑in near left t (Gaussian)
-    const idxT = b.tLeft; const beforeGap = b.residual;
-    const draw = (1.0 - b.rope.targetScale) * beforeGap * 0.65; // fraction of gap closed locally
-    applyDrawIn(idxT, draw, /*sigma*/ 8);
-    update(); refreshScore();
+/* ===== Targets, scoring, copilot ===== */
+const cfg = {
+  weights: { biteDepth:.18, spacing:.18, entryAngle:.12, exitAngle:.08, symmetry:.08, tensionSafety:.16, chordaeAvoidance:.10, efficiency:.10 },
+  targets: { biteDepthMM:[2,3], spacingMM:[2,3], entryAngleDeg:[60,90], exitAngleDeg:[60,90], tensionMaxN:1.0 }
+};
+let mode = 'tutorial'; // tutorial | practice | exam
+const state = {
+  liveDepth: 0, liveAngle: 0, liveTension: 0,
+  stitches: [],
+  nextTargetX: -leaflet.width*0.45,
+  targetSpacing: (cfg.targets.spacingMM[0]+cfg.targets.spacingMM[1])/2,
+};
+function bandScore(x,[lo,hi],tol=0.7){ if(x>=lo&&x<=hi) return 1; const d=(x<lo)?lo-x:x-hi; return Math.max(0,1-d/tol); }
+function scoreStitch(m){
+  const s = {
+    biteDepth: bandScore(m.biteDepthMM, cfg.targets.biteDepthMM),
+    spacing:   bandScore(m.spacingMM, cfg.targets.spacingMM),
+    entryAngle:bandScore(m.entryAngleDeg, cfg.targets.entryAngleDeg,12),
+    exitAngle: bandScore(m.exitAngleDeg, cfg.targets.exitAngleDeg,12),
+    symmetry:  Math.max(0,1-m.symmetryMM/1.0),
+    tensionSafety: Math.max(0,1-Math.max(0,m.tensionMaxN-cfg.targets.tensionMaxN)/0.5),
+    chordaeAvoidance: Math.min(1,m.distNoGoMM/3.0),
+    efficiency: Math.max(0,1-(m.timeS-10)/10)
   };
-  update();
+  const w=cfg.weights; const total = s.biteDepth*w.biteDepth + s.spacing*w.spacing + s.entryAngle*w.entryAngle + s.exitAngle*w.exitAngle +
+                                   s.symmetry*w.symmetry + s.tensionSafety*w.tensionSafety + s.chordaeAvoidance*w.chordaeAvoidance + s.efficiency*w.efficiency;
+  const wsum = Object.values(w).reduce((a,b)=>a+b,0);
+  return 100*total/wsum;
+}
+function copilot(m){
+  const out=[];
+  const [bdLo,bdHi]=cfg.targets.biteDepthMM, [aLo,aHi]=cfg.targets.entryAngleDeg;
+  if(m.biteDepthMM<bdLo) out.push({level:'warn', msg:`Bite too shallow (${m.biteDepthMM.toFixed(1)} mm). Aim ${bdLo}–${bdHi} mm.`});
+  if(m.biteDepthMM>bdHi) out.push({level:'warn', msg:`Bite too deep (${m.biteDepthMM.toFixed(1)} mm). Keep ${bdLo}–${bdHi} mm from free edge.`});
+  if(m.entryAngleDeg<aLo) out.push({level:'warn', msg:`Entry angle shallow (${Math.round(m.entryAngleDeg)}°). Rotate toward perpendicular (${aLo}–${aHi}°).`});
+  if(m.tensionMaxN>cfg.targets.tensionMaxN) out.push({level:'danger', msg:`Tension high. Ease traction to avoid leaflet tear.`});
+  if(m.distNoGoMM<1.5) out.push({level:'danger', msg:`Near chordae zone. Shift laterally ≥ 1.5 mm.`});
+  if(out.length===0 && mode!=='exam') out.push({level:'info', msg:'Good bite. Maintain depth and perpendicular entry.'});
+  if(mode==='exam') return out.filter(a=>a.level!=='info'); // safety only
+  return out;
 }
 
-/* ================= scoring ================= */
-function mean(a){ return a.reduce((x,y)=>x+y,0)/a.length; }
-function stdev(a){ const m=mean(a); return Math.sqrt(mean(a.map(v=>(v-m)*(v-m)))); }
-function cv(a){ return mean(a)>0 ? stdev(a)/mean(a) : NaN; }
-function computeScores(){
-  if(!bites.length) return {overall:NaN};
-  const target=5;
-  const depthErrs=[], angErrs=[], spacings=[], symErrs=[], res=[], stress=[];
-  for(let i=0;i<bites.length;i++){
-    const b=bites[i];
-    depthErrs.push((Math.abs(b.depthL-target)+Math.abs(b.depthR-target))/2);
-    angErrs.push(b.angleErr);
-    if(i>0 && isFinite(b.spacingFromPrev)) spacings.push(b.spacingFromPrev);
-    symErrs.push(b.symmetry);
-    res.push(b.residual);
-    stress.push((1.0-b.rope.targetScale)*5);
-  }
-  const dE=mean(depthErrs), aE=mean(angErrs), spCV=spacings.length?cv(spacings):NaN, sE=mean(symErrs), rG=mean(res), tS=mean(stress);
-  const sDepth=clamp(5-dE*0.8,1,5), sAngle=clamp(5-Math.max(0,aE-5)*0.12,1,5), sSpace=isFinite(spCV)?clamp(5-spCV*8,1,5):3, sSym=clamp(5-sE*0.6,1,5), sGap=clamp(5-rG*0.6,1,5), sStress=clamp(5-tS,1,5);
-  const overall = (sDepth*0.24 + sAngle*0.16 + sSpace*0.16 + sSym*0.16 + sGap*0.16 + sStress*0.12);
-  return {dE,aE,spCV,sE,rG,tS,overall};
-}
-function refreshScore(){
-  const s=computeScores();
-  ui.biteN.textContent=bites.length+'';
-  ui.depthErr.textContent = isFinite(s.dE)? s.dE.toFixed(1)+' mm':'—';
-  ui.angleErr.textContent = isFinite(s.aE)? s.aE.toFixed(1)+'°':'—';
-  ui.spacing.textContent  = isFinite(s.spCV)? (s.spCV*100).toFixed(0)+'%':'—';
-  ui.sym.textContent      = isFinite(s.sE)? s.sE.toFixed(1)+' mm':'—';
-  ui.gap.textContent      = isFinite(s.rG)? s.rG.toFixed(1)+' mm':'—';
-  ui.stress.textContent   = isFinite(s.tS)? s.tS.toFixed(2):'—';
-  ui.overall.textContent  = isFinite(s.overall)? s.overall.toFixed(1)+'/5':'—';
-  ui.time.textContent     = ((now()-sessionStart)/1000).toFixed(1)+' s';
+/* ===== Targets visualization ===== */
+const targetModel = m4.create(); m4.translate(targetModel,targetModel, state.nextTargetX, 0.6, -leaflet.depth/2);
+const targetLine = makeLines(gl, new Float32Array([0,0,0, 0,6,0]), progLine, false);
+function advanceTarget(){
+  state.nextTargetX += state.targetSpacing;
+  if(state.nextTargetX>leaflet.width*0.45) state.nextTargetX = -leaflet.width*0.45;
+  m4.translate(targetModel, m4.create(), state.nextTargetX, 0.6, -leaflet.depth/2);
 }
 
-/* ================= heatmap between entries ================= */
-const heatGroup = new THREE.Group(); scene.add(heatGroup);
-function updateHeat(){
-  heatGroup.clear();
-  if(bites.length<2) return;
-  for(let i=1;i<bites.length;i++){
-    const a=bites[i-1].entry, b=bites[i].entry;
-    const dist=a.distanceTo(b);
-    const col = (dist<mm(3.2)? 0xff4d4f : dist>mm(6.0)? 0xffb020 : 0x2ed573);
-    const g=new LineGeometry(); g.setPositions([a.x,a.y,a.z, b.x,b.y,b.z]);
-    const m=new LineMaterial({color:col, linewidth:3, worldUnits:true, transparent:true, opacity:0.25});
-    const l=new Line2(g,m); l.computeLineDistances(); heatGroup.add(l);
-  }
-}
+/* ===== UI wires ===== */
+const hudDepth = document.getElementById('hudDepth');
+const hudAngle = document.getElementById('hudAngle');
+const hudTension = document.getElementById('hudTension');
+const tensionBar = document.getElementById('tensionBar');
+const adviceList = document.getElementById('adviceList');
+const modeLabel = document.getElementById('modeLabel');
+const sumStitches = document.getElementById('sumStitches');
+const sumScore = document.getElementById('sumScore');
+document.getElementById('btnTutorial').onclick=()=>{ mode='tutorial'; modeLabel.textContent='TUTORIAL'; resetAttempt(); };
+document.getElementById('btnPractice').onclick=()=>{ mode='practice'; modeLabel.textContent='PRACTICE'; resetAttempt(); };
+document.getElementById('btnExam').onclick=()=>{ mode='exam'; modeLabel.textContent='EXAM'; resetAttempt(); };
+document.getElementById('btnReset').onclick=()=> resetAttempt();
 
-/* ================= remove / reset / finalize / export ================= */
-function removeLastBite(){
-  const b=bites.pop(); if(!b) return;
-  scene.remove(b.rope.line); refreshScore(); updateHeat(); ui.fb.textContent='Removed last bite.'; if(!bites.length) ui.tensionBox.style.display='none';
-}
-function clearAll(){
-  while(bites.length){ const b=bites.pop(); scene.remove(b.rope.line); }
-  entryP=null; exitP=null; step=0; activeIdx=-1; ui.tensionBox.style.display='none'; sessionStart=now(); needleGroup.clear(); updateHeat(); refreshScore();
-  ui.stepText.textContent='Click left edge (entry)'; ui.fb.textContent='—'; callouts.splice(0).forEach(c=>c.el.remove());
-}
-function finalize(){
-  if(!bites.length){ ui.fb.textContent='Place at least one bite before finishing.'; return; }
-  const s = computeScores();
-  ui.fb.innerHTML = `<span class="${s.overall>=4?'ok':s.overall>=3?'warn':'bad'}">Finished. Overall ${s.overall.toFixed(1)}/5</span>`;
-  if(ui.mode.value==='practice'){
-    if(s.overall<3.5) coachSay('Repeat focusing on angle (~60°) and symmetric depth; maintain 4–5 mm spacing; avoid overtension.');
-    else coachSay('Strong work. Try the wide wedge next, or speed challenge in Assess.');
+function setAdvice(items){
+  adviceList.innerHTML='';
+  if(!items || !items.length){ adviceList.innerHTML='<li style="opacity:.7">No advice.</li>'; return; }
+  for(const a of items){
+    const li=document.createElement('li');
+    li.textContent=a.msg;
+    li.style.color = a.level==='info' ? '#a7e3b8' : a.level==='warn' ? '#ffde84' : '#ff968a';
+    adviceList.appendChild(li);
   }
 }
-ui.exportBtn.onclick=()=>{
-  const payload={ when:new Date().toISOString(), mode:ui.mode.value, case:ui.caseSel.value,
-    bites:bites.map(b=>({ entry:b.entry, exit:b.exit, depthL:b.depthL, depthR:b.depthR, angleErr:b.angleErr, symmetry:b.symmetry, residual:b.residual, tension:b.tension })),
-    summary:computeScores(), time_s:((now()-sessionStart)/1000).toFixed(1) };
-  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='mitral_suture_session.json'; a.click(); URL.revokeObjectURL(a.href);
-};
-
-/* ================= toolbar ================= */
-function setTool(t){ tool=t; ['place','tension','remove','finish'].forEach(k=>document.getElementById('tool_'+k).classList.toggle('active',k===t)); ui.stepText.textContent=(t==='place'?'Click left edge (entry)': t==='tension'?'Select last bite then adjust tension':''); }
-ui.loadBtn.onclick=()=>{ loadCase(ui.caseSel.value); };
-ui.startBtn.onclick=()=>{ sessionStart=now(); if(ui.mode.value==='teach'){ ui.coachBox.style.display='block'; showCoach(); } if(ui.mode.value==='practice'){ ui.ghostNext.style.display='block'; } };
-ui.resetBtn.onclick=clearAll;
-ui.mode.onchange=()=>{ clearAll(); if(ui.mode.value==='teach'){ ui.coachBox.style.display='block'; showCoach(); ui.ghostNext.style.display='none'; } else if(ui.mode.value==='practice'){ ui.coachBox.style.display='none'; ui.ghostNext.style.display='block'; } else { ui.coachBox.style.display='none'; ui.ghostNext.style.display='none'; } };
-
-/* ================= render loop & resize ================= */
-function tick(){ requestAnimationFrame(tick);
-  // animate suture if an active rope exists
-  if(activeIdx>=0 && bites[activeIdx]){ const b=bites[activeIdx]; b.rope.step(); b.rope.updateLine(); }
-  controls.update(); updateCallouts(); renderer.render(scene,camera);
+function updateHUD(){
+  hudDepth.textContent = state.liveDepth? state.liveDepth.toFixed(1)+' mm' : '—';
+  hudAngle.textContent = state.liveAngle? Math.round(state.liveAngle)+'°' : '—';
+  hudTension.textContent= state.liveTension? state.liveTension.toFixed(2)+' N' : '—';
+  const pct = Math.max(0, Math.min(1, (state.liveTension||0)/1.2))*100;
+  tensionBar.style.width = pct.toFixed(0)+'%';
 }
-tick();
-window.addEventListener('resize', ()=>{ renderer.setSize(stage.clientWidth, stage.clientHeight); camera.aspect=stage.clientWidth/stage.clientHeight; camera.updateProjectionMatrix(); });
+function drawRadar(biteDepthMM, spacingMM, entryAngleDeg, tensionMaxN, score){
+  const c=document.getElementById('radar'); const ctx=c.getContext('2d');
+  ctx.clearRect(0,0,c.width,c.height);
+  const cx=140, cy=70, r=42;
+  const labels=['depth','spacing','angle','tension'];
+  function norm(k,v){
+    if(v==null) return 0;
+    if(k==='depth'||k==='spacing'){ const [lo,hi]=cfg.targets[k+'MM']; if(v>=lo&&v<=hi) return 1; const d = (v<lo)?lo-v:v-hi; return Math.max(0,1-d/1.0); }
+    if(k==='angle'){ const [lo,hi]=cfg.targets.entryAngleDeg; if(v>=lo&&v<=hi) return 1; const d=(v<lo)?lo-v:v-hi; return Math.max(0,1-d/12); }
+    if(k==='tension'){ const lim=cfg.targets.tensionMaxN; return Math.max(0, 1-(Math.max(0,v-lim)/0.5)); }
+    return 0;
+  }
+  const vals=[
+    norm('depth', biteDepthMM),
+    norm('spacing', spacingMM),
+    norm('angle', entryAngleDeg),
+    norm('tension', tensionMaxN)
+  ];
+  // grid
+  ctx.strokeStyle='#33506b'; ctx.fillStyle='rgba(127,198,255,0.15)'; ctx.lineWidth=1;
+  for(let ring=1; ring<=3; ring++){
+    ctx.beginPath();
+    for(let i=0;i<labels.length;i++){
+      const a=i/labels.length*Math.PI*2 - Math.PI/2;
+      const rr = r*ring/3, x=Math.cos(a)*rr, y=Math.sin(a)*rr;
+      if(i===0) ctx.moveTo(cx+x,cy+y); else ctx.lineTo(cx+x,cy+y);
+    }
+    ctx.closePath(); ctx.stroke();
+  }
+  // polygon
+  ctx.beginPath();
+  for(let i=0;i<labels.length;i++){
+    const a=i/labels.length*Math.PI*2 - Math.PI/2;
+    const rr = r*vals[i], x=Math.cos(a)*rr, y=Math.sin(a)*rr;
+    if(i===0) ctx.moveTo(cx+x,cy+y); else ctx.lineTo(cx+x,cy+y);
+  }
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  // labels
+  ctx.fillStyle='#9ec5ff'; ctx.font='12px system-ui';
+  for(let i=0;i<labels.length;i++){
+    const a=i/labels.length*Math.PI*2 - Math.PI/2; const x=Math.cos(a)*(r+10), y=Math.sin(a)*(r+10);
+    ctx.fillText(labels[i], cx+x-18, cy+y+4);
+  }
+  // score
+  ctx.font='bold 28px system-ui'; ctx.fillStyle='#a7e3b8';
+  ctx.fillText(isFinite(score)? String(Math.round(score)) : '—', 12, 48);
+}
 
-/* ================= boot ================= */
-function boot(){ loadCase('p2_mid'); setStatus('Ready','ok'); ui.coachFeed.textContent='Select a mode: Teaching is step‑gated; Practice gives AI Copilot; Assess scores strictly.'; }
-boot();
+/* ===== Input: move tool on left move; rotate on right drag; keys ===== */
+let leftActive=true; // follow pointer on plane if not rotating
+canvas.addEventListener('pointermove',(e)=>{
+  if(!rotating){
+    const p = intersectWorkplane(e.clientX, e.clientY, 0); // y=0
+    // smooth lerp
+    const alpha=0.35; tool.pos[0]=tool.pos[0]*(1-alpha)+p[0]*alpha; tool.pos[2]=tool.pos[2]*(1-alpha)+p[2]*alpha;
+  }
+});
+window.addEventListener('keydown',(e)=>{
+  if(e.code==='Space'){ tool.setClamp(!tool.clamped); }
+  if(e.code==='Enter'){ takeStitch(); }
+});
+function intersectWorkplane(clientX, clientY, y=0){
+  const rect = canvas.getBoundingClientRect();
+  const nx = ((clientX-rect.left)/rect.width)*2-1;
+  const ny = -(((clientY-rect.top)/rect.height)*2-1);
+  // ray from camera through NDC
+  const invViewProj = inv4(m4.mul(new Float32Array(16), U.proj, U.view)); // we need inverse; implement a tiny inv
+  // Instead of general inverse, compute ray in view-space: simpler
+  // We'll compute world ray manually:
+  const cx=U.eye[0], cy=U.eye[1], cz=U.eye[2];
+  // build camera basis from view matrix columns (inverse of view upper 3x3)
+  // From lookAt, view = [x0 y0 z0 0; x1 y1 z1 0; x2 y2 z2 0; ...]
+  const X=[U.view[0],U.view[1],U.view[2]], Y=[U.view[4],U.view[5],U.view[6]], Z=[U.view[8],U.view[9],U.view[10]];
+  // Reconstruct forward = -Z, right = X, up = Y
+  const right = v3.create(...X), up=v3.create(...Y), fwd=v3.create(-Z[0],-Z[1],-Z[2]);
+  const tanFov = Math.tan(rad(45)/2);
+  const dir = v3.create();
+  const vx = nx * tanFov * aspect, vy = ny * tanFov;
+  // Ray in camera space: normalize(fwd + vx*right + vy*up)
+  v3.set(dir, fwd[0]+vx*right[0]+vy*up[0], fwd[1]+vx*right[1]+vy*up[1], fwd[2]+vx*right[2]+vy*up[2]); v3.norm(dir,dir);
+  // Intersect with plane y=const
+  const t = (y - cy) / (dir[1]||1e-6);
+  return [cx + dir[0]*t, y, cz + dir[2]*t];
+}
+function inv4(m){ // minimal Gauss-Jordan for 4x4 (used rarely here); from small template
+  const inv=new Float32Array(16), a=new Float32Array(m); inv.set([1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]);
+  for(let i=0;i<4;i++){
+    // pivot
+    let p=i; for(let r=i+1;r<4;r++) if(Math.abs(a[r*4+i])>Math.abs(a[p*4+i])) p=r;
+    if(p!==i){ for(let c=0;c<4;c++){ const t=a[i*4+c]; a[i*4+c]=a[p*4+c]; a[p*4+c]=t; const u=inv[i*4+c]; inv[i*4+c]=inv[p*4+c]; inv[p*4+c]=u; } }
+    const f=a[i*4+i]||1e-9; for(let c=0;c<4;c++){ a[i*4+c]/=f; inv[i*4+c]/=f; }
+    for(let r=0;r<4;r++){ if(r===i) continue; const g=a[r*4+i]; for(let c=0;c<4;c++){ a[r*4+c]-=g*a[i*4+c]; inv[r*4+c]-=g*inv[i*4+c]; } }
+  }
+  return inv;
+}
+
+/* ===== Stitch metrics ===== */
+function needleTipWorld(){
+  // tip at arc start in needle local space: (radius,0,0) with our arc builder
+  const R=10; const local=[R*Math.cos(rad(-135/2)),0,R*Math.sin(rad(-135/2))];
+  const M = tool.needleLocal;
+  return mulPos(M, local[0], local[1], local[2]);
+}
+function needleForwardWorld(){
+  // forward vector ~ local +Z negative (down arc normal); we’ll use world up comparison for entry angle proxy
+  const M=tool.needleLocal;
+  const p0=mulPos(M, 0,0,0), p1=mulPos(M, 0,0,-1);
+  return v3.norm(v3.create(), v3.sub(v3.create(), p1, p0));
+}
+function nearestEdgePoint(p){
+  const x = Math.max(-leaflet.width/2, Math.min(leaflet.width/2, p[0]));
+  return [x, 0, -leaflet.depth/2];
+}
+function takeStitch(){
+  composeTool();
+  const tip = needleTipWorld();
+  const edgePt = nearestEdgePoint(tip);
+  const depth = Math.hypot(tip[0]-edgePt[0], tip[1]-edgePt[1], tip[2]-edgePt[2]);
+  const fwd = needleForwardWorld();
+  const entryAngle = deg(Math.acos(Math.max(-1, Math.min(1, fwd[1])))); // angle to +Y
+  const spacing = Math.abs(tip[0]-state.nextTargetX);
+  const distNoGo = Math.max(0, 6 - Math.abs(tip[2] + leaflet.depth/2)); // crude proxy
+  const tension = state.liveTension;
+  const stitch = {
+    biteDepthMM: depth, spacingMM: spacing,
+    entryAngleDeg: entryAngle, exitAngleDeg: entryAngle,
+    symmetryMM: 0, tensionMaxN: tension, distNoGoMM: distNoGo,
+    timeS: 10, regrips: 0, crossings: 0
+  };
+  // advice + score
+  const adv = copilot(stitch); setAdvice(adv);
+  const score = scoreStitch(stitch);
+  state.stitches.push(stitch);
+  // move target
+  advanceTarget();
+  // summarize every 3 stitches
+  if(state.stitches.length % 3 === 0){
+    const last3 = state.stitches.slice(-3);
+    const avg = last3.reduce((s,m)=>s+scoreStitch(m),0)/3;
+    sumStitches.textContent = String(state.stitches.length);
+    sumScore.textContent = String(Math.round(avg));
+    drawRadar(stitch.biteDepthMM, stitch.spacingMM, stitch.entryAngleDeg, stitch.tensionMaxN, avg);
+  }
+}
+
+/* ===== Frame loop ===== */
+let tPrev=performance.now();
+function frame(){
+  resize();
+  const now=performance.now(), dt=Math.min(0.05, (now-tPrev)/1000); tPrev=now;
+  updateCamera();
+  setFrameUniforms();
+
+  // update tool transform from input state
+  composeTool();
+
+  // Pin rope head to needle tip
+  const tip = needleTipWorld();
+  rope.p[0]=tip[0]; rope.p[1]=tip[1]; rope.p[2]=tip[2];
+
+  // integrate/project rope
+  ropeIntegrate(dt); ropeProject(6); ropeLines.update();
+
+  // tension proxy
+  const headHome=[0,60,120];
+  state.liveTension = Math.hypot(rope.p[0]-headHome[0], rope.p[1]-headHome[1], rope.p[2]-headHome[2])*0.03;
+
+  // live HUD probes
+  const edgePt = nearestEdgePoint(tip);
+  state.liveDepth = Math.hypot(tip[0]-edgePt[0], tip[1]-edgePt[1], tip[2]-edgePt[2]);
+  const fwd = needleForwardWorld();
+  state.liveAngle = deg(Math.acos(Math.max(-1, Math.min(1, fwd[1]))));
+  updateHUD();
+
+  // Clear & draw
+  gl.clearColor(0.05,0.07,0.09,1);
+  gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+
+  // Ground grid (faint)
+  // (simple two lines as reference)
+  edge.draw(m4.create(), new Float32Array([0.3,0.4,0.5]));
+
+  // Leaflet
+  const Mleaf=m4.create(); meshLeaflet.draw(Mleaf, new Float32Array([1.0,0.95,0.95]));
+
+  // Annulus
+  annulus.draw(m4.create(), new Float32Array([0.54,0.76,1.0]));
+
+  // Target marker line
+  targetLine.draw(targetModel, new Float32Array([0.4,1.0,0.7]));
+
+  // Tool (handle + jaws + needle)
+  meshHandle.draw(tool.handle, new Float32Array([0.22,0.28,0.31]));
+  meshJawL.draw(tool.jawL, new Float32Array([0.56,0.74,0.84]));
+  meshJawR.draw(tool.jawR, new Float32Array([0.56,0.74,0.84]));
+  meshNeedle.draw(tool.needleLocal, new Float32Array([0.69,0.75,0.77]));
+
+  // Rope
+  ropeLines.draw(m4.create(), new Float32Array([1,1,1]));
+
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+/* ===== Reset ===== */
+function resetAttempt(){
+  state.stitches.length=0;
+  sumStitches.textContent='0';
+  sumScore.textContent='—';
+  setAdvice([{level:'info', msg:'Session reset. Take a stitch to begin.'}]);
+  state.nextTargetX = -leaflet.width*0.45;
+  m4.translate(targetModel, m4.create(), state.nextTargetX, 0.6, -leaflet.depth/2);
+  tool.pos.set([0,40,120]); tool.rx=0; tool.ry=0; tool.clamped=false;
+  ropeInit();
+  drawRadar(NaN,NaN,NaN,NaN,NaN);
+}
+resetAttempt();
 </script>
 </body>
 </html>
