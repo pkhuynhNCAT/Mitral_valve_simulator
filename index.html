@@ -1,486 +1,405 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<title>MitralLab Pro — Realistic Web Mitral Valve Simulator (Resilient)</title>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
-<meta name="description" content="Real-time, pressure-driven mitral valve repair & replacement simulator for training and education." />
+<meta charset="utf-8">
+<title>Mitral Valve 2D — Minimal, Runs Anywhere</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-  :root{
-    --bg:#0b0f14; --panel:#0f151d; --ink:#eaf2f8; --mut:#93a7b7;
-    --good:#28c97b; --warn:#ffb020; --bad:#ff4e4e; --accent:#52e2c0;
-    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-    --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans)}
-  #app{display:grid;grid-template-columns:340px 1fr;grid-template-rows:56px 1fr 28px;height:100%;}
-  header{grid-column:1/3;grid-row:1;display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid #1e2a37;background:linear-gradient(180deg,#0e1520,#0b1218)}
-  header h1{font-size:16px;margin:0 8px 0 0;font-weight:600;letter-spacing:.3px}
-  header .tag{margin-left:auto;font-size:11px;color:#b4c9d8;border:1px solid #2a3848;padding:4px 8px;border-radius:999px}
-  #panel{grid-column:1;grid-row:2;background:var(--panel);border-right:1px solid #1d2834;padding:12px 12px 18px;overflow:auto}
-  #panel h2{font-size:12px;letter-spacing:.1em;color:#a7bed1;text-transform:uppercase;margin:14px 0 8px}
-  .group{border:1px solid #223243;background:#0c1219;border-radius:12px;padding:10px;margin-bottom:12px;box-shadow:0 8px 26px rgba(0,0,0,.35)}
-  .group label{display:block;font-size:12px;color:#a5bbcd;margin-top:8px}
-  .group input[type=range]{width:100%}
-  .group button,.group select{width:100%;padding:9px 10px;margin-top:8px;background:#101825;color:#e6f0f6;border:1px solid #233243;border-radius:8px;cursor:pointer}
-  .pill{display:inline-block;font-size:11px;color:#9fb5c0;border:1px solid #2a3948;border-radius:999px;padding:3px 8px;margin:4px 4px 0 0}
-  #view{grid-column:2;grid-row:2;position:relative;background:radial-gradient(60% 70% at 50% 50%,#0c141b 0%,#0a1016 100%)}
-  canvas{display:block}
-  #hud{position:absolute;top:10px;left:10px;right:10px;display:grid;grid-template-columns:repeat(4,minmax(220px,1fr));gap:8px;pointer-events:none}
-  .card{pointer-events:auto;background:rgba(9,14,19,.82);border:1px solid #1f2b36;border-radius:12px;padding:8px 10px;backdrop-filter:blur(6px)}
-  .kpi{display:flex;align-items:baseline;gap:8px}
-  .kpi .v{font-family:var(--mono);font-weight:700;font-size:16px}
-  .kpi small{font-size:11px;color:#86a0b3}
-  #tee{position:absolute;bottom:10px;right:10px;width:380px;height:256px;border:1px solid #203040;border-radius:12px;overflow:hidden;background:#04090e;box-shadow:0 10px 30px rgba(0,0,0,.5)}
-  #teeBar{position:absolute;bottom:6px;left:8px;right:8px;display:flex;align-items:center;gap:8px}
-  #footer{grid-column:1/3;grid-row:3;font-size:12px;color:#8dadc1;display:flex;align-items:center;padding:4px 12px;gap:10px;border-top:1px solid #1d2834}
-  .ok{color:var(--good)} .warn{color:var(--warn)} .bad{color:var(--bad)}
-  #help{position:absolute;top:64px;left:50%;transform:translateX(-50%);width:min(980px,92%);max-height:70vh;overflow:auto;z-index:20;display:none;background:#0d141c;border:1px solid #223142;border-radius:12px;padding:16px}
-  #help h3{margin:0 0 8px}
-  #help pre{background:#0a1117;border:1px solid #1e2a37;padding:10px;border-radius:8px;font-family:var(--mono);font-size:12px;overflow:auto}
-  #status{position:fixed;z-index:9999;top:8px;left:8px;background:#0e1520;border:1px solid #233243;border-radius:10px;color:#cfe8ff;padding:8px 10px;font-size:12px;box-shadow:0 8px 20px rgba(0,0,0,.35)}
-  #status.bad{border-color:#ff4e4e;color:#ffd4d4}
-  #status.ok{border-color:#28c97b;color:#d9ffe8}
+  :root{ --bg:#0b0f14; --ink:#eaf2f8; --mut:#9fb3c4; --ok:#2ed573; --warn:#ffb020; --bad:#ff4d4f; --panel:#0f151d; }
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.4 ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial}
+  #wrap{display:grid;grid-template-rows:48px 1fr 36px;height:100%}
+  header{display:flex;align-items:center;gap:12px;padding:8px 12px;background:linear-gradient(180deg,#0e1520,#0b1218);border-bottom:1px solid #182330}
+  header h1{font-size:15px;margin:0;font-weight:600}
+  #ui{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-left:auto}
+  #ui label{color:var(--mut);font-size:12px}
+  #ui input[type=range]{width:150px}
+  #ui select,#ui button{background:#101825;color:#e6f0f6;border:1px solid #223243;border-radius:8px;padding:6px 8px}
+  main{position:relative}
+  canvas{display:block;width:100%;height:100%}
+  #hud{position:absolute;top:8px;left:8px;display:grid;gap:6px}
+  .card{background:rgba(9,14,19,.8);border:1px solid #1f2b36;border-radius:8px;padding:6px 8px;backdrop-filter:blur(5px);min-width:200px}
+  .k{color:#a8bfd1;font-size:11px}
+  .v{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700}
+  footer{display:flex;align-items:center;padding:6px 10px;color:#8dadc1;border-top:1px solid #182330}
+  #status{margin-left:8px}
 </style>
 </head>
 <body>
-<div id="status">Loading 3D engine…</div>
-<div id="app" style="visibility:hidden">
+<div id="wrap">
   <header>
-    <h1>MitralLab Pro — Repair & Replacement Simulator</h1>
-    <span class="tag">pressure-driven • client-side • single-file</span>
+    <h1>Mitral Valve 2D — Minimal Simulation</h1>
+    <div id="ui">
+      <label>HR <input id="hr" type="range" min="40" max="140" value="70"></label>
+      <span id="hrV">70 bpm</span>
+      <label>ΔP_peak <input id="dP" type="range" min="40" max="140" step="5" value="100"></label>
+      <span id="dPV">100 mmHg</span>
+      <select id="case">
+        <option value="normal">Normal</option>
+        <option value="p2_flail">Degenerative — P2 flail</option>
+        <option value="functional">Functional — tethering</option>
+      </select>
+      <button id="reset">Load case</button>
+      <button id="pause">Pause</button>
+    </div>
   </header>
 
-  <aside id="panel">
-    <div class="group">
-      <h2>Case</h2>
-      <select id="caseSelect">
-        <option value="p2_flail">Degenerative MR — P2 flail</option>
-        <option value="barlow">Barlow’s disease — multi-scallop excess</option>
-        <option value="functional">Functional (ischemic) MR — tethering</option>
-      </select>
-      <div style="display:flex;gap:8px">
-        <button id="resetBtn">Load case</button>
-        <button id="startBtn">Start session</button>
-        <button id="stopBtn">Stop & export</button>
-      </div>
-      <div class="pill">Units: mm, cm², mmHg, m/s</div>
-      <div class="pill">Open via http:// (not file://). If Firefox blocks CDNs, click the shield → allow.</div>
-    </div>
-
-    <div class="group">
-      <h2>Hemodynamics</h2>
-      <label>Heart rate (bpm) <input id="hr" type="range" min="40" max="120" step="1" value="70"></label>
-      <div id="hrV" class="pill">70 bpm</div>
-      <label>LV–LA ΔP peak (mmHg) <input id="dP" type="range" min="40" max="140" step="5" value="100"></label>
-      <div id="dPV" class="pill">100 mmHg</div>
-      <label><input id="contact" type="checkbox" checked> Coaptation/contact during systole</label>
-      <label><input id="anisotropy" type="checkbox" checked> Anisotropic leaflet stiffness</label>
-    </div>
-
-    <div class="group">
-      <h2>Repair</h2>
-      <label>Neochordae (click free edge → papillary)</label>
-      <button id="neoBtn">Add neochord loop</button>
-      <label>Posterior triangular resection (P2)</label>
-      <button id="triBtn">Triangular resection</button>
-      <label>Annuloplasty ring size (mm)</label>
-      <input id="ringSize" type="range" min="24" max="40" step="1" value="32"/>
-      <div style="display:flex;gap:8px">
-        <div id="ringSizeV" class="pill">32</div>
-        <div id="ringRead" class="pill">—</div>
-      </div>
-      <label>Ring stiffness <input id="ringStiff" type="range" min="0.4" max="1.0" step="0.05" value="0.85"></label>
-      <div style="display:flex;gap:8px">
-        <button id="ringSizerBtn">Ring sizer</button>
-        <button id="ringBtn">Implant ring</button>
-      </div>
-      <button id="undoBtn">Undo last step</button>
-    </div>
-
-    <div class="group">
-      <h2>Replacement</h2>
-      <div style="display:flex;gap:8px">
-        <button id="replaceBtn">Chordal-sparing MVR</button>
-        <button id="revertBtn">Revert to native</button>
-      </div>
-    </div>
-
-    <div class="group">
-      <h2>Display</h2>
-      <label><input id="shadows" type="checkbox" checked> Shadows</label>
-      <label><input id="wire" type="checkbox"> Tissue wireframe</label>
-      <label><input id="showTEE" type="checkbox" checked> Show TEE viewport</label>
-    </div>
-
-    <div class="group">
-      <h2>Shortcuts</h2>
-      <div class="pill">Drag: rotate</div><div class="pill">Shift+Drag: pan</div><div class="pill">Wheel: zoom</div>
-      <div class="pill">1/2/3: cases</div><div class="pill">N: neochord</div><div class="pill">T: triangular</div><div class="pill">A: ring</div><div class="pill">R: reload</div><div class="pill">H: help</div>
-    </div>
-  </aside>
-
-  <main id="view">
+  <main>
+    <canvas id="cv"></canvas>
     <div id="hud">
       <div class="card">
-        <div class="kpi"><div>EROA</div><div class="v" id="eroa">0.00</div><small>cm² (per-beat)</small></div>
-        <div class="kpi"><div>Regurg. volume</div><div class="v" id="rv">0 ml</div><small>per beat</small></div>
+        <div class="k">EROA (per-beat)</div>
+        <div class="v" id="eroa">0.00 cm²</div>
       </div>
       <div class="card">
-        <div class="kpi"><div>Regurg. fraction</div><div class="v" id="rf">0%</div><small>per beat</small></div>
-        <div class="kpi"><div>MR grade</div><div class="v" id="mrGrade">None</div><small>guideline-informed</small></div>
+        <div class="k">Regurg Volume / Fraction</div>
+        <div class="v" id="rv">0.0 ml • 0%</div>
       </div>
       <div class="card">
-        <div class="kpi"><div>Ring</div><div class="v" id="ringRead2">—</div><small>mm / stiffness</small></div>
-        <div class="kpi"><div>Neochords</div><div class="v" id="neoCount">0</div></div>
+        <div class="k">Status</div>
+        <div class="v" id="simstatus">Running</div>
       </div>
-      <div class="card">
-        <div class="kpi"><div>OSATS</div><div class="v" id="osats">—</div><small>auto proxy</small></div>
-        <div style="font-size:11px;color:#8aa1b1">Time, efficiency, handling proxies</div>
-      </div>
-    </div>
-
-    <div id="tee">
-      <div id="teeBar" style="display:flex;gap:8px;align-items:center">
-        <input id="teeAngle" type="range" min="0" max="135" step="5" value="60" style="flex:1">
-        <div id="teeAngleV" class="pill">TEE: 60°</div>
-      </div>
-    </div>
-
-    <div id="help" style="display:none">
-      <h3>Controls & TEE</h3>
-      <pre>Mouse: rotate • Shift+Mouse: pan • Wheel: zoom
-1/2/3: P2 flail / Barlow / Functional MR
-N: neochord    T: triangular resection    A: implant ring
-R: reload      H: toggle help
-
-TEE (commonly used): 0° A2/P2, ~45° commissural, 60–75° LAA–P1–P2–P3, 120–135° A1–A2–P2.</pre>
     </div>
   </main>
 
-  <div id="footer">For education & training; not a medical device.</div>
+  <footer>
+    <div>Pure Canvas 2D (no WebGL/CDNs). Educational demo — not a medical device.</div>
+    <div id="status"></div>
+  </footer>
 </div>
 
-<script type="module">
-/* ----------------------------------------------------------------------------
-   0) Resilient loader + status banner + WebGL check
-   --------------------------------------------------------------------------*/
-const statusEl = document.getElementById('status');
-function setStatus(msg, cls){ statusEl.textContent = msg; statusEl.className = cls || ''; }
-function showApp(){ document.getElementById('app').style.visibility='visible'; statusEl.classList.add('ok'); setStatus('Loaded. If blank, press F12 → Console for details.','ok'); setTimeout(()=>statusEl.remove(), 2000); }
+<script>
+/* ============================== Minimal Valve 2D ============================== */
+/* Pure Canvas 2D beating valve with two deformable leaflets + chordae.        */
+/* No external libs. Designed to run on GitHub Pages and any modern browser.   */
 
-function webglAvailable(){
-  try{ const c=document.createElement('canvas'); return !!(window.WebGLRenderingContext && (c.getContext('webgl')||c.getContext('experimental-webgl'))); }
-  catch(e){ return false; }
+/* ---- Canvas setup ---- */
+const canvas = document.getElementById('cv');
+const ctx = canvas.getContext('2d');
+function resize(){ canvas.width = canvas.clientWidth; canvas.height = canvas.clientHeight; }
+window.addEventListener('resize', resize); resize();
+
+/* ---- UI elements ---- */
+const el = (id)=>document.getElementById(id);
+const hrSl = el('hr'), dPSl = el('dP'), caseSel = el('case');
+const hrV = el('hrV'), dPV = el('dPV'), eroaV = el('eroa'), rvV = el('rv');
+const statusV = el('simstatus'), statusBar = el('status');
+const btnReset = el('reset'), btnPause = el('pause');
+
+/* ---- Model constants (units: pixels ~ mm; 10 px ≈ 10 mm) ---- */
+const K = 60;                          // segments along annulus/leaflets
+const CENTER = ()=>({ x: canvas.width*0.5, y: canvas.height*0.55 });
+const R_ML = ()=>Math.min(canvas.width, canvas.height)*0.22;   // mediolateral radius
+const R_AP = ()=>Math.min(canvas.width, canvas.height)*0.17;   // anteroposterior radius
+const LEAF_LEN_ANT = 65;               // mm-ish (pixels)
+const LEAF_LEN_POST = 55;
+const DAMP = 0.04;                     // global damping
+const RAD_STIFF = 0.20;                // radial (hinge->free) stiffness
+const EDGE_STIFF = 0.12;               // neighbor smoothness
+const CHORDA_STIFF = 0.15;             // chordae stiffness
+const COAPT_GAP = 1.0;                 // minimal separation (mm-ish)
+const PRESSURE_GAIN = 0.02;            // px per mmHg per frame (tuned)
+
+/* ---- State ---- */
+let running = true;
+let HR = +hrSl.value;
+let DP = +dPSl.value;
+let CASE = caseSel.value;
+let t0 = performance.now();
+let lastBeat = t0;
+let beatLog = [];      // {eroa_cm2, rv_ml, rf}
+
+/* ---- Geometry buffers ---- */
+let hinge = new Array(K);
+let normal = new Array(K);
+let ant = { free: new Array(K), prev: new Array(K), len: LEAF_LEN_ANT, side:-1, chordIdx:[] };
+let post= { free: new Array(K), prev: new Array(K), len: LEAF_LEN_POST, side:+1, chordIdx:[] };
+let papAL, papPM;
+
+/* ---- Utility ---- */
+function lerp(a,b,t){ return a+(b-a)*t; }
+function len2(a,b){ const dx=a.x-b.x, dy=a.y-b.y; return Math.hypot(dx,dy); }
+function add(a,b){ return {x:a.x+b.x,y:a.y+b.y}; }
+function sub(a,b){ return {x:a.x-b.x,y:a.y-b.y}; }
+function mul(a,s){ return {x:a.x*s,y:a.y*s}; }
+function set(p,q){ p.x=q.x; p.y=q.y; }
+function clamp(x,a,b){ return Math.max(a,Math.min(b,x)); }
+
+/* ---- Build annulus (ellipse) + normals ---- */
+function buildAnnulus(){
+  const c = CENTER(), rx = R_ML(), ry = R_AP();
+  for(let i=0;i<K;i++){
+    const t = i/(K-1);               // arc across LV–LA line (nearly 180°)
+    const ang = lerp(-Math.PI*0.9, Math.PI*0.9, t);
+    const p = { x: c.x + rx*Math.cos(ang), y: c.y + ry*Math.sin(ang) };
+    hinge[i] = p;
+    const nvec = { x: (p.x - c.x), y: (p.y - c.y) };
+    const L = Math.hypot(nvec.x, nvec.y) || 1;
+    normal[i] = { x: nvec.x/L, y: nvec.y/L };  // outward normal
+  }
+  papAL = { x: c.x + rx*0.45, y: c.y + ry*1.4 };   // anterolateral
+  papPM = { x: c.x - rx*0.48, y: c.y + ry*1.5 };   // posteromedial
 }
-if(!webglAvailable()){
-  setStatus('WebGL not available. Update/enable graphics drivers or try another browser.', 'bad');
-  throw new Error('WebGL not available');
+
+/* ---- Initialize leaflets ---- */
+function initLeaf(side){
+  const st = (side<0) ? ant : post;
+  for(let i=0;i<K;i++){
+    const base = add(hinge[i], mul(normal[i], side * st.len));
+    st.free[i] = {x: base.x, y: base.y};
+    st.prev[i] = {x: base.x, y: base.y};
+  }
+  // chordae: every 3rd node goes to AL (left half) or PM (right half)
+  st.chordIdx = [];
+  for(let i=0;i<K;i+=3){
+    st.chordIdx.push(i);
+  }
 }
 
-// Try multiple CDNs for THREE + OrbitControls
-async function loadThree(){
-  const tries = [
-    async ()=>({ THREE: await import('https://unpkg.com/three@0.160.0/build/three.module.js'),
-                 OrbitControls: (await import('https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js')).OrbitControls }),
-    async ()=>({ THREE: await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js'),
-                 OrbitControls: (await import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js')).OrbitControls }),
-    async ()=>({ THREE: await import('https://esm.sh/three@0.160.0'),
-                 OrbitControls: (await import('https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls.js')).OrbitControls }),
-    async ()=>({ THREE: await import('https://cdn.skypack.dev/three@0.160.0'),
-                 OrbitControls: (await import('https://cdn.skypack.dev/three@0.160.0/examples/jsm/controls/OrbitControls.js')).OrbitControls }),
-  ];
-  let lastErr=null;
-  for(const attempt of tries){
-    try{ return await attempt(); } catch(e){ lastErr=e; }
+/* ---- Apply pathology presets ---- */
+function applyCase(){
+  // Reset geometry
+  buildAnnulus();
+  initLeaf(-1); // anterior
+  initLeaf(+1); // posterior
+
+  if(CASE === 'p2_flail'){
+    // "Cut" a band of posterior chordae around center
+    const mid = Math.floor(K/2), span = Math.floor(K*0.12);
+    for(let i=mid-span;i<=mid+span;i++){
+      // Move that free point farther out (flail) and weaken neighbor coupling
+      post.free[i].y += 15;
+      post.prev[i].y += 15;
+      // Remove its chordae by not treating it as chordIdx
+    }
+    // Filter chordae indices to exclude the flail region
+    post.chordIdx = post.chordIdx.filter(i => i < mid-span || i > mid+span);
+  } else if(CASE === 'functional'){
+    // Shift papillary points apically and dilate the annulus slightly
+    const c = CENTER(); const scale = 1.10;
+    for(let i=0;i<K;i++){
+      hinge[i] = add(c, mul(sub(hinge[i], c), scale));
+      normal[i] = mul(normal[i], 1); // recalc not needed since direction preserved
+    }
+    papAL.y += 18; papPM.y += 22; papAL.x += 6; papPM.x -= 6;
+    // Tethering effect: increase posterior leaflet rest length a little
+    post.len += 6;
   }
-  throw lastErr || new Error('Failed to load THREE from all CDNs');
 }
 
-setStatus('Loading 3D engine (with CDN fallbacks)…');
-const {THREE, OrbitControls} = await loadThree().catch(e=>{
-  console.error(e);
-  setStatus('Could not load the 3D engine. If you are offline or a blocker is active, allow one of: unpkg, jsDelivr, esm.sh, Skypack.', 'bad');
-  throw e;
-});
-showApp();
-
-/* ----------------------------------------------------------------------------
-   1) Simulator (identical physics/UX as before, with small robustness tweaks)
-   --------------------------------------------------------------------------*/
-const mm = v=>v, cm2 = mm2=>mm2/100.0, clamp=(x,a,b)=>Math.max(a,Math.min(b,x)), lerp=(a,b,t)=>a+(b-a)*t;
-const TAU = Math.PI*2, MMHG_TO_PA=133.322, RHO_BLOOD=1060, MS_PER_MIN=60000;
-
-function toast(msg,cls=''){ const f=document.getElementById('footer'); f.innerHTML = `<span class="${cls}">${msg}</span>`; clearTimeout(toast._t); toast._t=setTimeout(()=>f.textContent='For education & training; not a medical device.', 4000); }
-const info=t=>toast(t,''), warn=t=>toast(t,'warn'), ok=t=>toast(t,'ok');
-
-class PBD{
-  constructor(){ this.nodes=[]; this.constraints=[]; this.contacts=[]; this.gravity=new THREE.Vector3(0,-0.12,0); this.substeps=5; this.iterations=18; this.globalDamping=0.02; }
-  node(pos,invMass=1){ return this.nodes.push({p:pos.clone(),prev:pos.clone(),invMass,pinned:invMass===0})-1; }
-  addDistance(i,j,rest,stiff=1){ this.constraints.push({i,j,rest,stiff}); }
-  addContact(i,j,rest=0,stiff=1){ this.contacts.push({i,j,rest,stiff}); }
-  integrate(dt){ for(const n of this.nodes){ if(n.pinned) continue; const vel=n.p.clone().sub(n.prev).multiplyScalar(1-this.globalDamping); n.prev.copy(n.p); vel.addScaledVector(this.gravity,dt); n.p.add(vel);} }
-  solve(){ for(let k=0;k<this.iterations;k++){ for(const c of this.constraints) this._solveDistance(c); for(const c of this.contacts) this._solveDistance(c);} this.contacts.length=0; }
-  _solveDistance(c){ const a=this.nodes[c.i], b=this.nodes[c.j], delta=a.p.clone().sub(b.p); const len=delta.length()||1e-6; const diff=(len-c.rest)/len; const w1=a.invMass, w2=b.invMass, w=w1+w2; if(!w) return; const corr=delta.multiplyScalar(c.stiff*diff); if(!a.pinned) a.p.addScaledVector(corr,-w1/w); if(!b.pinned) b.p.addScaledVector(corr, w2/w); }
+/* ---- Heart cycle (ΔP over time) ---- */
+function beatPeriodMs(){ return 60000/HR; }
+function dP_mmHg(timeMs){
+  const T = beatPeriodMs(); const t = (timeMs % T)/T;
+  const syst = 0.38;
+  if(t < syst){ const x = t/syst; return DP * Math.sin(Math.PI*x); } // half-sine up/down
+  const d = (t - syst) / (1 - syst);
+  return -8 * (1 - Math.cos(Math.PI*d)) * 0.5; // small negative diastolic suction
 }
 
-class ValveSim{
-  constructor(scene){
-    this.scene=scene; this.pbd=new PBD(); this.frameId=0;
-    this.enableCoaptation=true; this.enableAnisotropy=true;
-    this.annulus=null; this.anterior=null; this.posterior=null; this.ring=null; this.mech=null;
-    this.pap={AL:new THREE.Vector3(+mm(15),-mm(36),+mm(15)), PM:new THREE.Vector3(-mm(18),-mm(40),-mm(18))};
-    this.case='p2_flail'; this.neochords=0; this.triangular=false; this.ringSize=32; this.ringStiff=0.85; this.ringImplanted=false; this.replacement=false;
-    this.hr=70; this.dPpeak=100; this.t0=performance.now(); this.beatIdx=0; this.lastBeatAt=this.t0; this.beatLog=[]; this.eroa_mm2_acc=0; this.eroa_samples=0; this.rv_ml_acc=0;
-    this._statics(); this.resetCase('p2_flail');
-  }
-  _statics(){
-    const hemi=new THREE.HemisphereLight(0xaad4ff,0x0a0d10,0.8);
-    const key=new THREE.DirectionalLight(0xffffff,1.05); key.position.set(180,220,160); key.castShadow=true;
-    const fill=new THREE.DirectionalLight(0x99bbff,0.35); fill.position.set(-160,40,-80);
-    this.scene.add(hemi,key,fill);
-    const floor=new THREE.Mesh(new THREE.CircleGeometry(800,64), new THREE.MeshStandardMaterial({color:0x0b1219,metalness:0.2,roughness:0.9}));
-    floor.rotation.x=-Math.PI/2; floor.receiveShadow=true; this.scene.add(floor);
-    const pmMat=new THREE.MeshStandardMaterial({color:0x3e566e,metalness:0.55,roughness:0.45});
-    this.pmAL=new THREE.Mesh(new THREE.SphereGeometry(2.8),pmMat); this.pmAL.position.copy(this.pap.AL);
-    this.pmPM=new THREE.Mesh(new THREE.SphereGeometry(2.8),pmMat); this.pmPM.position.copy(this.pap.PM);
-    this.scene.add(this.pmAL,this.pmPM);
-  }
-  dAnn(Rlat=mm(18),Rantr=mm(15),saddle=mm(6),res=80){ const pts=[]; for(let i=0;i<res;i++){ const t=i/(res), th=t*TAU, w=(Math.cos(th)>0)?0.5:1.0; const rX=lerp(Rantr,Rlat,w), rZ=Rlat; const x=rX*Math.cos(th), z=rZ*Math.sin(th), y=saddle*Math.cos(2*th); pts.push(new THREE.Vector3(x,y,z)); } return pts; }
-  resetCase(kind){
-    for(let i=this.scene.children.length-1;i>=0;i--){ const o=this.scene.children[i]; if(['annulus','ring','mechanical','leaflet'].includes(o.name)) this.scene.remove(o); }
-    this.pbd.nodes.length=0; this.pbd.constraints.length=0; this.pbd.contacts.length=0;
-    this.annPts=this.dAnn(); this.annIdx=this.annPts.map(p=>this.pbd.node(p.clone(),0));
-    let annGeo=new THREE.TubeGeometry(new THREE.CatmullRomCurve3(this.annPts,true), this.annPts.length, 1.5, 16, true);
-    this.annulus=new THREE.Mesh(annGeo,new THREE.MeshStandardMaterial({color:0x95a9c4,metalness:.45,roughness:.35})); this.annulus.name='annulus'; this.annulus.castShadow=this.annulus.receiveShadow=true; this.scene.add(this.annulus);
-    this.anterior=this._leaf('anterior'); this.posterior=this._leaf('posterior'); this._addChordae(this.anterior); this._addChordae(this.posterior);
-    if(kind==='p2_flail'){ this._damageP(0.35,0.65); }
-    else if(kind==='barlow'){ this._elong(this.anterior,1.12); this._elong(this.posterior,1.14); }
-    else if(kind==='functional'){
-      this.pap.AL.add(new THREE.Vector3(+2,-7,+1)); this.pap.PM.add(new THREE.Vector3(-3,-9,-2)); this.pmAL.position.copy(this.pap.AL); this.pmPM.position.copy(this.pap.PM);
-      const s=1.12; for(let i=0;i<this.annPts.length;i++) this.annPts[i].multiplyScalar(s);
-      this.scene.remove(this.annulus); annGeo=new THREE.TubeGeometry(new THREE.CatmullRomCurve3(this.annPts,true), this.annPts.length,1.5,16,true);
-      this.annulus=new THREE.Mesh(annGeo,new THREE.MeshStandardMaterial({color:0x95a9c4,metalness:.45,roughness:.35})); this.annulus.name='annulus'; this.scene.add(this.annulus);
-      this.scene.remove(this.anterior); this.scene.remove(this.posterior); this.anterior=this._leaf('anterior'); this.posterior=this._leaf('posterior'); this._addChordae(this.anterior); this._addChordae(this.posterior);
+/* ---- Physics step (Verlet + positional corrections) ---- */
+function step(dt){
+  const now = performance.now();
+  const dP = dP_mmHg(now);
+  const Ppush = PRESSURE_GAIN * dP;
+
+  function integrateLeaf(st){
+    for(let i=0;i<K;i++){
+      const p = st.free[i], prev = st.prev[i];
+
+      // Verlet integration with global damping
+      const vx = (p.x - prev.x) * (1 - DAMP);
+      const vy = (p.y - prev.y) * (1 - DAMP);
+      prev.x = p.x; prev.y = p.y;
+
+      // Pressure drives leaflets inward during systole, outward during diastole
+      // Direction: -side * normal (so both move towards hinge when dP > 0)
+      const dir = mul(normal[i], -st.side * Ppush);
+
+      p.x += vx + dir.x;
+      p.y += vy + dir.y;
+
+      // Radial spring towards (hinge + side*len*normal)
+      const target = add(hinge[i], mul(normal[i], st.side * st.len));
+      p.x += (target.x - p.x) * RAD_STIFF;
+      p.y += (target.y - p.y) * RAD_STIFF;
     }
-    this.case=kind; this.neochords=0; this.triangular=false; this.ringImplanted=false; this.replacement=false; this.ring=null; this.mech=null;
-    this.beatLog.length=0; this.beatIdx=0; this.eroa_mm2_acc=0; this.eroa_samples=0; this.rv_ml_acc=0;
-  }
-  _leaf(which){
-    const cols=42, rows=18, nodes=[], idx=(r,c)=>nodes[r*cols+c];
-    const start=(which==='anterior')?Math.floor(this.annPts.length*0.05):Math.floor(this.annPts.length*0.55);
-    const end  =(which==='anterior')?Math.floor(this.annPts.length*0.55):Math.floor(this.annPts.length*0.98);
-    const arc=(end-start+this.annPts.length)%this.annPts.length, ann=i=>this.annPts[(start+i)%this.annPts.length];
-    for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
-      const t=c/(cols-1), aIdx=Math.floor(t*arc), hinge=ann(aIdx), nxt=ann((aIdx+1)%this.annPts.length), prv=ann((aIdx-1+this.annPts.length)%this.annPts.length);
-      const tangent=nxt.clone().sub(prv).normalize(), up=new THREE.Vector3(0,1,0), n=new THREE.Vector3().crossVectors(tangent,up).normalize();
-      const length=which==='anterior'?mm(18):mm(15), v=r/(rows-1), offset=n.clone().multiplyScalar(lerp(0,length,v)).addScaledVector(up,lerp(0,-mm(2),Math.sin(Math.PI*v)));
-      const pos=hinge.clone().add(offset), invMass=(r===0)?0:1; nodes.push(this.pbd.node(pos,invMass));
+
+    // Edge smoothness (neighbor coupling)
+    for(let i=1;i<K-1;i++){
+      const p = st.free[i], a = st.free[i-1], b = st.free[i+1];
+      p.x += ((a.x + b.x)/2 - p.x) * EDGE_STIFF;
+      p.y += ((a.y + b.y)/2 - p.y) * EDGE_STIFF;
     }
-    const stiffChord=this.enableAnisotropy?0.95:0.90, stiffRadial=this.enableAnisotropy?0.80:0.90, stiffShear=0.72;
-    const rest=(i,j)=>this.pbd.nodes[i].p.distanceTo(this.pbd.nodes[j].p), add=(i,j,s)=>this.pbd.addDistance(i,j,rest(i,j),s);
-    for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){ const id=idx(r,c);
-      if(c+1<cols) add(id,idx(r,c+1),stiffChord);
-      if(r+1<rows) add(id,idx(r+1,c),stiffRadial);
-      if(r+1<rows&&c+1<cols) add(id,idx(r+1,c+1),stiffShear);
-      if(r+1<rows&&c-1>=0)   add(id,idx(r+1,c-1),stiffShear);
-      if(c+2<cols) add(id,idx(r,c+2),0.35);
-      if(r+2<rows) add(id,idx(r+2,c),0.35);
-    }
-    const geom=new THREE.BufferGeometry(), posArr=new Float32Array(rows*cols*3), uvs=new Float32Array(rows*cols*2);
-    geom.setAttribute('position', new THREE.BufferAttribute(posArr,3)); geom.setAttribute('uv', new THREE.BufferAttribute(uvs,2));
-    const indices=[]; for(let r=0;r<rows-1;r++)for(let c=0;c<cols-1;c++){ const a=r*cols+c,b=a+1,d=a+cols,e=d+1; indices.push(a,d,b, b,d,e); }
-    geom.setIndex(indices);
-    const mat=new THREE.MeshStandardMaterial({color:which==='anterior'?0xf9fbff:0xf0f5ff, roughness:.75, metalness:.06, transparent:true, opacity:.98});
-    const mesh=new THREE.Mesh(geom,mat); mesh.castShadow=mesh.receiveShadow=true; mesh.name='leaflet'; mesh.userData={nodes,rows,cols,which}; this.scene.add(mesh); return mesh;
-  }
-  _addChordae(leaf){ const {rows,cols,nodes}=leaf.userData, free=rows-1; for(let c=0;c<cols;c+=2){ const vId=nodes[free*cols+c], anchor=(c<cols/2)?this.pap.AL:this.pap.PM, pId=this.pbd.node(anchor.clone(),0); const rest=this.pbd.nodes[vId].p.distanceTo(this.pbd.nodes[pId].p)*0.985; this.pbd.addDistance(vId,pId,rest,1.0);} }
-  _damageP(uMin,uMax){ const {rows,cols,nodes}=this.posterior.userData, free=rows-1; for(let c=0;c<cols;c++){ const u=c/(cols-1); if(u>=uMin&&u<=uMax){ const id=nodes[free*cols+c]; for(const con of this.pbd.constraints){ if((con.i===id||con.j===id)&&con.rest>mm(15)) con.rest*=1.5; } } } }
-  _elong(leaf,f){ const {rows,cols,nodes}=leaf.userData, free=rows-1; for(let c=0;c<cols;c++){ const id=nodes[free*cols+c]; for(const con of this.pbd.constraints){ if((con.i===id||con.j===id)&&con.rest>mm(15)) con.rest*=f; } } }
-  triangularResection(){ if(this.triangular) return warn('Triangular already done.'); const m=this.posterior.userData, free=m.rows-1, mid=Math.floor(m.cols*0.5), span=Math.floor(m.cols*0.1);
-    for(let c=mid-span;c<=mid+span;c++){ const id=m.nodes[free*m.cols+c]; for(const con of this.pbd.constraints){ if((con.i===id||con.j===id)&&con.rest<mm(15)) con.rest*=0.72; } }
-    this.triangular=true; ok('Posterior triangular resection simulated.');
-  }
-  implantRing(size,stiff=0.85){
-    if(this.ringImplanted) return warn('Ring already implanted.'); this.ringSize=size; this.ringStiff=stiff;
-    const scale=size/32, target=this.dAnn(mm(18)*scale,mm(15)*scale,mm(6)*scale,this.annPts.length);
-    for(let i=0;i<this.annPts.length;i++){ const p=target[i]; this.annPts[i].copy(p); const id=this.annIdx[i], n=this.pbd.nodes[id]; n.p.copy(p); n.prev.copy(p); }
-    if(this.ring) this.scene.remove(this.ring);
-    const geo=new THREE.TubeGeometry(new THREE.CatmullRomCurve3(target,true),target.length,1.6,24,true);
-    this.ring=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:0x88e1c1,metalness:.55,roughness:.35})); this.ring.name='ring'; this.ring.castShadow=this.ring.receiveShadow=true; this.scene.add(this.ring);
-    for(let i=0;i<this.annIdx.length;i++){ const a=this.annIdx[i], b=this.annIdx[(i+1)%this.annIdx.length]; this.pbd.addDistance(a,b, this.pbd.nodes[a].p.distanceTo(this.pbd.nodes[b].p), stiff); }
-    this.ringImplanted=true; ok('Annuloplasty ring implanted.');
-  }
-  chordalSparingMVR(){ if(this.replacement) return warn('Replacement already active.'); if(this.anterior) this.scene.remove(this.anterior); if(this.posterior) this.scene.remove(this.posterior);
-    const size=this.ringSize, r=size*0.5, group=new THREE.Group(); group.name='mechanical';
-    const body=new THREE.Mesh(new THREE.TorusGeometry(r,2.3,24,64), new THREE.MeshStandardMaterial({color:0x556677,metalness:.8,roughness:.3})); body.rotation.x=Math.PI/2; body.castShadow=true; group.add(body);
-    const flapG=new THREE.CylinderGeometry(r-3,r-3,1.4,64,1,true);
-    for(let i=0;i<2;i++){ const flap=new THREE.Mesh(flapG,new THREE.MeshStandardMaterial({color:0xa0afbf,metalness:.6,roughness:.25})); flap.rotation.z=i?-0.38:0.38; flap.position.y=0.7*i; group.add(flap); }
-    this.mech=group; this.scene.add(group); this.replacement=true; info('Chordal-sparing MVR on.');
-  }
-  revertToNative(){ if(!this.replacement) return; if(this.mech){this.scene.remove(this.mech); this.mech=null;} this.resetCase(this.case); this.replacement=false; ok('Reverted to native.'); }
-  cycleTime(){ return (performance.now()-this.t0); } beatPeriodMs(){ return MS_PER_MIN/this.hr; } systoleFrac(){ return 0.38; }
-  transvalvularPressure_mmHg(tMs){ const T=this.beatPeriodMs(), t=(tMs%T)/T, sys=this.systoleFrac(); if(t<sys){ const x=t/sys, env=Math.sin(Math.PI*x); return this.dPpeak*env; } else { const d=(t-sys)/(1-sys); return -8*(1-Math.cos(Math.PI*d))*0.5; } }
-  applyPressureForces(dt){
-    if(!this.anterior||!this.posterior) return; const dPmmHg=this.transvalvularPressure_mmHg(this.cycleTime()), dP=dPmmHg*MMHG_TO_PA;
-    for(const mesh of [this.anterior,this.posterior]){
-      const {nodes,rows,cols}=mesh.userData, posAttr=mesh.geometry.getAttribute('position');
-      for(let i=0;i<nodes.length;i++){ const p=this.pbd.nodes[nodes[i]].p; posAttr.setXYZ(i,p.x,p.y,p.z); }
-      const addF=(ia,ib,ic)=>{ const a=this.pbd.nodes[nodes[ia]], b=this.pbd.nodes[nodes[ib]], c=this.pbd.nodes[nodes[ic]];
-        const ab=b.p.clone().sub(a.p), ac=c.p.clone().sub(a.p), n=new THREE.Vector3().crossVectors(ab,ac); const area=0.5*n.length(); if(area<1e-6) return; n.normalize();
-        const F=n.multiplyScalar(dP*area*1e-6); if(!a.pinned) a.p.addScaledVector(F,dt*0.8); if(!b.pinned) b.p.addScaledVector(F,dt*0.8); if(!c.pinned) c.p.addScaledVector(F,dt*0.8);
-      };
-      for(let r=0;r<rows-1;r++)for(let c=0;c<cols-1;c++){ const a=r*cols+c,b=a+1,d=a+cols,e=d+1; addF(a,d,b); addF(b,d,e); }
-    }
-  }
-  buildCoaptationContacts(){
-    if(!this.enableCoaptation) return; const sys=this.transvalvularPressure_mmHg(this.cycleTime())>2; if(!sys) return;
-    const A=this.anterior.userData, P=this.posterior.userData, cols=Math.min(A.cols,P.cols), fA=A.rows-1, fP=P.rows-1;
-    for(let c=0;c<cols;c++){ const a=A.nodes[fA*A.cols+c], p=P.nodes[fP*P.cols+c]; const da=this.pbd.nodes[a].p, dp=this.pbd.nodes[p].p, d=da.distanceTo(dp), target=0.6; if(d<target){ this.pbd.addContact(a,p,target,0.9); } }
-  }
-  instantEROA_mm2(){ if(!this.anterior||!this.posterior) return 0; const a=this.anterior.userData, p=this.posterior.userData, cols=Math.min(a.cols,p.cols), fA=a.rows-1, fP=p.rows-1; let area=0; const span=0.9;
-    for(let c=0;c<cols;c++){ const idA=a.nodes[fA*a.cols+c], idP=p.nodes[fP*p.cols+c]; const d=this.pbd.nodes[idA].p.distanceTo(this.pbd.nodes[idP].p), gap=Math.max(0,d-1.0); area += gap*span; }
-    return area;
-  }
-  integrateBeat(dt){
-    const dPmmHg=this.transvalvularPressure_mmHg(this.cycleTime()), eroa_mm2=this.instantEROA_mm2(), v_ms=dPmmHg>0?Math.sqrt(Math.max(0,dPmmHg)/4):0, flow_ml_s=cm2(eroa_mm2)*(v_ms*100);
-    if(dPmmHg>2){ this.eroa_mm2_acc+=eroa_mm2; this.eroa_samples+=1; this.rv_ml_acc += flow_ml_s*dt; }
-    const now=performance.now(), T=this.beatPeriodMs();
-    if(now-this.lastBeatAt>=T){
-      const avg_eroa_mm2=this.eroa_samples? (this.eroa_mm2_acc/this.eroa_samples):0, eroa_cm2=cm2(avg_eroa_mm2), rv_ml=this.rv_ml_acc;
-      const CO_ml_min=4500*clamp(this.dPpeak/100,0.7,1.3), SV_ml=CO_ml_min/this.hr, rf=clamp((SV_ml>0)?(rv_ml/SV_ml*100):0,0,95);
-      const severe=(this.case==='functional')?0.20:0.40; let grade='None'; if(eroa_cm2<0.10) grade='None'; else if(eroa_cm2<0.20) grade='Mild'; else if(eroa_cm2<severe) grade='Moderate'; else grade='Severe';
-      this.beatLog.push({beat:++this.beatIdx, eroa_cm2, rv_ml, rf, grade}); this.eroa_mm2_acc=0; this.eroa_samples=0; this.rv_ml_acc=0; this.lastBeatAt+=T;
-      document.getElementById('eroa').textContent=eroa_cm2.toFixed(2); document.getElementById('rv').textContent=rv_ml.toFixed(1)+' ml';
-      document.getElementById('rf').textContent=Math.round(rf)+'%'; document.getElementById('mrGrade').textContent=grade;
+
+    // Chordae to papillary muscles
+    for(const idx of st.chordIdx){
+      const p = st.free[idx];
+      const anchor = (idx < K/2) ? papAL : papPM;
+      const d = sub(anchor, p);
+      const L = Math.hypot(d.x, d.y) || 1;
+      // Desired chord length is current; just pull slightly toward anchor (tension)
+      const pull = CHORDA_STIFF;
+      p.x += (d.x / L) * pull * 6;   // 6 px nominal
+      p.y += (d.y / L) * pull * 6;
     }
   }
-  step(dt){
-    this.applyPressureForces(dt); this.pbd.integrate(dt); this.buildCoaptationContacts(); this.pbd.solve();
-    for(const m of this.scene.children){ if(m.isMesh && m.name==='leaflet'){ const {nodes}=m.userData, pos=m.geometry.getAttribute('position'); for(let i=0;i<nodes.length;i++){ const p=this.pbd.nodes[nodes[i]].p; pos.setXYZ(i,p.x,p.y,p.z);} pos.needsUpdate=true; if((this.frameId++%3)===0) m.geometry.computeVertexNormals(); } }
-    this.integrateBeat(dt);
+
+  // Integrate both leaflets
+  integrateLeaf(ant); integrateLeaf(post);
+
+  // Coaptation contact: keep a minimal gap (prevents interpenetration)
+  for(let i=0;i<K;i++){
+    const A = ant.free[i], P = post.free[i];
+    const d = sub(P, A);
+    const L = Math.hypot(d.x, d.y) || 1;
+    const gap = L - COAPT_GAP;
+    if(gap < 0){
+      // Move both half the correction along the line
+      const corr = (COAPT_GAP - L) * 0.5;
+      const ux = d.x / L, uy = d.y / L;
+      A.x -= ux * corr; A.y -= uy * corr;
+      P.x += ux * corr; P.y += uy * corr;
+    }
+  }
+
+  // Per-beat metrics (EROA & regurg stats)
+  accumulateBeatMetrics(dP, dt);
+}
+
+/* ---- Metrics ---- */
+let eroaAcc_mm2 = 0, eroaN = 0, rv_ml_acc = 0;
+function accumulateBeatMetrics(dP, dt){
+  // EROA estimate: sum positive gaps between free edges along arc
+  let area_mm2 = 0;
+  for(let i=0;i<K;i++){
+    const A = ant.free[i], P = post.free[i];
+    const L = len2(A, P);
+    const gap = Math.max(0, L - 1.0); // 1 mm tolerance for "coapted" line
+    // Arc spacing in mm-ish (approx)
+    const s = (R_ML()*Math.PI*1.8) / (K-1) / (Math.min(canvas.width, canvas.height)/300*10); // rough normalization
+    area_mm2 += gap * s;
+  }
+  const eroa_cm2_inst = area_mm2 / 100.0;
+
+  // Jet velocity from echo rule: ΔP ≈ 4 v^2 → v ≈ sqrt(ΔP/4) m/s
+  const v_ms = dP>0 ? Math.sqrt(Math.max(0, dP)/4) : 0;
+  const flow_ml_s = eroa_cm2_inst * (v_ms * 100); // (cm² * cm/s) = ml/s
+
+  // Accumulate during systole (dP>0)
+  if(dP > 2){
+    eroaAcc_mm2 += area_mm2;
+    eroaN += 1;
+    rv_ml_acc += flow_ml_s * dt;
+  }
+
+  // Beat boundary
+  const now = performance.now();
+  if(now - lastBeat >= beatPeriodMs()){
+    const eroa_cm2 = (eroaN>0) ? (eroaAcc_mm2/eroaN)/100.0 : 0;
+    const rv_ml = rv_ml_acc;
+    // Stroke volume ~ 4.5 L/min scaled by ΔP, crude; RF = RV/SV
+    const CO_ml_min = 4500 * clamp(DP/100, 0.7, 1.3);
+    const SV_ml = CO_ml_min / HR;
+    const rf = clamp(SV_ml ? (rv_ml/SV_ml*100) : 0, 0, 95);
+
+    beatLog.push({ eroa_cm2, rv_ml, rf });
+    if(beatLog.length > 8) beatLog.shift();
+
+    eroaV.textContent = eroa_cm2.toFixed(2) + ' cm²';
+    rvV.textContent   = rv_ml.toFixed(1) + ' ml • ' + Math.round(rf) + '%';
+
+    eroaAcc_mm2 = 0; eroaN = 0; rv_ml_acc = 0; lastBeat += beatPeriodMs();
   }
 }
 
-/* ----------------------------------------------------------------------------
-   2) App bootstrap + resilient UX
-   --------------------------------------------------------------------------*/
-const viewEl=document.getElementById('view'), teeEl=document.getElementById('tee');
-const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'}); renderer.setSize(viewEl.clientWidth,viewEl.clientHeight); renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1)); renderer.shadowMap.enabled=true; viewEl.appendChild(renderer.domElement);
-const teeRenderer=new THREE.WebGLRenderer({antialias:false,alpha:true}); teeRenderer.setSize(teeEl.clientWidth,teeEl.clientHeight); teeRenderer.setPixelRatio(1); teeEl.appendChild(teeRenderer.domElement);
-const scene=new THREE.Scene(); scene.background=new THREE.Color(0x0b1016);
-const camera=new THREE.PerspectiveCamera(50, viewEl.clientWidth/viewEl.clientHeight, 0.1, 5000); camera.position.set(0,110,240);
-const controls=new OrbitControls(camera, renderer.domElement); controls.enableDamping=true; controls.dampingFactor=0.05; controls.minDistance=120; controls.maxDistance=420;
+/* ---- Render ---- */
+function draw(){
+  const w=canvas.width, h=canvas.height;
+  ctx.clearRect(0,0,w,h);
 
-const sim=new ValveSim(scene);
+  // Backdrop grid
+  ctx.save();
+  ctx.strokeStyle = '#14202a';
+  ctx.lineWidth = 1;
+  for(let x=0;x<w;x+=40){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
+  for(let y=0;y<h;y+=40){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
+  ctx.restore();
 
-/* TEE viewport */
-const teeCam=new THREE.PerspectiveCamera(52, teeEl.clientWidth/teeEl.clientHeight, 2, 2000); teeCam.position.set(0,+40,+140); teeCam.lookAt(0,0,0);
-const teeAngle=document.getElementById('teeAngle'), teeAngleV=document.getElementById('teeAngleV');
-teeAngle.oninput=()=>{ const deg=+teeAngle.value; teeAngleV.textContent=`TEE: ${deg}°`; const rad=THREE.MathUtils.degToRad(deg), R=160; teeCam.position.set(Math.sin(rad)*R,40,Math.cos(rad)*R); teeCam.lookAt(new THREE.Vector3(0,0,0)); };
-scene.fog=new THREE.FogExp2(0x0a1016,0.00035);
+  // Annulus
+  ctx.save();
+  ctx.strokeStyle = '#95a9c4';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(hinge[0].x, hinge[0].y);
+  for(let i=1;i<K;i++) ctx.lineTo(hinge[i].x, hinge[i].y);
+  ctx.stroke();
+  ctx.restore();
 
-/* Picking for tools */
-const ray=new THREE.Raycaster(), mouse=new THREE.Vector2();
-viewEl.addEventListener('mousemove',(e)=>{ const r=viewEl.getBoundingClientRect(); mouse.x=((e.clientX-r.left)/r.width)*2-1; mouse.y=-((e.clientY-r.top)/r.height)*2+1; });
-function pickLeafVertex(){ ray.setFromCamera(mouse,camera); const targets=scene.children.filter(o=>o.isMesh&&o.name==='leaflet'); const hits=ray.intersectObjects(targets,false); if(!hits.length) return null; const m=hits[0].object, tri=[hits[0].face.a,hits[0].face.b,hits[0].face.c]; let best=tri[0],d=1e9; for(const i of tri){ const v=new THREE.Vector3().fromBufferAttribute(m.geometry.getAttribute('position'), i); const wp=m.localToWorld(v.clone()); const dist=hits[0].point.distanceTo(wp); if(dist<d){d=dist;best=i;} } const nodeId=m.userData.nodes[best]; return {mesh:m,nodeId,point:hits[0].point.clone()}; }
+  // Leaflet fills (posterior then anterior)
+  function fillLeaf(leaf, color){
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(hinge[0].x, hinge[0].y);
+    for(let i=1;i<K;i++) ctx.lineTo(hinge[i].x, hinge[i].y);
+    for(let i=K-1;i>=0;i--) ctx.lineTo(leaf.free[i].x, leaf.free[i].y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+  fillLeaf(post, 'rgba(240,248,255,0.95)');
+  fillLeaf(ant , 'rgba(230,235,255,0.92)');
 
-/* UI */
-const ui={ caseSelect:qs('#caseSelect'), resetBtn:qs('#resetBtn'), startBtn:qs('#startBtn'), stopBtn:qs('#stopBtn'), neoBtn:qs('#neoBtn'), triBtn:qs('#triBtn'), ringSize:qs('#ringSize'), ringSizeV:qs('#ringSizeV'), ringRead:qs('#ringRead'), ringRead2:qs('#ringRead2'), ringBtn:qs('#ringBtn'), ringStiff:qs('#ringStiff'), ringSizerBtn:qs('#ringSizerBtn'), undoBtn:qs('#undoBtn'), replaceBtn:qs('#replaceBtn'), revertBtn:qs('#revertBtn'), hr:qs('#hr'), hrV:qs('#hrV'), dP:qs('#dP'), dPV:qs('#dPV'), contact:qs('#contact'), anisotropy:qs('#anisotropy'), showTEE:qs('#showTEE'), shadows:qs('#shadows'), wire:qs('#wire'), osats:qs('#osats'), neoCount:qs('#neoCount'), helpBtn:qs('#helpBtn') };
-function qs(s){return document.querySelector(s)}
-let running=true; // auto-start so you SEE motion immediately
-let startedAt=performance.now(), actionLog=[], history=[];
-function updateHUD(){ ui.ringSizeV.textContent=sim.ringSize+''; ui.ringRead.textContent=sim.ringImplanted?`${sim.ringSize} mm`:'—'; ui.ringRead2.textContent=sim.ringImplanted?`${sim.ringSize} / ${sim.ringStiff.toFixed(2)}`:'—'; ui.neoCount.textContent=sim.neochords+''; }
-
-ui.resetBtn.onclick=()=>{ sim.resetCase(ui.caseSelect.value); history.push({op:'reset',case:ui.caseSelect.value}); updateHUD(); info('Case loaded.'); };
-ui.startBtn.onclick=()=>{ running=true; startedAt=performance.now(); actionLog=[]; info('Session started.'); };
-ui.stopBtn.onclick =()=>{ if(!running) return; running=false; exportReport(); ok('Session exported.'); };
-ui.helpBtn.onclick =()=>{ const h=qs('#help'); h.style.display=(h.style.display==='none'||!h.style.display)?'block':'none'; };
-
-ui.hr.oninput=()=>{ sim.hr=+ui.hr.value; ui.hrV.textContent=`${sim.hr} bpm`; };
-ui.dP.oninput=()=>{ sim.dPpeak=+ui.dP.value; ui.dPV.textContent=`${sim.dPpeak} mmHg`; };
-ui.contact.onchange=()=>{ sim.enableCoaptation=ui.contact.checked; };
-ui.anisotropy.onchange=()=>{ sim.enableAnisotropy=ui.anisotropy.checked; sim.resetCase(sim.case); updateHUD(); };
-
-ui.ringSize.oninput=()=>{ sim.ringSize=+ui.ringSize.value; ui.ringSizeV.textContent=sim.ringSize+''; };
-ui.ringStiff.oninput=()=>{ sim.ringStiff=+ui.ringStiff.value; ui.ringRead2.textContent=sim.ringImplanted?`${sim.ringSize} / ${sim.ringStiff.toFixed(2)}`:'—'; };
-ui.neoBtn.onclick=()=>modeAddNeochord();
-ui.triBtn.onclick=()=>{ sim.triangularResection(); history.push({op:'tri'}); };
-ui.ringBtn.onclick=()=>{ sim.implantRing(sim.ringSize,sim.ringStiff); updateHUD(); history.push({op:'ring',size:sim.ringSize,stiff:sim.ringStiff}); };
-ui.ringSizerBtn.onclick=()=>ringSizer();
-ui.undoBtn.onclick=()=>undo();
-ui.replaceBtn.onclick=()=>{ sim.chordalSparingMVR(); history.push({op:'mvr'}); };
-ui.revertBtn.onclick=()=>{ sim.revertToNative(); history.push({op:'revert'}); updateHUD(); };
-ui.shadows.onchange=()=>{ renderer.shadowMap.enabled=ui.shadows.checked; };
-ui.wire.onchange=()=>{ for(const o of scene.children){ if(o.name==='leaflet') o.material.wireframe=ui.wire.checked; } };
-ui.showTEE.onchange=()=>{}; // handled in render
-
-document.addEventListener('keydown',(ev)=>{
-  if(ev.key==='1'){ ui.caseSelect.value='p2_flail'; ui.resetBtn.click(); }
-  if(ev.key==='2'){ ui.caseSelect.value='barlow'; ui.resetBtn.click(); }
-  if(ev.key==='3'){ ui.caseSelect.value='functional'; ui.resetBtn.click(); }
-  if(ev.key==='n'||ev.key==='N') modeAddNeochord();
-  if(ev.key==='t'||ev.key==='T') ui.triBtn.click();
-  if(ev.key==='a'||ev.key==='A') ui.ringBtn.click();
-  if(ev.key==='r'||ev.key==='R') ui.resetBtn.click();
-  if(ev.key==='h'||ev.key==='H') ui.helpBtn.click();
-});
-
-function modeAddNeochord(){
-  info('Neochord: click free edge → papillary (AL or PM).');
-  let step=0, from=null;
-  const onClick=()=>{ const pick=pickLeafVertex(); if(!pick) return;
-    if(step===0){ flash(pick.point); from=pick; step=1; }
-    else{ const dAL=pick.point.distanceTo(sim.pap.AL), dPM=pick.point.distanceTo(sim.pap.PM); const target=(dAL<dPM)?sim.pap.AL:sim.pap.PM;
-      const pid=sim.pbd.node(target.clone(),0); const rl=sim.pbd.nodes[from.nodeId].p.distanceTo(sim.pbd.nodes[pid].p)*0.985;
-      sim.pbd.addDistance(from.nodeId,pid,rl,1.0); sim.neochords++; updateHUD(); ok('Neochord placed.'); actionLog.push({t:performance.now()-startedAt,op:'neochord',from:from.nodeId,to:pid}); viewEl.removeEventListener('click',onClick); }
-  };
-  viewEl.addEventListener('click',onClick);
+  // Chordae
+  ctx.save();
+  ctx.strokeStyle = '#6fa2ff';
+  ctx.lineWidth = 1;
+  for(const idx of post.chordIdx){
+    const a = post.free[idx], b = (idx<K/2)? papAL : papPM;
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+  }
+  for(const idx of ant.chordIdx){
+    const a = ant.free[idx], b = (idx<K/2)? papAL : papPM;
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+  }
+  // Papillary markers
+  ctx.fillStyle = '#3e566e';
+  ctx.beginPath(); ctx.arc(papAL.x,papAL.y,4,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(papPM.x,papPM.y,4,0,Math.PI*2); ctx.fill();
+  ctx.restore();
 }
-function ringSizer(){
-  info('Ring sizer: pick A2 free edge → A2 hinge; then commissure → commissure.');
-  let stage=0,pA=null,pB=null;
-  const onClick=()=>{ const pick=pickLeafVertex(); if(!pick) return; const wp=sim.pbd.nodes[pick.nodeId].p.clone();
-    if(stage===0){ pA=wp; flash(wp); stage=1; }
-    else if(stage===1){ pB=wp; const A2=pA.distanceTo(pB).toFixed(1); info(`A2 height ≈ ${A2} mm. Now commissures.`); stage=2; }
-    else if(stage===2){ pA=wp; flash(wp); stage=3; }
-    else { pB=wp; const IC=pA.distanceTo(pB).toFixed(1); ok(`Intercommissural ≈ ${IC} mm.`); viewEl.removeEventListener('click',onClick); }
-  };
-  viewEl.addEventListener('click',onClick);
-}
-function undo(){ const last=history.pop(); if(!last) return warn('Nothing to undo.'); if(last.op==='ring'){ sim.ringImplanted=false; if(sim.ring){scene.remove(sim.ring); sim.ring=null;} sim.resetCase(sim.case); }
-  if(last.op==='tri'){ sim.resetCase(sim.case); }
-  if(last.op==='mvr'){ sim.revertToNative(); }
-  if(last.op==='revert'){ sim.resetCase(sim.case); }
-  updateHUD(); info('Undo → reloaded case for consistency.');
-}
-function osatsProxy(){
-  const timeMin=running?((performance.now()-startedAt)/60000):0.0001, actions=actionLog.length;
-  const efficiency=clamp(5-(timeMin*0.7+actions*0.06),1,5), handling=clamp(4.5-(ui.wire.checked?0.2:0)-(sim.enableCoaptation?0:0.3),1,5), flow=clamp(2+(sim.triangular||sim.ringImplanted||sim.replacement?2:0),1,5);
-  const knowledge=clamp(3+((document.getElementById('mrGrade').textContent==='None'||document.getElementById('mrGrade').textContent==='Mild')?2:0),1,5), respect=handling;
-  const overall=Math.round(((efficiency+handling+flow+knowledge+respect)/5)*10)/10; ui.osats.textContent=overall.toFixed(1)+'/5'; return {efficiency,handling,flow,knowledge,respect,overall};
-}
-function exportReport(){
-  const report={ when:new Date().toISOString(), case:sim.case, ring:sim.ringImplanted?{size_mm:sim.ringSize,stiffness:sim.ringStiff}:null, neochords:sim.neochords, triangular:sim.triangular, replacement:sim.replacement, hemodynamics:{hr_bpm:sim.hr,dPpeak_mmHg:sim.dPpeak}, per_beat:sim.beatLog, final_metrics:sim.beatLog.at(-1)||null, osats_proxy:osatsProxy(), actions:actionLog };
-  const blob=new Blob([JSON.stringify(report,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='mitrallab_session.json'; a.click(); URL.revokeObjectURL(url);
-}
-function flash(p){ const m=new THREE.Mesh(new THREE.SphereGeometry(2), new THREE.MeshBasicMaterial({color:0x52e2c0})); m.position.copy(p); scene.add(m); setTimeout(()=>scene.remove(m),800); }
 
-/* Render loop — auto-running so you see motion */
-const teeRendererOn=()=>document.getElementById('showTEE').checked;
-function tick(){ requestAnimationFrame(tick); const dt=1/60; if(running) sim.step(dt); controls.update(); renderer.render(scene,camera); if(teeRendererOn()) teeRenderer.render(scene,teeCam); osatsProxy(); }
-tick();
+/* ---- Main loop ---- */
+let last = performance.now();
+function loop(){
+  if(!running){ requestAnimationFrame(loop); return; }
+  const now = performance.now();
+  const dt = Math.min(1/60, (now-last)/1000);
+  step(dt);
+  draw();
+  last = now;
+  requestAnimationFrame(loop);
+}
 
-/* Responsive */
-window.addEventListener('resize',()=>{ renderer.setSize(viewEl.clientWidth,viewEl.clientHeight); renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1)); camera.aspect=viewEl.clientWidth/viewEl.clientHeight; camera.updateProjectionMatrix();
-  teeRenderer.setSize(teeEl.clientWidth,teeEl.clientHeight); teeCam.aspect=teeEl.clientWidth/teeEl.clientHeight; teeCam.updateProjectionMatrix(); });
+/* ---- UI wiring ---- */
+hrSl.oninput = ()=>{ HR = +hrSl.value; hrV.textContent = HR + ' bpm'; };
+dPSl.oninput = ()=>{ DP = +dPSl.value; dPV.textContent = DP + ' mmHg'; };
+btnReset.onclick = ()=>{ CASE = caseSel.value; applyCase(); statusBar.textContent = 'Loaded: '+CASE; };
+btnPause.onclick = ()=>{
+  running = !running;
+  statusV.textContent = running ? 'Running' : 'Paused';
+  btnPause.textContent = running ? 'Pause' : 'Resume';
+  if(running) last = performance.now();
+};
 
-/* Boot UI state */
-updateHUD(); // ensure labels filled
-document.getElementById('hrV').textContent = `${sim.hr} bpm`;
-document.getElementById('dPV').textContent = `${sim.dPpeak} mmHg`;
-
+function boot(){
+  buildAnnulus();
+  initLeaf(-1); initLeaf(+1);
+  applyCase(); // default selection
+  running = true; statusV.textContent = 'Running';
+  loop();
+}
+boot();
 </script>
 </body>
 </html>
