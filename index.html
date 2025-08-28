@@ -1,24 +1,27 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<title>Mitral Suture Trainer — P2 Triangular Resection (Teach • Practice • Assess)</title>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+<meta charset="utf-8">
+<title>Mitral Suture Trainer — P2 Triangular Resection (Teach · Practice · Assess)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
   :root{
     --bg:#0b0f14; --ink:#eaf2f8; --mut:#9fb3c4; --ok:#2ed573; --warn:#ffb020; --bad:#ff4d4f;
     --panel:#0f151d; --line:#1f2b36; --accent:#52e2c0;
-    --mono: ui-monospace,Menlo,Consolas,monospace; --sans: ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial;
+    --mono: ui-monospace, Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial;
   }
   html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.45 var(--sans)}
   #app{display:grid;grid-template-rows:58px 1fr 30px;height:100%}
+
   header{display:flex;gap:12px;align-items:center;padding:10px 14px;background:linear-gradient(180deg,#0e1520,#0b1218);border-bottom:1px solid #182330}
-  header h1{margin:0;font-size:16px;font-weight:800}
+  header h1{margin:0;font-size:16px;font-weight:800;letter-spacing:.2px}
   #toolbar{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
   .grp{display:flex;gap:10px;align-items:center;background:#0f1823;border:1px solid #1b2733;border-radius:10px;padding:6px 8px}
   label{color:var(--mut);font-size:12px}
   select,button{background:#101825;color:#e6f0f6;border:1px solid #223243;border-radius:8px;padding:6px 10px;cursor:pointer}
   button:active{transform:translateY(1px)}
+
   main{display:grid;grid-template-columns:360px 1fr}
   aside{background:var(--panel);border-right:1px solid #1b2733;padding:12px;overflow:auto}
   aside h2{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#a7bed1;margin:12px 0 8px}
@@ -28,18 +31,20 @@
   .toolbtn{display:flex;gap:6px;align-items:center;width:100%}
   .toolbtn.active{outline:2px solid #3c5977}
   .coach{background:#0d1621;border-left:4px solid #3b82f6;padding:10px;border-radius:8px}
-  .ok{color:var(--ok)} .warn{color:var(--warn)} .bad{color:var(--bad)} .mut{color:#9fb3c4}
+
   #stage{position:relative;background:radial-gradient(60% 70% at 50% 50%,#0c141b 0%,#0a1016 100%)}
   canvas{display:block;width:100%;height:100%}
+
   #hud{position:absolute;top:10px;left:10px;display:grid;gap:8px;pointer-events:none}
   #hud .card{pointer-events:auto;min-width:280px}
   #tensionBox{position:absolute;left:12px;bottom:12px;background:rgba(9,14,19,.88);border:1px solid #1f2b36;border-radius:8px;padding:6px 8px;color:#cfe8ff;display:none}
   #tensionBox input[type=range]{width:180px}
   #coachBox{position:absolute;right:12px;top:12px;width:min(420px,36vw);max-height:60vh;overflow:auto;background:rgba(9,14,19,.88);border:1px solid #1f2b36;border-radius:12px;padding:12px;display:none}
-  #coachBox h3{margin:0 0 6px 0}
   #ghostNext{position:absolute;right:12px;bottom:12px;background:rgba(12,18,27,.88);border:1px dashed #335; padding:6px 10px;border-radius:10px;color:#cfe8ff;display:none}
+
   footer{display:flex;gap:10px;align-items:center;padding:6px 10px;border-top:1px solid #182330;color:#8dadc1}
   #status{color:#cfe8ff}
+  .ok{color:var(--ok)} .warn{color:var(--warn)} .bad{color:var(--bad)} .mut{color:#9fb3c4}
 </style>
 </head>
 <body>
@@ -91,11 +96,11 @@
           <li>Symmetry: entry≈exit depth</li>
           <li>Tension: coaptation flush (no gap, no strangulation)</li>
         </ul>
-        <div class="pill">Depth bands are painted on the edge (2–8 mm)</div>
+        <div class="pill">Depth bands are painted on each edge (2–8 mm), with a gold 4–6 mm zone.</div>
       </div>
 
       <h2>Session metrics</h2>
-      <div class="card" id="scoreSummary">
+      <div class="card">
         <div class="kpi"><span>Bites placed</span><span id="biteN">0</span></div>
         <div class="kpi"><span>Avg depth error</span><span id="depthErr">—</span></div>
         <div class="kpi"><span>Avg angle error</span><span id="angleErr">—</span></div>
@@ -113,11 +118,13 @@
       <div class="card">
         <div class="pill">Left click: place entry/exit</div>
         <div class="pill">Z: remove last • F: finish</div>
-        <div class="pill">Shift+drag: pan • Wheel: zoom</div>
+        <div class="pill">Drag to rotate scene; Shift+Drag pan; Wheel zoom</div>
       </div>
     </aside>
 
     <section id="stage">
+      <canvas id="cv"></canvas>
+
       <div id="hud">
         <div class="card">
           <div style="font-weight:800;margin-bottom:6px">Step</div>
@@ -128,178 +135,44 @@
           <div id="fb">—</div>
         </div>
       </div>
+
       <div id="tensionBox">Tension <input id="tens" type="range" min="0.70" max="1.00" step="0.01" value="1.00"> <span id="tv">loose</span></div>
+
       <div id="coachBox" class="coach">
         <h3 id="coachTitle">Teaching Mode</h3>
-        <div id="coachText">When you’re ready, place the <b>apex bite</b>: entry on LEFT, exit on RIGHT, depth 5 mm, angle ~60°.</div>
+        <div id="coachText">Place the <b>apex bite</b>: entry on LEFT, exit on RIGHT, depth ~5 mm (gold band), angle ~60°.</div>
         <div style="margin-top:8px"><button id="coachPrev">◀ Back</button> <button id="coachNext">Next ▶</button></div>
       </div>
+
       <div id="ghostNext">Next target shown as <span style="color:#FFEB99">gold dot</span>. Keep 4–6 mm depth and ~5 mm spacing.</div>
     </section>
   </main>
 
   <footer>
-    <div>Surgeon view • Realistic needle arc + suture tension • Step-gated teaching, AI Copilot coaching. For education; not a medical device.</div>
+    <div>Pure Canvas-2D (no libraries). Surgeon view · step-gated teaching · AI-like guidance · strict scoring. For education; not a medical device.</div>
     <div id="status"></div>
   </footer>
 </div>
 
-<script type="module">
-/* ============ Status & helpers ============ */
-const clamp = (x,a,b)=>Math.max(a,Math.min(b,x));
-const now = ()=>performance.now();
-function setStatus(t, cls=''){ const el=document.getElementById('status'); el.textContent=t; el.className=cls; }
+<script>
+/* ===================== utilities & canvas ===================== */
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const lerp =(a,b,t)=>a+(b-a)*t;
+const now  =()=>performance.now();
 
-/* ============ OFFLINE-FIRST loader (local → CDNs) ============ */
-async function loadThree() {
-  const tries = [
-    // 1) LOCAL files (recommended) — works offline / behind firewalls
-    async ()=>({
-      THREE:        await import('./lib/three.module.js'),
-      OrbitControls:(await import('./lib/controls.OrbitControls.js')).OrbitControls,
-      Line2:        (await import('./lib/lines.Line2.js')).Line2,
-      LineGeometry: (await import('./lib/lines.LineGeometry.js')).LineGeometry,
-      LineMaterial: (await import('./lib/lines.LineMaterial.js')).LineMaterial
-    }),
-    // 2) CDNs as fallbacks
-    async ()=>({
-      THREE:        await import('https://unpkg.com/three@0.160.0/build/three.module.js'),
-      OrbitControls:(await import('https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js')).OrbitControls,
-      Line2:        (await import('https://unpkg.com/three@0.160.0/examples/jsm/lines/Line2.js')).Line2,
-      LineGeometry: (await import('https://unpkg.com/three@0.160.0/examples/jsm/lines/LineGeometry.js')).LineGeometry,
-      LineMaterial: (await import('https://unpkg.com/three@0.160.0/examples/jsm/lines/LineMaterial.js')).LineMaterial
-    }),
-    async ()=>({
-      THREE:        await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js'),
-      OrbitControls:(await import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js')).OrbitControls,
-      Line2:        (await import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/lines/Line2.js')).Line2,
-      LineGeometry: (await import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/lines/LineGeometry.js')).LineGeometry,
-      LineMaterial: (await import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/lines/LineMaterial.js')).LineMaterial
-    })
-  ];
-  let lastErr=null;
-  for(const t of tries){ try{ return await t(); } catch(e){ lastErr=e; } }
-  throw lastErr || new Error('Three.js failed to load from all sources');
+const statusEl=document.getElementById('status');
+function setStatus(m,cls=''){ statusEl.textContent=m; statusEl.className=cls; }
+
+const cv=document.getElementById('cv'); const ctx=cv.getContext('2d');
+function fitCanvas(){
+  const dpr=Math.max(1, window.devicePixelRatio||1);
+  const w=cv.clientWidth, h=cv.clientHeight;
+  cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
 }
-setStatus('Loading 3D engine…');
-const { THREE, OrbitControls, Line2, LineGeometry, LineMaterial } = await loadThree().catch(e=>{ console.error(e); setStatus('Could not load 3D engine (local/ CDN blocked?)','bad'); throw e; });
-setStatus('Loaded.','ok');
+window.addEventListener('resize', fitCanvas);
+fitCanvas();
 
-/* ============ Scene / camera ============ */
-const stage = document.getElementById('stage');
-const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
-renderer.setSize(stage.clientWidth, stage.clientHeight);
-renderer.setPixelRatio(Math.min(2, window.devicePixelRatio||1));
-stage.appendChild(renderer.domElement);
-
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0b1016);
-
-const camera = new THREE.PerspectiveCamera(50, stage.clientWidth/stage.clientHeight, 0.1, 5000);
-camera.position.set(0, 70, 160);
-
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true; controls.dampingFactor=0.06; controls.minDistance=90; controls.maxDistance=260;
-
-const hemi = new THREE.HemisphereLight(0xbfdcff, 0x0a0d10, 0.85);
-const key  = new THREE.DirectionalLight(0xffffff, 1.15); key.position.set(200,240,180); key.castShadow = true;
-const fill = new THREE.DirectionalLight(0xaaccff, 0.35); fill.position.set(-160,40,-80);
-scene.add(hemi,key,fill);
-
-const floor = new THREE.Mesh(new THREE.CircleGeometry(800,64), new THREE.MeshStandardMaterial({color:0x0b1219, metalness:0.15, roughness:0.95}));
-floor.rotation.x = -Math.PI/2; floor.receiveShadow = true; scene.add(floor);
-
-/* ============ Anatomy (posterior wedge edges with depth bands) ============ */
-const mm = v=>v;
-const ANN_RES=96;
-function dShapePoints(Rlat=mm(18), Rantr=mm(15), saddle=mm(6)){
-  const pts=[]; for(let i=0;i<ANN_RES;i++){ const t=i/ANN_RES, th=t*Math.PI*2, w=(Math.cos(th)>0)?0.5:1.0;
-    const rX=THREE.MathUtils.lerp(Rantr,Rlat,w), rZ=Rlat;
-    const x=rX*Math.cos(th), z=rZ*Math.sin(th), y=saddle*Math.cos(2*th); pts.push(new THREE.Vector3(x,y,z)); }
-  return pts;
-}
-const annPts=dShapePoints(18,15,6); const annCurve=new THREE.CatmullRomCurve3(annPts,true);
-const annulus=new THREE.Mesh(new THREE.TubeGeometry(annCurve, ANN_RES, 1.3, 32, true), new THREE.MeshStandardMaterial({color:0x8fa6c2, metalness:.45, roughness:.35}));
-annulus.castShadow=annulus.receiveShadow=true; scene.add(annulus);
-
-/* Papillary muscles (context) */
-const papAL=new THREE.Mesh(new THREE.ConeGeometry(3.4,16,24), new THREE.MeshStandardMaterial({color:0x405a70,metalness:.4,roughness:.55}));
-const papPM=papAL.clone(); papAL.position.set(+15,-36,+15); papPM.position.set(-18,-40,-18); papAL.rotation.x=papPM.rotation.x=Math.PI; scene.add(papAL,papPM);
-
-/* Leaflet fabric texture */
-function makeLeafletTexture(){
-  const c=document.createElement('canvas'); c.width=512; c.height=512; const g=c.getContext('2d');
-  const grd=g.createLinearGradient(0,0,0,512); grd.addColorStop(0,'#eef5ff'); grd.addColorStop(1,'#e7eefc'); g.fillStyle=grd; g.fillRect(0,0,512,512);
-  g.globalAlpha=0.18; g.strokeStyle='#c9d7ef';
-  for(let i=0;i<220;i++){ const x=Math.random()*512, y=Math.random()*512, R=8+Math.random()*28; g.beginPath(); g.ellipse(x,y,R,R*0.35,Math.random()*Math.PI,0,Math.PI*2); g.stroke(); }
-  const img=g.getImageData(0,0,512,512); for(let i=0;i<img.data.length;i+=4){ img.data[i]+= (Math.random()*8)|0; img.data[i+1]+= (Math.random()*8)|0; img.data[i+2]+= (Math.random()*6)|0; } g.putImageData(img,0,0);
-  const tex=new THREE.CanvasTexture(c); tex.wrapS=tex.wrapT=THREE.RepeatWrapping; tex.repeat.set(2,1); return tex;
-}
-const leafletTex=makeLeafletTexture();
-
-/* Posterior resection edges */
-const EDGE_SEGS=56, STRIP_W=mm(8);
-function posteriorEdgeCurve(){
-  const pts=[]; for(let i=ANN_RES*0.55;i<ANN_RES*0.98;i+= (ANN_RES*0.43)/EDGE_SEGS ){ const p=annPts[Math.floor(i)%ANN_RES].clone(); p.y -= 1.5*Math.cos((i/(ANN_RES*0.43))*Math.PI); pts.push(p); }
-  return new THREE.CatmullRomCurve3(pts,false);
-}
-let basePosterior=posteriorEdgeCurve();
-function resectionPair(base, dz){ const pts=base.getPoints(EDGE_SEGS); const rightPts=pts.map(p=>p.clone().add(new THREE.Vector3(0,0,dz))); return {left:new THREE.CatmullRomCurve3(pts), right:new THREE.CatmullRomCurve3(rightPts)};}
-let gapDZ=mm(6); let edges=resectionPair(basePosterior,gapDZ);
-
-function stripFromCurve(curve,color,alpha=0.95,paintDepth=false){
-  const pts=curve.getPoints(EDGE_SEGS);
-  const geom=new THREE.BufferGeometry(), vtx=new Float32Array((EDGE_SEGS+1)*2*3), uv=new Float32Array((EDGE_SEGS+1)*2*2), idx=[];
-  for(let i=0;i<=EDGE_SEGS;i++){
-    const p=pts[i], dir=(i<EDGE_SEGS? pts[i+1].clone().sub(pts[i]) : pts[i].clone().sub(pts[i-1])).normalize();
-    const up=new THREE.Vector3(0,1,0), n=new THREE.Vector3().crossVectors(dir,up).normalize();
-    const a=p.clone().add(n.clone().multiplyScalar(STRIP_W/2)), b=p.clone().add(n.clone().multiplyScalar(-STRIP_W/2));
-    vtx.set([a.x,a.y,a.z],i*6+0); vtx.set([b.x,b.y,b.z],i*6+3); uv.set([0,i/EDGE_SEGS],i*4+0); uv.set([1,i/EDGE_SEGS],i*4+2);
-    if(i<EDGE_SEGS){ const k=i*2; idx.push(k,k+1,k+2,k+1,k+3,k+2); }
-  }
-  geom.setAttribute('position', new THREE.BufferAttribute(vtx,3)); geom.setAttribute('uv', new THREE.BufferAttribute(uv,2)); geom.setIndex(idx); geom.computeVertexNormals();
-  let mat;
-  if(paintDepth){
-    const c=document.createElement('canvas'); c.width=256; c.height=1024; const g=c.getContext('2d');
-    g.fillStyle='rgba(240,248,255,0.97)'; g.fillRect(0,0,256,1024); g.strokeStyle='rgba(60,90,150,0.55)'; g.lineWidth=2;
-    for(let x=16;x<256;x+= (STRIP_W/6)*(256/STRIP_W) ){ g.beginPath(); g.moveTo(x,0); g.lineTo(x,1024); g.stroke(); }
-    const mm2px=256/STRIP_W, x1=Math.round((STRIP_W/2-6)*mm2px), x2=Math.round((STRIP_W/2-4)*mm2px);
-    g.fillStyle='rgba(255,235,153,0.35)'; g.fillRect(x1,0,(x2-x1),1024);
-    const tex=new THREE.CanvasTexture(c); tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
-    mat=new THREE.MeshStandardMaterial({map:tex,color,metalness:.06,roughness:.82,side:THREE.DoubleSide,transparent:true,opacity:alpha});
-  } else {
-    mat=new THREE.MeshStandardMaterial({map:leafletTex,color,metalness:.06,roughness:.82,side:THREE.DoubleSide,transparent:true,opacity:alpha});
-  }
-  const mesh=new THREE.Mesh(geom,mat); mesh.castShadow=mesh.receiveShadow=true; return mesh;
-}
-let leftStrip=stripFromCurve(edges.left,0xf1f7ff,0.98,true);
-let rightStrip=stripFromCurve(edges.right,0xe7efff,0.95,true);
-scene.add(leftStrip,rightStrip);
-
-/* Simple anterior context surface */
-(function anteriorSurface(){
-  const pts=[]; for(let i=ANN_RES*0.05;i<ANN_RES*0.55;i+= (ANN_RES*0.5)/42 ){ const p=annPts[Math.floor(i)%ANN_RES].clone(); const n=annPts[(Math.floor(i+1))%ANN_RES].clone().sub(annPts[(Math.floor(i-1+ANN_RES))%ANN_RES]).normalize(); const up=new THREE.Vector3(0,1,0); const lat=new THREE.Vector3().crossVectors(n,up).normalize(); p.addScaledVector(lat,-mm(18)); p.y -= mm(2)*Math.sin(i); pts.push(p); }
-  const curve=new THREE.CatmullRomCurve3(pts); const g=new THREE.TubeGeometry(curve, 42, 9, 32, false);
-  const m=new THREE.MeshStandardMaterial({map:leafletTex,color:0xf7fbff,metalness:.06,roughness:.82,transparent:true,opacity:0.22,side:THREE.DoubleSide});
-  const mesh=new THREE.Mesh(g,m); mesh.receiveShadow=true; scene.add(mesh);
-})();
-
-/* ============ Needle & Suture rope ============ */
-const needleGroup=new THREE.Group(); scene.add(needleGroup);
-function makeNeedle(radius=mm(8), span=Math.PI*3/8){ const tube=new THREE.TorusGeometry(radius,0.5,18,96,span); const mat=new THREE.MeshStandardMaterial({color:0xa0b8cd,metalness:.8,roughness:.25}); const mesh=new THREE.Mesh(tube,mat); mesh.rotation.y=Math.PI/2; return mesh; }
-function computeNeedlePath(entry,exit){ const mid=entry.clone().add(exit).multiplyScalar(0.5), chord=exit.clone().sub(entry), L=chord.length(); const R=Math.max(mm(6), L/1.8); const up=new THREE.Vector3(0,1,0); const n=new THREE.Vector3().crossVectors(chord,up).normalize(); return {mid,n,R,span:Math.PI*0.8}; }
-let BUSY=false;
-function animateNeedle(entry,exit,onDone){ BUSY=true; needleGroup.clear(); const {mid,n,R,span}=computeNeedlePath(entry,exit); const mesh=makeNeedle(R,span); needleGroup.add(mesh); const z=exit.clone().sub(entry).normalize(), x=new THREE.Vector3().crossVectors(n,z).normalize(), y=new THREE.Vector3().crossVectors(z,x).normalize(); const basis=new THREE.Matrix4().makeBasis(x,y,z), pos=new THREE.Matrix4().makeTranslation(mid.x,mid.y,mid.z); mesh.matrixAutoUpdate=false; let t=0; (function tick(){ t+=0.03; const angle=-span/2+span*Math.min(1,t); const rot=new THREE.Matrix4().makeRotationX(angle); mesh.matrix=pos.clone().multiply(basis).multiply(rot); renderer.render(scene,camera); if(t<1){ requestAnimationFrame(tick); } else { BUSY=false; onDone&&onDone(); } })(); }
-
-class Rope{
-  constructor(a,b,segments=18){ this.nodes=[]; for(let i=0;i<=segments;i++) this.nodes.push(a.clone().lerp(b,i/segments)); this.restLen=this.totalLength(); this.targetScale=1.0; }
-  totalLength(){ let L=0; for(let i=1;i<this.nodes.length;i++) L+=this.nodes[i].distanceTo(this.nodes[i-1]); return L; }
-  tighten(s){ this.targetScale=clamp(s,0.7,1.0); }
-  step(){ const want=this.restLen*this.targetScale, have=this.totalLength(), excess=have-want; if(Math.abs(excess)<0.01) return; const perSeg=excess/(this.nodes.length-1); for(let i=1;i<this.nodes.length-1;i++){ const prev=this.nodes[i-1], cur=this.nodes[i], nxt=this.nodes[i+1]; const u1=cur.clone().sub(prev).normalize(), u2=nxt.clone().sub(cur).normalize(); cur.addScaledVector(u1,-perSeg*0.25).addScaledVector(u2,perSeg*0.25);} }
-  mesh(){ const geo=new LineGeometry(), arr=[]; for(const p of this.nodes) arr.push(p.x,p.y,p.z); geo.setPositions(arr); const mat=new LineMaterial({color:0xfff2c2, linewidth:2, worldUnits:true}); const line=new Line2(geo,mat); line.computeLineDistances(); line.userData.update=()=>{ const a=[]; for(const p of this.nodes) a.push(p.x,p.y,p.z); geo.setPositions(a); }; return line; }
-}
-
-/* ============ UI refs ============ */
 const ui={
   mode:document.getElementById('mode'), caseSel:document.getElementById('case'),
   loadBtn:document.getElementById('load'), startBtn:document.getElementById('start'),
@@ -317,103 +190,453 @@ const ui={
   ghostNext:document.getElementById('ghostNext')
 };
 let tool='place'; setTool('place');
-ui.tool_place.onclick=()=>setTool('place'); ui.tool_tension.onclick=()=>setTool('tension');
-ui.tool_remove.onclick=removeLastBite; ui.tool_finish.onclick=finalize;
-document.addEventListener('keydown',e=>{ if(e.key==='z'||e.key==='Z') removeLastBite(); if(e.key==='f'||e.key==='F') finalize(); });
+ui.tool_place.onclick =()=>setTool('place');
+ui.tool_tension.onclick=()=>setTool('tension');
+ui.tool_remove.onclick =removeLastBite;
+ui.tool_finish.onclick =finalize;
 
-/* ============ Cases & framing ============ */
-function loadCase(kind){ const ck=kind==='p2_wide'?'wide':kind==='p2_small'?'small':'mid'; gapDZ=(ck==='wide'?mm(8):ck==='small'?mm(4):mm(6));
-  scene.remove(leftStrip,rightStrip); basePosterior=posteriorEdgeCurve(); edges=resectionPair(basePosterior,gapDZ);
-  leftStrip=stripFromCurve(edges.left,0xf1f7ff,0.98,true); rightStrip=stripFromCurve(edges.right,0xe7efff,0.95,true);
-  scene.add(leftStrip,rightStrip); frameView(); clearAll();
+document.addEventListener('keydown',e=>{
+  if(e.key==='z'||e.key==='Z') removeLastBite();
+  if(e.key==='f'||e.key==='F') finalize();
+});
+
+/* ===================== geometry (surgeon view 2D) ===================== */
+function pxPerMm(){ return Math.min(cv.clientWidth, cv.clientHeight)/300*10; } // heuristic
+const center =()=>({ x: cv.clientWidth*0.5, y: cv.clientHeight*0.55 });
+function ellipsePosteriorPts(segments){
+  const c=center(); const RX=Math.min(cv.clientWidth, cv.clientHeight)*0.24;
+  const RY=Math.min(cv.clientWidth, cv.clientHeight)*0.18;
+  const start=0.55*Math.PI*2, end=0.98*Math.PI*2; // posterior arc
+  const pts=[];
+  for(let i=0;i<=segments;i++){
+    const t=i/segments, th=lerp(start,end,t);
+    const x=c.x + RX*Math.cos(th);
+    const y=c.y + RY*Math.sin(th) - 1.5*Math.cos(t*Math.PI); // crown
+    pts.push({x,y});
+  }
+  return pts;
 }
-function frameView(){ const box=new THREE.Box3().setFromObject(leftStrip).union(new THREE.Box3().setFromObject(rightStrip)); const c=box.getCenter(new THREE.Vector3()); controls.target.copy(c); camera.position.set(c.x,c.y+60,c.z+160); }
+let EDGE_SEGS=64;
+let STRIP_W_MM=8, gapMM=6;
+let basePts=ellipsePosteriorPts(EDGE_SEGS);
+function normals(pts){ // lateral normals (per-vertex)
+  const ns=[];
+  for(let i=0;i<pts.length;i++){
+    const a=pts[Math.max(0,i-1)], b=pts[Math.min(pts.length-1,i+1)];
+    const dx=b.x-a.x, dy=b.y-a.y; // tangent
+    const L=Math.hypot(dx,dy)||1;
+    ns.push({x: -dy/L, y: dx/L}); // rotate 90° (lateral-ish)
+  }
+  return ns;
+}
+function offsetCurve(pts, ns, d){ return pts.map((p,i)=>({x:p.x+ns[i].x*d, y:p.y+ns[i].y*d})); }
 
-/* ============ Picking & workflow ============ */
-const ray=new THREE.Raycaster(), mouse=new THREE.Vector2();
-renderer.domElement.addEventListener('pointermove',e=>{ const r=renderer.domElement.getBoundingClientRect(); mouse.x=((e.clientX-r.left)/r.width)*2-1; mouse.y=-((e.clientY-r.top)/r.height)*2+1; });
-renderer.domElement.addEventListener('pointerdown', onClick);
-let step=0, entryP=null, exitP=null, activeBiteIdx=-1, sessionStart=now();
-const bites=[];
+function buildEdges(){
+  basePts=ellipsePosteriorPts(EDGE_SEGS);
+  const ns=normals(basePts);
+  const dz=gapMM*pxPerMm();
+  const left  = basePts.map(p=>({...p}));
+  const right = basePts.map((p,i)=>({x:p.x+ns[i].x*dz, y:p.y+ns[i].y*dz}));
+  return {left,right,ns};
+}
+let edges=buildEdges();
 
-function onClick(){ if(BUSY || tool!=='place') return;
-  ray.setFromCamera(mouse,camera);
-  const hitL=ray.intersectObject(leftStrip,false)[0], hitR=ray.intersectObject(rightStrip,false)[0];
-  if(step===0){ if(!hitL || hitL.object!==leftStrip){ ui.fb.textContent='Place ENTRY on LEFT edge (gold band 4–6 mm).'; return; }
-    entryP=hitL.point.clone(); step=1; ui.stepText.textContent='Click right edge (exit)'; ui.fb.textContent='Good. Now place EXIT on RIGHT edge.'; flash(entryP,0xFFEB99);
+/* ===================== drawing helpers ===================== */
+function drawGrid(){
+  const w=cv.clientWidth, h=cv.clientHeight;
+  ctx.save(); ctx.strokeStyle='#14202a'; ctx.lineWidth=1;
+  for(let x=0;x<w;x+=40){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
+  for(let y=0;y<h;y+=40){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
+  ctx.restore();
+}
+function pathFromPoly(poly){
+  ctx.beginPath(); ctx.moveTo(poly[0].x, poly[0].y);
+  for(let i=1;i<poly.length;i++) ctx.lineTo(poly[i].x, poly[i].y);
+}
+function stripPolygon(centerPts, ns, widthPx){
+  const half=widthPx/2; const A=[], B=[];
+  for(let i=0;i<centerPts.length;i++){
+    const p=centerPts[i]; const n=ns[i];
+    A.push({x:p.x+n.x*half, y:p.y+n.y*half});
+    B.push({x:p.x-n.x*half, y:p.y-n.y*half});
+  }
+  return {upper:A, lower:B};
+}
+function fillStrip(centerPts, ns, color, alpha=0.95){
+  const {upper,lower}=stripPolygon(centerPts, ns, STRIP_W_MM*pxPerMm());
+  ctx.save(); ctx.globalAlpha=alpha; ctx.fillStyle=color; ctx.beginPath();
+  ctx.moveTo(upper[0].x,upper[0].y);
+  for(let i=1;i<upper.length;i++) ctx.lineTo(upper[i].x,upper[i].y);
+  for(let i=lower.length-1;i>=0;i--) ctx.lineTo(lower[i].x,lower[i].y);
+  ctx.closePath(); ctx.fill(); ctx.restore();
+}
+function fillTargetBand(edgePts, ns, insideSign){ // paints 4–6 mm band from edge centerline
+  const mm2px=pxPerMm(), d1=4*mm2px*insideSign, d2=6*mm2px*insideSign;
+  const inner=edgePts.map((p,i)=>({x:p.x+ns[i].x*d1, y:p.y+ns[i].y*d1}));
+  const outer=edgePts.map((p,i)=>({x:p.x+ns[i].x*d2, y:p.y+ns[i].y*d2}));
+  ctx.save(); ctx.fillStyle='rgba(255,235,153,0.35)';
+  ctx.beginPath(); ctx.moveTo(inner[0].x, inner[0].y); for(let i=1;i<inner.length;i++) ctx.lineTo(inner[i].x,inner[i].y);
+  for(let i=outer.length-1;i>=0;i--) ctx.lineTo(outer[i].x, outer[i].y);
+  ctx.closePath(); ctx.fill(); ctx.restore();
+}
+function drawAnnulus(){
+  const c=center(), RX=Math.min(cv.clientWidth, cv.clientHeight)*0.24, RY=Math.min(cv.clientWidth, cv.clientHeight)*0.18;
+  ctx.save(); ctx.strokeStyle='#8fa6c2'; ctx.lineWidth=3;
+  ctx.beginPath(); for(let a=0;a<=Math.PI*2+0.001;a+=0.02){ const x=c.x+RX*Math.cos(a), y=c.y+RY*Math.sin(a)*0.95; if(a===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
+  ctx.stroke(); ctx.restore();
+}
+function drawPapillary(){
+  const al={x:center().x+pxPerMm()*15*0.9, y:center().y+pxPerMm()*27}, pm={x:center().x-pxPerMm()*16*0.9, y:center().y+pxPerMm()*30};
+  ctx.save(); ctx.fillStyle='#3e566e';
+  ctx.beginPath(); ctx.arc(al.x,al.y,6,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(pm.x,pm.y,6,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+function drawLabel(text, pos){
+  ctx.save(); ctx.fillStyle='#cfe8ff'; ctx.font='700 13px Segoe UI'; ctx.textAlign='center'; ctx.fillText(text, pos.x, pos.y-10); ctx.restore();
+}
+
+/* ===================== measurement helpers ===================== */
+function nearestOnEdge(edgePts, p){
+  // sample along polyline, find nearest point and local tangent & lateral
+  let best={x:edgePts[0].x,y:edgePts[0].y}, bestD=1e9, bestIdx=0;
+  for(let i=0;i<edgePts.length;i++){
+    const q=edgePts[i]; const d=Math.hypot(p.x-q.x,p.y-q.y);
+    if(d<bestD){ best=q; bestD=d; bestIdx=i; }
+  }
+  const i1=Math.max(0,bestIdx-1), i2=Math.min(edgePts.length-1,bestIdx+1);
+  const tx=edgePts[i2].x-edgePts[i1].x, ty=edgePts[i2].y-edgePts[i1].y; // tangent
+  const tL=Math.hypot(tx,ty)||1; const tang={x:tx/tL, y:ty/tL};
+  const lat={x:-tang.y, y:tang.x}; // lateral normal
+  return {pos:best, tangent:tang, lateral:lat};
+}
+function depthFromEdge(edgePts, p, insideSign){
+  const pr=nearestOnEdge(edgePts, p);
+  const dx=p.x-pr.pos.x, dy=p.y-pr.pos.y;
+  const signed = dx*pr.lateral.x + dy*pr.lateral.y;
+  const mmDepth = (signed*insideSign)/pxPerMm();
+  return { depth: Math.abs(mmDepth), base: pr.pos, tangent: pr.tangent, lateral: pr.lateral };
+}
+function angleErrorDeg(edgeTangent, chord){
+  const t=edgeTangent, L=Math.hypot(chord.x,chord.y)||1;
+  const ux=chord.x/L, uy=chord.y/L;
+  const d=Math.abs(t.x*ux + t.y*uy); // |cosθ|
+  const ang=Math.acos(clamp(d,0,1))*180/Math.PI; // 0 parallel, 90 perp
+  return Math.abs(ang-60);
+}
+
+/* ===================== needle & rope (2D) ===================== */
+let BUSY=false, anim=null;
+function animateNeedle(entry, exit, cb){
+  BUSY=true; let t=0; const span=0.8*Math.PI; const mid={x:(entry.x+exit.x)/2, y:(entry.y+exit.y)/2};
+  const chord={x:exit.x-entry.x, y:exit.y-entry.y}, L=Math.hypot(chord.x,chord.y)||1, nx=-chord.y/L, ny=chord.x/L;
+  const R=Math.max(6, L/1.8);
+  function tick(){
+    if(!BUSY) return;
+    drawAll(); // redraw base
+    // draw path arc up to angle
+    ctx.save(); ctx.strokeStyle='#9ab5c9'; ctx.lineWidth=4; ctx.lineCap='round';
+    ctx.beginPath();
+    for(let a=-span/2;a<=(-span/2+span*t); a+=0.02){
+      const x=mid.x + (chord.x/2)*Math.cos(a) + nx*R*Math.sin(a);
+      const y=mid.y + (chord.y/2)*Math.cos(a) + ny*R*Math.sin(a);
+      if(a===-span/2) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.stroke(); ctx.restore();
+    t+=0.04;
+    if(t<1){ anim=requestAnimationFrame(tick); } else { BUSY=false; cb&&cb(); }
+  }
+  tick();
+}
+
+class Rope {
+  constructor(a,b,segments=18){
+    this.nodes=[];
+    for(let i=0;i<=segments;i++){
+      this.nodes.push({ x: lerp(a.x,b.x,i/segments), y: lerp(a.y,b.y,i/segments) });
+    }
+    this.restLen = this.length();
+    this.targetScale = 1.0;
+  }
+  length(){ let L=0; for(let i=1;i<this.nodes.length;i++){ const p=this.nodes[i], q=this.nodes[i-1]; L+=Math.hypot(p.x-q.x,p.y-q.y);} return L; }
+  tighten(s){ this.targetScale=clamp(s,0.7,1.0); }
+  step(){
+    const want=this.restLen*this.targetScale, have=this.length(), excess=have-want;
+    if(Math.abs(excess)<0.01) return;
+    const per=excess/(this.nodes.length-1);
+    for(let i=1;i<this.nodes.length-1;i++){
+      const p=this.nodes[i], q=this.nodes[i-1], r=this.nodes[i+1];
+      const u1={x:p.x-q.x,y:p.y-q.y}; let l1=Math.hypot(u1.x,u1.y)||1; u1.x/=l1; u1.y/=l1;
+      const u2={x:r.x-p.x,y:r.y-p.y}; let l2=Math.hypot(u2.x,u2.y)||1; u2.x/=l2; u2.y/=l2;
+      p.x += -u1.x*per*0.25 +  u2.x*per*0.25;
+      p.y += -u1.y*per*0.25 +  u2.y*per*0.25;
+    }
+  }
+  draw(){
+    ctx.save(); ctx.strokeStyle='#fff2c2'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(this.nodes[0].x, this.nodes[0].y);
+    for(let i=1;i<this.nodes.length;i++) ctx.lineTo(this.nodes[i].x, this.nodes[i].y);
+    ctx.stroke(); ctx.restore();
+  }
+}
+
+/* ===================== task state ===================== */
+let sessionStart=now();
+let step=0, entryP=null, exitP=null, activeIdx=-1;
+const bites=[]; // {entry,exit, rope, depthL,depthR, angleErr, symmetry, spacingFromPrev, residual, tension}
+function residualGap(rope){ const L=rope.length(), want=rope.restLen*rope.targetScale, gain=L-want; return clamp((gapMM*pxPerMm() - gain*0.4)/pxPerMm(), 0, gapMM); }
+
+/* ===================== Teach / Practice scripts ===================== */
+const TEACH_STEPS=[
+  { id:'intro', title:'Orientation', text:'This is P2 with a triangular wedge excised. Depth bands (2–8 mm) are painted; target is 4–6 mm (gold). Start with the apex bite.', gate:()=>true },
+  { id:'apex',  title:'Apex bite', text:'Place the apex bite: LEFT entry → RIGHT exit, both near 5 mm and angle ~60°, symmetric.', gate:()=> bites.length>=1 && within(bites[0],{depth:[4,6],angle:15,sym:1.0}) },
+  { id:'mid',   title:'Second bite', text:'Place the second bite ~5 mm away with same criteria.', gate:()=> bites.length>=2 && within(bites[1],{depth:[4,6],angle:15,sym:1.0}) },
+  { id:'series',title:'Complete series', text:'Complete closure with even spacing (~4–5 mm). Then tighten.', gate:()=> bites.length>=4 },
+  { id:'tension',title:'Tension', text:'Switch to “Tighten knot” and adjust until residual gap is minimal without strangulation.', gate:()=> avgResidual()<=2.0 }
+];
+let teachIdx=0;
+function within(b,lim){
+  const okD=(b.depthL>=lim.depth[0]&&b.depthL<=lim.depth[1]&&b.depthR>=lim.depth[0]&&b.depthR<=lim.depth[1]);
+  const okA=(b.angleErr<=lim.angle);
+  const okS=(Math.abs(b.depthL-b.depthR)<=lim.sym);
+  return okD && okA && okS;
+}
+function avgResidual(){ if(!bites.length) return 999; return bites.reduce((s,b)=>s+b.residual,0)/bites.length; }
+function showCoach(){
+  if(ui.mode.value!=='teach'){ ui.coachBox.style.display='none'; return; }
+  ui.coachBox.style.display='block';
+  ui.coachTitle.textContent = `Teaching — Step ${teachIdx+1}/${TEACH_STEPS.length}: ${TEACH_STEPS[teachIdx].title}`;
+  ui.coachText.textContent  = TEACH_STEPS[teachIdx].text;
+}
+ui.coachPrev.onclick=()=>{ teachIdx=Math.max(0,teachIdx-1); showCoach(); };
+ui.coachNext.onclick=()=>{ if(TEACH_STEPS[teachIdx].gate()) teachIdx=Math.min(teachIdx+1,TEACH_STEPS.length-1); showCoach(); };
+
+function coachSay(t){ ui.coachFeed.textContent=t; }
+function copilotAdvice(b){
+  const adv=[];
+  if(b.angleErr>25) adv.push('Angle too parallel — roll wrist toward perpendicular (~60°).');
+  else if(b.angleErr>15) adv.push('Slightly shallow angle — bias more perpendicular.');
+  if(b.depthL<4 || b.depthR<4) adv.push('Depth too shallow — move bites into gold band (4–6 mm).');
+  if(b.depthL>6 || b.depthR>6) adv.push('Depth too deep — stay within 4–6 mm.');
+  if(Math.abs(b.depthL-b.depthR)>1.2) adv.push('Asymmetric entry/exit — adjust exit ~1–2 mm to match.');
+  if(bites.length>1){
+    const s=distance(b.entry, bites[bites.length-2].entry);
+    if(s<3.2) adv.push('Bites too close — target 4–5 mm spacing.');
+    if(s>6.0) adv.push('Bites too far — target 4–5 mm spacing.');
+  }
+  if(!adv.length) adv.push('Nice bite. Maintain this pattern along the wedge.');
+  return adv.join('\n');
+}
+
+/* ===================== interaction & picking ===================== */
+function distance(a,b){ return Math.hypot(a.x-b.x,a.y-b.y); }
+function pickPointOnStrip(edgePts, ns, insideSign, mx,my){
+  // Accept click if within strip width band measured from edge centerline
+  const pr=nearestOnEdge(edgePts, {x:mx,y:my});
+  const dx=mx-pr.pos.x, dy=my-pr.pos.y;
+  const signed = dx*pr.lateral.x + dy*pr.lateral.y;
+  const half=STRIP_W_MM*pxPerMm()/2;
+  if(Math.abs(signed) > half+8) return null; // not within strip
+  // snap to point at depth limited within strip
+  const snapped={ x: pr.pos.x + pr.lateral.x * clamp(signed, -half, half),
+                  y: pr.pos.y + pr.lateral.y * clamp(signed, -half, half) };
+  return snapped;
+}
+let dragging=false, lastMouse={x:0,y:0}, cam={tx:0,ty:0, scale:1};
+cv.addEventListener('mousedown', e=>{
+  const rect=cv.getBoundingClientRect();
+  const x=(e.clientX-rect.left), y=(e.clientY-rect.top);
+  if(e.shiftKey){ dragging=true; lastMouse={x,y}; return; }
+  if(BUSY || tool!=='place') return;
+  handleClick(x,y);
+});
+cv.addEventListener('mousemove', e=>{
+  if(!dragging) return;
+  const r=cv.getBoundingClientRect();
+  const x=(e.clientX-r.left), y=(e.clientY-r.top);
+  cam.tx += (x-lastMouse.x); cam.ty += (y-lastMouse.y);
+  lastMouse={x,y};
+  drawAll();
+});
+cv.addEventListener('mouseup', ()=>dragging=false);
+cv.addEventListener('wheel', e=>{ const s=Math.exp(-e.deltaY*0.001); cam.scale*=s; drawAll(); e.preventDefault(); }, {passive:false});
+
+function toWorld(p){ // simple pan/zoom transform
+  return { x:(p.x - cv.clientWidth/2 - cam.tx)/cam.scale + cv.clientWidth/2,
+           y:(p.y - cv.clientHeight/2 - cam.ty)/cam.scale + cv.clientHeight/2 };
+}
+function fromWorld(p){
+  return { x:(p.x - cv.clientWidth/2)*cam.scale + cv.clientWidth/2 + cam.tx,
+           y:(p.y - cv.clientHeight/2)*cam.scale + cv.clientHeight/2 + cam.ty };
+}
+function handleClick(sx,sy){
+  const {x,y}=toWorld({x:sx,y:sy});
+  // entry must be on LEFT strip; exit on RIGHT strip
+  const ns=normals(basePts);
+  if(step===0){
+    const p=pickPointOnStrip(edges.left, ns, +1, x,y); // +1 means "inside" direction
+    if(!p){ ui.fb.textContent='Place ENTRY on LEFT edge (gold band 4–6 mm).'; return; }
+    entryP=p; step=1; ui.stepText.textContent='Click right edge (exit)'; ui.fb.textContent='Good. Now place EXIT on RIGHT edge.'; drawAll(true, entryP);
   } else {
-    if(!hitR || hitR.object!==rightStrip){ ui.fb.textContent='Place EXIT on RIGHT edge.'; return; }
-    exitP=hitR.point.clone(); BUSY=true;
-    animateNeedle(entryP,exitP,()=>{
-      const rope=new Rope(entryP,exitP,18), line=rope.mesh(); scene.add(line);
-      const dL=depthFromEdge(edges.left,entryP), dR=depthFromEdge(edges.right,exitP);
-      const chord=exitP.clone().sub(entryP), angErr=angleError(dL.tangent,chord), symErr=Math.abs(dL.depth-dR.depth);
-      const spacing=bites.length? entryP.distanceTo(bites.at(-1).entry):NaN;
-      const b={ entry:entryP.clone(), exit:exitP.clone(), rope, line, depthL:dL.depth, depthR:dR.depth, angleErr:angErr, symmetry:symErr, spacingFromPrev:spacing, get residual(){ return residualGap(rope); }, get tension(){ return 1.0-rope.targetScale; } };
-      bites.push(b); activeBiteIdx=bites.length-1; showTensionFor(b); refreshScore();
-      if(ui.mode.value==='practice') coachSay(aiCopilotAdvice(b));
-      if(ui.mode.value==='teach'   && TEACH_STEPS[teachIdx].gate()) { teachIdx=Math.min(teachIdx+1,TEACH_STEPS.length-1); showCoach(); }
-      step=0; entryP=null; exitP=null; BUSY=false; ui.stepText.textContent='Click left edge (entry)'; ui.fb.textContent='Bite placed.'; hintNextTarget();
+    const p=pickPointOnStrip(edges.right, ns, -1, x,y); // -1 inside for right edge
+    if(!p){ ui.fb.textContent='Place EXIT on RIGHT edge.'; return; }
+    exitP=p;
+    BUSY=true;
+    animateNeedle(entryP, exitP, ()=>{
+      const rope=new Rope(entryP, exitP, 18);
+      // measure
+      const dL=depthFromEdge(edges.left,  entryP, +1);
+      const dR=depthFromEdge(edges.right, exitP, -1);
+      const chord={x:exitP.x-entryP.x, y:exitP.y-entryP.y};
+      const angErr=angleErrorDeg(dL.tangent, chord);
+      const symErr=Math.abs(dL.depth - dR.depth);
+      const spacing=bites.length? distance(entryP, bites[bites.length-1].entry):NaN;
+
+      const b={
+        entry:entryP, exit:exitP, rope,
+        depthL:dL.depth, depthR:dR.depth, angleErr:angErr, symmetry:symErr,
+        spacingFromPrev: spacing,
+        get residual(){ return residualGap(rope); },
+        get tension(){ return 1.0 - rope.targetScale; }
+      };
+      bites.push(b); activeIdx=bites.length-1;
+      showTensionFor(b);
+      if(ui.mode.value==='practice') coachSay(copilotAdvice(b));
+      if(ui.mode.value==='teach'){ if(TEACH_STEPS[teachIdx].gate()) teachIdx=Math.min(teachIdx+1, TEACH_STEPS.length-1); showCoach(); }
+      step=0; entryP=null; exitP=null; BUSY=false; ui.stepText.textContent='Click left edge (entry)'; ui.fb.textContent='Bite placed.';
+      drawAll();
+      refreshScore();
+      hintNextTarget();
     });
   }
 }
-function flash(p,color=0xFFEB99){ const m=new THREE.Mesh(new THREE.SphereGeometry(1.4), new THREE.MeshBasicMaterial({color})); m.position.copy(p); scene.add(m); setTimeout(()=>scene.remove(m),900); }
 
-/* Depth/angle helpers */
-function nearestOn(curve,p){ let bestT=0,bestD=1e9; for(let i=0;i<=EDGE_SEGS;i++){ const t=i/EDGE_SEGS,q=curve.getPoint(t), d=q.distanceTo(p); if(d<bestD){bestD=d;bestT=t;} } const q=curve.getPoint(bestT), tangent=curve.getTangent(bestT).normalize(), lateral=new THREE.Vector3().crossVectors(tangent,new THREE.Vector3(0,1,0)).normalize(); return {pos:q,tangent,lateral}; }
-function depthFromEdge(curve,p){ const pr=nearestOn(curve,p), d=p.clone().sub(pr.pos); const depth=Math.abs(d.dot(pr.lateral)); return {depth,tangent:pr.tangent,base:pr.pos,lateral:pr.lateral}; }
-function angleError(edgeTangent,chordVec){ const edge=edgeTangent.clone().normalize(), chord=chordVec.clone().normalize(); const d=clamp(Math.abs(edge.dot(chord)),0,1); const ang=Math.acos(d)*180/Math.PI; return Math.abs(ang-60); }
-function residualGap(rope){ const L=rope.totalLength(), want=rope.restLen*rope.targetScale, gain=L-want; return clamp((gapDZ-gain*0.4),0,gapDZ); }
+/* ===================== tension UI ===================== */
+function showTensionFor(b){
+  ui.tensionBox.style.display='block';
+  ui.tens.value=b.rope.targetScale.toFixed(2);
+  function updateLabel(){
+    const t=1-parseFloat(ui.tens.value);
+    ui.tv.textContent=(t<0.05?'loose': t>0.25?'tight':'ok');
+    ui.tv.style.color=(t<0.05?'#9fb3c4': t>0.25?'#ffb020':'#2ed573');
+  }
+  ui.tens.oninput=()=>{ b.rope.tighten(parseFloat(ui.tens.value)); updateLabel(); drawAll(); };
+  updateLabel();
+}
 
-/* Teach/Copilot */
-const TEACH_STEPS=[
-  {id:'intro',title:'Orientation',text:'This is P2 with a triangular wedge excised. Depth bands (2–8 mm) are painted; target is 4–6 mm (gold). Start with the apex bite.', gate:()=>true},
-  {id:'apex', title:'Apex bite', text:'Place the apex bite: LEFT entry then RIGHT exit, both near 5 mm, angle ~60°, symmetric.', gate:()=> bites.length>=1 && within(bites[0],{depth:[4,6],angle:15,sym:1.0})},
-  {id:'mid',  title:'Second bite', text:'Place the second bite ~5 mm away; same criteria.', gate:()=> bites.length>=2 && within(bites[1],{depth:[4,6],angle:15,sym:1.0})},
-  {id:'series',title:'Complete series', text:'Complete closure with even spacing (~4–5 mm). Then tighten.', gate:()=> bites.length>=4 },
-  {id:'tension',title:'Tension', text:'Switch to “Tighten knot” and adjust until residual gap is minimal without strangulation.', gate:()=> avgResidual()<=2.0 }
-];
-let teachIdx=0;
-function within(b,lim){ const okD=(b.depthL>=lim.depth[0]&&b.depthL<=lim.depth[1]&&b.depthR>=lim.depth[0]&&b.depthR<=lim.depth[1]); const okA=(b.angleErr<=lim.angle); const okS=(b.symmetry<=lim.sym); return okD&&okA&&okS; }
-function avgResidual(){ if(!bites.length) return Infinity; return bites.reduce((a,x)=>a+x.residual,0)/bites.length; }
-function showCoach(){ if(ui.mode.value!=='teach'){ ui.coachBox.style.display='none'; return;} ui.coachBox.style.display='block'; ui.coachTitle.textContent=`Teaching — Step ${teachIdx+1}/${TEACH_STEPS.length}: ${TEACH_STEPS[teachIdx].title}`; ui.coachText.textContent=TEACH_STEPS[teachIdx].text; }
-ui.coachPrev.onclick=()=>{ teachIdx=Math.max(0,teachIdx-1); showCoach(); };
-ui.coachNext.onclick=()=>{ if(TEACH_STEPS[teachIdx].gate()) teachIdx=Math.min(TEACH_STEPS.length-1,teachIdx+1); showCoach(); };
+/* ===================== scoring & export ===================== */
+function mean(a){ return a.reduce((s,x)=>s+x,0)/a.length; }
+function stdev(a){ const m=mean(a); return Math.sqrt(mean(a.map(x=>(x-m)*(x-m)))); }
+function cv(a){ return mean(a)>0? stdev(a)/mean(a): NaN; }
+function computeScores(){
+  if(!bites.length) return {overall:NaN};
+  const target=5;
+  const depthErrs=[], angErrs=[], spacings=[], symErrs=[], res=[];
+  bites.forEach((b,i)=>{ depthErrs.push((Math.abs(b.depthL-target)+Math.abs(b.depthR-target))/2); angErrs.push(b.angleErr); if(i>0) spacings.push(distance(b.entry,bites[i-1].entry)); symErrs.push(b.symmetry); res.push(b.residual); });
+  const dE=mean(depthErrs), aE=mean(angErrs), spCV=spacings.length?cv(spacings):NaN, sE=mean(symErrs), rG=mean(res);
+  const sDepth=clamp(5-dE*0.8,1,5), sAngle=clamp(5-Math.max(0,aE-5)*0.12,1,5), sSpace=isFinite(spCV)?clamp(5-spCV*8,1,5):3, sSym=clamp(5-sE*0.6,1,5), sGap=clamp(5-rG*0.6,1,5);
+  const overall=(sDepth*0.28 + sAngle*0.18 + sSpace*0.18 + sSym*0.18 + sGap*0.18);
+  return {dE,aE,spCV,sE,rG,overall};
+}
+function refreshScore(){
+  const s=computeScores();
+  ui.biteN.textContent=bites.length+'';
+  ui.depthErr.textContent=isFinite(s.dE)? s.dE.toFixed(1)+' mm':'—';
+  ui.angleErr.textContent=isFinite(s.aE)? s.aE.toFixed(1)+'°':'—';
+  ui.spacing.textContent=isFinite(s.spCV)? (s.spCV*100).toFixed(0)+'%':'—';
+  ui.sym.textContent=isFinite(s.sE)? s.sE.toFixed(1)+' mm':'—';
+  ui.gap.textContent=isFinite(s.rG)? s.rG.toFixed(1)+' mm':'—';
+  ui.overall.textContent=isFinite(s.overall)? s.overall.toFixed(1)+'/5':'—';
+  ui.time.textContent=((now()-sessionStart)/1000).toFixed(1)+' s';
+}
+function exportJSON(){
+  const payload={
+    when:new Date().toISOString(),
+    mode:ui.mode.value, case:ui.caseSel.value,
+    bites:bites.map(b=>({ entry:b.entry, exit:b.exit, depthL:b.depthL, depthR:b.depthR, angleErr:b.angleErr, symmetry:b.symmetry, residual:b.residual, tension:b.tension })),
+    summary:computeScores(), time_s:((now()-sessionStart)/1000).toFixed(1)
+  };
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='mitral_suture_session.json'; a.click(); URL.revokeObjectURL(a.href);
+}
 
-function coachSay(msg){ ui.coachFeed.textContent=msg; }
-function aiCopilotAdvice(b){ const adv=[]; if(b.angleErr>25) adv.push('Angle too parallel — roll wrist to drive more perpendicular (~60°).'); else if(b.angleErr>15) adv.push('Slightly shallow angle — bias needle toward perpendicular.'); if(b.depthL<4||b.depthR<4) adv.push('Depth too shallow — move into gold band (4–6 mm).'); if(b.depthL>6||b.depthR>6) adv.push('Depth too deep — stay within 4–6 mm.'); if(Math.abs(b.depthL-b.depthR)>1.2) adv.push('Asymmetric entry/exit — adjust exit ~1–2 mm to match.'); if(bites.length>1){ const s=b.entry.distanceTo(bites.at(-2).entry); if(s<3.2) adv.push('Bites too close — target 4–5 mm.'); if(s>6.0) adv.push('Bites too far — target 4–5 mm.'); } if(!adv.length) adv.push('Nice bite. Maintain this pattern.'); return adv.join('\n'); }
-function hintNextTarget(){ ui.ghostNext.style.display = (ui.mode.value==='practice') ? 'block':'none'; }
+/* ===================== remove / reset / finalize ===================== */
+function removeLastBite(){ const b=bites.pop(); if(!b) return; drawAll(); refreshScore(); ui.fb.textContent='Removed last bite.'; if(!bites.length) ui.tensionBox.style.display='none'; }
+function clearAll(){
+  bites.length=0; entryP=null; exitP=null; step=0; activeIdx=-1; sessionStart=now();
+  ['biteN','depthErr','angleErr','spacing','sym','gap','overall','time'].forEach(id=>ui[id].textContent='—');
+  ui.tensionBox.style.display='none'; ui.stepText.textContent='Click left edge (entry)'; ui.fb.textContent='—'; drawAll();
+  if(ui.mode.value==='teach'){ teachIdx=0; showCoach(); }
+}
+function finalize(){
+  if(!bites.length){ ui.fb.textContent='Place at least one bite before finishing.'; return; }
+  const s=computeScores();
+  ui.fb.innerHTML=`<span class="${s.overall>=4?'ok':s.overall>=3?'warn':'bad'}">Finished. Overall ${s.overall.toFixed(1)}/5</span>`;
+  if(ui.mode.value==='practice'){
+    if(s.overall<3.5) coachSay('Run again focusing on angle (~60°) and symmetric depth.'); else coachSay('Great. Try the wide wedge next.');
+  }
+}
 
-/* Tension widget */
-function showTensionFor(b){ ui.tensionBox.style.display='block'; const s=ui.tens, lab=ui.tv; s.value=b.rope.targetScale.toFixed(2); const upd=()=>{ const t=1-parseFloat(s.value); lab.textContent=(t<0.05?'loose': t>0.25?'tight':'ok'); lab.style.color=(t<0.05?'#9fb3c4': t>0.25?'#ffb020':'#2ed573'); }; s.oninput=()=>{ b.rope.tighten(parseFloat(s.value)); upd(); }; upd(); if(ui.mode.value==='practice'){ if(b.residual>4) coachSay('Tension under-corrected — tighten until edges approximate (avoid strangulation).'); }}
-
-/* Remove/Reset/Finalize */
-function removeLastBite(){ const b=bites.pop(); if(!b) return; scene.remove(b.line); refreshScore(); ui.fb.textContent='Removed last bite.'; if(!bites.length) ui.tensionBox.style.display='none'; }
-function clearAll(){ while(bites.length){ const b=bites.pop(); scene.remove(b.line);} entryP=null; exitP=null; step=0; activeBiteIdx=-1; ui.tensionBox.style.display='none'; sessionStart=now(); ['biteN','depthErr','angleErr','spacing','sym','gap','overall','time'].forEach(id=>ui[id].textContent='—'); ui.stepText.textContent='Click left edge (entry)'; ui.fb.textContent='—'; needleGroup.clear(); if(ui.mode.value==='teach'){ teachIdx=0; showCoach(); } }
-function finalize(){ if(!bites.length){ ui.fb.textContent='Place at least one bite before finishing.'; return; } const s=computeScores(); ui.fb.innerHTML=`<span class="${s.overall>=4?'ok':s.overall>=3?'warn':'bad'}">Finished. Overall ${s.overall.toFixed(1)}/5</span>`; if(ui.mode.value==='practice'){ if(s.overall<3.5) coachSay('Run again focusing on angle (~60°) and symmetric depth.'); else coachSay('Great. Try the wide wedge next.'); }}
-
-/* Metrics / Score */
-function mean(a){ return a.reduce((x,y)=>x+y,0)/a.length; }
-function stdev(a){ const m=mean(a); return Math.sqrt(mean(a.map(v=>(v-m)*(v-m)))); }
-function cv(a){ return mean(a)>0 ? stdev(a)/mean(a) : NaN; }
-function computeScores(){ if(!bites.length) return {overall:NaN}; const targetDepth=5; const d=[],a=[],sp=[],sy=[],rg=[]; for(let i=0;i<bites.length;i++){ const b=bites[i]; d.push((Math.abs(b.depthL-targetDepth)+Math.abs(b.depthR-targetDepth))/2); a.push(b.angleErr); if(i>0) sp.push(b.entry.distanceTo(bites[i-1].entry)); sy.push(b.symmetry); rg.push(b.residual);} const dE=mean(d), aE=mean(a), spCV=sp.length?cv(sp):NaN, sE=mean(sy), rG=mean(rg); const sDepth=clamp(5-dE*0.8,1,5), sAngle=clamp(5-Math.max(0,aE-5)*0.12,1,5), sSpace=isFinite(spCV)?clamp(5-spCV*8,1,5):3, sSym=clamp(5-sE*0.6,1,5), sGap=clamp(5-rG*0.6,1,5); const overall=(sDepth*0.28 + sAngle*0.18 + sSpace*0.18 + sSym*0.18 + sGap*0.18); return {dE,aE,spCV,sE,rG,overall}; }
-function refreshScore(){ const s=computeScores(); ui.biteN.textContent=bites.length+''; ui.depthErr.textContent=isFinite(s.dE)? s.dE.toFixed(1)+' mm':'—'; ui.angleErr.textContent=isFinite(s.aE)? s.aE.toFixed(1)+'°':'—'; ui.spacing.textContent=isFinite(s.spCV)? (s.spCV*100).toFixed(0)+'%':'—'; ui.sym.textContent=isFinite(s.sE)? s.sE.toFixed(1)+' mm':'—'; ui.gap.textContent=isFinite(s.rG)? s.rG.toFixed(1)+' mm':'—'; ui.overall.textContent=isFinite(s.overall)? s.overall.toFixed(1)+'/5':'—'; ui.time.textContent=((now()-sessionStart)/1000).toFixed(1)+' s'; }
-
-/* Toolbar */
+/* ===================== toolbar ===================== */
 function setTool(t){ tool=t; ['place','tension','remove','finish'].forEach(k=>document.getElementById('tool_'+k).classList.toggle('active',k===t)); ui.stepText.textContent=(t==='place'?'Click left edge (entry)': t==='tension'?'Select last bite then adjust tension':''); }
-ui.loadBtn.onclick=()=>loadCase(ui.caseSel.value);
+ui.loadBtn.onclick=()=>{ // rebuild edges for case
+  const v=ui.caseSel.value; gapMM=(v==='p2_wide'?8: v==='p2_small'?4:6); edges=buildEdges(); clearAll();
+};
 ui.startBtn.onclick=()=>{ sessionStart=now(); if(ui.mode.value==='teach'){ ui.coachBox.style.display='block'; showCoach(); } if(ui.mode.value==='practice'){ ui.ghostNext.style.display='block'; } };
-ui.resetBtn.onclick=clearAll; ui.exportBtn.onclick=exportJSON;
+ui.resetBtn.onclick=clearAll;
+ui.exportBtn.onclick=exportJSON;
 ui.mode.onchange=()=>{ clearAll(); if(ui.mode.value==='teach'){ ui.coachBox.style.display='block'; showCoach(); ui.ghostNext.style.display='none'; } else if(ui.mode.value==='practice'){ ui.coachBox.style.display='none'; ui.ghostNext.style.display='block'; } else { ui.coachBox.style.display='none'; ui.ghostNext.style.display='none'; } };
-function exportJSON(){ const payload={ when:new Date().toISOString(), mode:ui.mode.value, case:ui.caseSel.value, bites:bites.map(b=>({ entry:b.entry, exit:b.exit, depthL:b.depthL, depthR:b.depthR, angleErr:b.angleErr, symmetry:b.symmetry, residual:b.residual, tension:b.tension })), summary:computeScores(), time_s:((now()-sessionStart)/1000).toFixed(1) }; const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='mitral_suture_session.json'; a.click(); URL.revokeObjectURL(url); }
 
-/* Render & resize */
-function tick(){ requestAnimationFrame(tick); if(activeBiteIdx>=0 && bites[activeBiteIdx]){ const b=bites[activeBiteIdx]; b.rope.step(); b.line.userData.update && b.line.userData.update(); } controls.update(); renderer.render(scene,camera); }
-tick();
-window.addEventListener('resize',()=>{ renderer.setSize(stage.clientWidth,stage.clientHeight); camera.aspect=stage.clientWidth/stage.clientHeight; camera.updateProjectionMatrix(); });
+/* ===================== main draw ===================== */
+function drawAll(showEntry=false, entryPt=null){
+  // apply camera transform
+  ctx.save();
+  ctx.translate(cv.clientWidth/2 + cam.tx, cv.clientHeight/2 + cam.ty);
+  ctx.scale(cam.scale, cam.scale);
+  ctx.translate(-cv.clientWidth/2, -cv.clientHeight/2);
 
-/* Boot */
-function boot(){ loadCase('p2_mid'); setStatus('Ready','ok'); ui.coachFeed.textContent='Choose a mode: Teaching guides step-by-step; Practice gives AI Copilot tips; Assess scores strictly.'; }
+  ctx.clearRect(0,0,cv.clientWidth,cv.clientHeight);
+  // backdrop grid
+  ctx.save(); ctx.globalAlpha=0.35; drawGrid(); ctx.restore();
+
+  // annulus & papillary
+  drawAnnulus(); drawPapillary();
+
+  // posterior strips
+  const ns=normals(basePts);
+  fillStrip(edges.right, ns, 'rgba(231,239,255,0.95)');
+  fillStrip(edges.left , ns, 'rgba(241,247,255,0.98)');
+  fillTargetBand(edges.left , ns, +1);
+  fillTargetBand(edges.right, ns, -1);
+
+  // labels
+  drawLabel('P2 left edge', edges.left[Math.floor(edges.left.length*0.6)]);
+  drawLabel('P2 right edge', edges.right[Math.floor(edges.right.length*0.6)]);
+
+  // suture ropes
+  bites.forEach(b=>{ b.rope.step(); b.rope.draw(); });
+
+  // ghost next hint
+  if(ui.mode.value==='practice' && bites.length){
+    const last=bites[bites.length-1].entry;
+    ctx.save(); ctx.fillStyle='#FFEB99'; ctx.beginPath(); ctx.arc(last.x+pxPerMm()*5, last.y, 4, 0, Math.PI*2); ctx.fill(); ctx.restore();
+  }
+
+  // highlight entry during step
+  if(showEntry && entryPt){
+    ctx.save(); ctx.fillStyle='#FFEB99'; ctx.beginPath(); ctx.arc(entryPt.x, entryPt.y, 3.5, 0, Math.PI*2); ctx.fill(); ctx.restore();
+  }
+
+  ctx.restore();
+}
+
+/* ===================== boot ===================== */
+function boot(){
+  setStatus('Ready','ok');
+  edges=buildEdges();
+  drawAll();
+  ui.coachFeed.textContent='Choose a mode: Teaching guides step by step; Practice gives AI-style coaching; Assess scores strictly.';
+}
 boot();
 </script>
 </body>
