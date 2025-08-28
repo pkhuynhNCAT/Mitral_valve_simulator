@@ -2,41 +2,51 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>Mitral Suture Trainer — Triangular Resection Closure (P2) — v1.1</title>
+<title>Mitral Suture Trainer — P2 Triangular Resection Closure (Teach • Practice • Assess)</title>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
 <style>
   :root{
     --bg:#0b0f14; --ink:#eaf2f8; --mut:#9fb3c4; --ok:#2ed573; --warn:#ffb020; --bad:#ff4d4f;
-    --panel:#0f151d; --card:#0a1117; --line:#1f2b36; --accent:#52e2c0; --accent2:#8ad0ff;
+    --panel:#0f151d; --line:#1f2b36; --accent:#52e2c0; --accent2:#8ad0ff; --accent3:#FF7A7A;
     --mono: ui-monospace,Menlo,Consolas,monospace; --sans: ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial;
   }
-  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.4 var(--sans)}
-  #app{display:grid;grid-template-rows:56px 1fr 30px;height:100%}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.45 var(--sans)}
+  #app{display:grid;grid-template-rows:58px 1fr 30px;height:100%}
+
   header{display:flex;gap:12px;align-items:center;padding:10px 14px;background:linear-gradient(180deg,#0e1520,#0b1218);border-bottom:1px solid #182330}
-  header h1{margin:0;font-size:16px;font-weight:700}
+  header h1{margin:0;font-size:16px;font-weight:800;letter-spacing:.2px}
   #toolbar{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-  #toolbar .grp{display:flex;gap:10px;align-items:center;background:#0f1823;border:1px solid #1b2733;border-radius:10px;padding:6px 8px}
+  .grp{display:flex;gap:10px;align-items:center;background:#0f1823;border:1px solid #1b2733;border-radius:10px;padding:6px 8px}
   label{color:var(--mut);font-size:12px}
   select,button{background:#101825;color:#e6f0f6;border:1px solid #223243;border-radius:8px;padding:6px 10px;cursor:pointer}
   button:active{transform:translateY(1px)}
-  main{display:grid;grid-template-columns:340px 1fr}
+
+  main{display:grid;grid-template-columns:360px 1fr}
   aside{background:var(--panel);border-right:1px solid #1b2733;padding:12px;overflow:auto}
   aside h2{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#a7bed1;margin:12px 0 8px}
-  .card{background:rgba(9,14,19,.82);border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:10px;backdrop-filter:blur(5px)}
+  .card{background:rgba(9,14,19,.82);border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:10px;backdrop-filter:blur(6px)}
   .kpi{display:flex;justify-content:space-between;font-family:var(--mono);font-weight:700}
   .pill{display:inline-block;border:1px solid #223243;border-radius:999px;padding:3px 8px;color:#a6c1d5;font-size:11px;margin:4px 4px 0 0}
   .toolbtn{display:flex;gap:6px;align-items:center;width:100%}
   .toolbtn.active{outline:2px solid #3c5977}
+  .coach{background:#0d1621;border-left:4px solid #3b82f6;padding:10px;border-radius:8px}
+  .coach b{color:#bfe0ff}
+  .ok{color:var(--ok)} .warn{color:var(--warn)} .bad{color:var(--bad)} .mut{color:#9fb3c4}
+
   #stage{position:relative;background:radial-gradient(60% 70% at 50% 50%,#0c141b 0%,#0a1016 100%)}
   canvas{display:block;width:100%;height:100%}
+
+  /* overlays */
   #hud{position:absolute;top:10px;left:10px;display:grid;gap:8px;pointer-events:none}
-  #hud .card{pointer-events:auto;min-width:260px}
+  #hud .card{pointer-events:auto;min-width:280px}
+  #tensionBox{position:absolute;left:12px;bottom:12px;background:rgba(9,14,19,.88);border:1px solid #1f2b36;border-radius:8px;padding:6px 8px;color:#cfe8ff;display:none}
+  #tensionBox input[type=range]{width:180px}
+  #coachBox{position:absolute;right:12px;top:12px;width:min(420px,36vw);max-height:60vh;overflow:auto;background:rgba(9,14,19,.88);border:1px solid #1f2b36;border-radius:12px;padding:12px;display:none}
+  #coachBox h3{margin:0 0 6px 0}
+  #ghostNext{position:absolute;right:12px;bottom:12px;background:rgba(12,18,27,.88);border:1px dashed #335; padding:6px 10px;border-radius:10px;color:#cfe8ff;display:none}
+
   footer{display:flex;gap:10px;align-items:center;padding:6px 10px;border-top:1px solid #182330;color:#8dadc1}
   #status{color:#cfe8ff}
-  .ok{color:var(--ok)} .warn{color:var(--warn)} .bad{color:var(--bad)}
-  /* tension widget */
-  #tensionBox{position:absolute;left:12px;bottom:12px;background:rgba(9,14,19,.85);border:1px solid #1f2b36;border-radius:8px;padding:6px 8px;color:#cfe8ff;display:none}
-  #tensionBox input[type=range]{width:160px}
 </style>
 </head>
 <body>
@@ -47,7 +57,8 @@
       <div class="grp">
         <label>Mode</label>
         <select id="mode">
-          <option value="teach">Teach (guided)</option>
+          <option value="teach">Teach (step-gated)</option>
+          <option value="practice">Practice (AI Copilot)</option>
           <option value="assess">Assess (scored)</option>
         </select>
       </div>
@@ -78,13 +89,16 @@
         <button class="toolbtn" id="tool_finish">✅ Finish & score</button>
       </div>
 
-      <h2>Targets (guidance)</h2>
+      <h2>Targets (clinical)</h2>
       <div class="card">
-        <div>• Bite depth: <b>4–6 mm</b> from cut edge (both sides)</div>
-        <div>• Bite angle: ~<b>60°±15°</b> to edge</div>
-        <div>• Spacing: uniform (~<b>4–5 mm</b>) along wedge</div>
-        <div>• Symmetry: entry≈exit depth</div>
-        <div>• Tension: <b>coaptation flush</b> (no gap, no strangulation)</div>
+        <ul class="mut" style="margin:0 0 6px 16px; padding:0">
+          <li>Bite depth: <b>4–6 mm</b> from cut edge (both sides)</li>
+          <li>Bite angle: <b>≈60°±15°</b> to edge (perpendicular needle drive)</li>
+          <li>Spacing: uniform <b>~4–5 mm</b> along wedge</li>
+          <li>Symmetry: entry≈exit depth</li>
+          <li>Tension: coaptation flush (no gap, no strangulation)</li>
+        </ul>
+        <div class="pill">Depth bands are painted on the edge (2–8 mm)</div>
       </div>
 
       <h2>Session metrics</h2>
@@ -95,64 +109,84 @@
         <div class="kpi"><span>Spacing CV</span><span id="spacing">—</span></div>
         <div class="kpi"><span>Symmetry error</span><span id="sym">—</span></div>
         <div class="kpi"><span>Residual gap</span><span id="gap">—</span></div>
+        <div class="kpi"><span>Time</span><span id="time">—</span></div>
         <div class="kpi"><span>Overall</span><span id="overall">—</span></div>
       </div>
 
+      <h2>Coach log</h2>
+      <div class="card coach" id="coachFeed" style="white-space:pre-wrap">—</div>
+
       <h2>Shortcuts</h2>
       <div class="card">
-        <div class="pill">Click on <b>left edge</b> → then <b>right edge</b> to place one bite</div>
-        <div class="pill">Enter tension: select “Tighten knot” then drag slider</div>
-        <div class="pill">Z: remove last • F: finish & score</div>
+        <div class="pill">Left click: place entry/exit</div>
+        <div class="pill">Z: remove last • F: finish</div>
+        <div class="pill">Shift+drag: pan • Wheel: zoom</div>
       </div>
     </aside>
 
     <section id="stage">
       <div id="hud">
         <div class="card">
-          <div style="font-weight:700;margin-bottom:6px">Step</div>
+          <div style="font-weight:800;margin-bottom:6px">Step</div>
           <div id="stepText">Click left edge (entry)</div>
         </div>
         <div class="card">
-          <div style="font-weight:700;margin-bottom:6px">Realtime feedback</div>
+          <div style="font-weight:800;margin-bottom:6px">Realtime feedback</div>
           <div id="fb">—</div>
         </div>
       </div>
-      <!-- single shared tension widget -->
+
+      <!-- tension widget -->
       <div id="tensionBox">Tension <input id="tens" type="range" min="0.70" max="1.00" step="0.01" value="1.00"> <span id="tv">loose</span></div>
+
+      <!-- teaching overlay -->
+      <div id="coachBox" class="coach">
+        <h3 id="coachTitle">Teaching Mode</h3>
+        <div id="coachText">When you’re ready, place the <b>apex bite</b>: entry on LEFT, exit on RIGHT, depth 5 mm, angle ~60°.</div>
+        <div style="margin-top:8px"><button id="coachPrev">◀ Back</button> <button id="coachNext">Next ▶</button></div>
+      </div>
+
+      <!-- practice ghost -->
+      <div id="ghostNext">Next target shown as <span style="color:#FFEB99">gold dot</span>. Keep 4–6 mm depth and ~5 mm spacing.</div>
     </section>
   </main>
 
   <footer>
-    <div>Realistic needle arc, bite metrics, suture tension. For education; not a medical device.</div>
+    <div>Surgeon view • Realistic needle arc + suture tension • Step-gated teaching, AI Copilot coaching. For education; not a medical device.</div>
     <div id="status"></div>
   </footer>
 </div>
 
 <script type="module">
-/* ===== utilities / status ===== */
+/* ===================== status / helpers ===================== */
+const clamp = (x,a,b)=>Math.max(a,Math.min(b,x));
 const statusEl = document.getElementById('status');
 function setStatus(t, cls=''){ statusEl.textContent=t; statusEl.className=cls; }
-const clamp = (x,a,b)=>Math.max(a,Math.min(b,x)); // <-- FIX: define clamp
+const now = () => performance.now();
 
-/* ===== load three.js with fallbacks ===== */
+/* ===================== load three.js with fallbacks ===================== */
 async function loadThree() {
   const tries = [
     async ()=>({ THREE: await import('https://unpkg.com/three@0.160.0/build/three.module.js'),
-                 OrbitControls: (await import('https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js')).OrbitControls }),
+                 OrbitControls: (await import('https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js')).OrbitControls,
+                 Line2: (await import('https://unpkg.com/three@0.160.0/examples/jsm/lines/Line2.js')).Line2,
+                 LineGeometry: (await import('https://unpkg.com/three@0.160.0/examples/jsm/lines/LineGeometry.js')).LineGeometry,
+                 LineMaterial: (await import('https://unpkg.com/three@0.160.0/examples/jsm/lines/LineMaterial.js')).LineMaterial }),
     async ()=>({ THREE: await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js'),
-                 OrbitControls: (await import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js')).OrbitControls }),
-    async ()=>({ THREE: await import('https://esm.sh/three@0.160.0'),
-                 OrbitControls: (await import('https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls.js')).OrbitControls })
+                 OrbitControls: (await import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js')).OrbitControls,
+                 Line2: (await import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/lines/Line2.js')).Line2,
+                 LineGeometry: (await import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/lines/LineGeometry.js')).LineGeometry,
+                 LineMaterial: (await import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/lines/LineMaterial.js')).LineMaterial })
   ];
   let lastErr=null;
-  for (const t of tries){ try { return await t(); } catch(e){ lastErr=e; } }
+  for(const t of tries){ try{ return await t(); }catch(e){ lastErr=e; } }
   throw lastErr || new Error('Failed to load Three.js');
 }
 setStatus('Loading 3D engine…');
-const { THREE, OrbitControls } = await loadThree().catch(e=>{ console.error(e); setStatus('Could not load 3D engine (CDN blocked?)','bad'); throw e; });
+const { THREE, OrbitControls, Line2, LineGeometry, LineMaterial } = await loadThree().catch(e=>{ console.error(e); setStatus('Could not load 3D engine (CDN blocked?)','bad'); throw e; });
 setStatus('Loaded.','ok');
 
-/* ===== scene / camera ===== */
+/* ===================== scene / camera / lights ===================== */
 const stage = document.getElementById('stage');
 const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
 renderer.setSize(stage.clientWidth, stage.clientHeight);
@@ -163,88 +197,177 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0b1016);
 
 const camera = new THREE.PerspectiveCamera(50, stage.clientWidth/stage.clientHeight, 0.1, 5000);
-camera.position.set(0, 60, 150);
+camera.position.set(0, 70, 160);
 
 const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true; controls.dampingFactor=0.05; controls.minDistance=80; controls.maxDistance=260;
+controls.enableDamping = true; controls.dampingFactor=0.06; controls.minDistance=90; controls.maxDistance=260;
 
-const hemi = new THREE.HemisphereLight(0xaad4ff, 0x0a0d10, 0.8);
-const key  = new THREE.DirectionalLight(0xffffff, 1.05); key.position.set(180,220,160); key.castShadow = true;
-const fill = new THREE.DirectionalLight(0x99bbff, 0.3); fill.position.set(-160,40,-80);
+const hemi = new THREE.HemisphereLight(0xbfdcff, 0x0a0d10, 0.85);
+const key  = new THREE.DirectionalLight(0xffffff, 1.15); key.position.set(200,240,180); key.castShadow = true;
+const fill = new THREE.DirectionalLight(0xaaccff, 0.35); fill.position.set(-160,40,-80);
 scene.add(hemi,key,fill);
 
-const floor = new THREE.Mesh(new THREE.CircleGeometry(800,64), new THREE.MeshStandardMaterial({color:0x0b1219, metalness:0.2, roughness:0.9}));
+const floor = new THREE.Mesh(new THREE.CircleGeometry(800,64), new THREE.MeshStandardMaterial({color:0x0b1219, metalness:0.15, roughness:0.95}));
 floor.rotation.x = -Math.PI/2; floor.receiveShadow = true; scene.add(floor);
 
-/* ===== wedge edges / strips ===== */
+/* ===================== anatomy (surgeon view) ===================== */
+/* D-shaped annulus, scallops, realistic leaflet shading via CanvasTexture with fibrous pattern */
 const mm = v=>v;
-const EDGE_LEN = mm(40);
-const EDGE_SEGS = 48;                 // higher res for smoother strips
-const STRIP_W   = mm(8);
-
-function makeEdgeCurve(kind="mid"){
-  const bow = kind==="wide"? 6 : kind==="small"? 2 : 4;
-  const points = [];
-  for(let i=0;i<=EDGE_SEGS;i++){
-    const t = i/EDGE_SEGS;
-    const x = THREE.MathUtils.lerp(-EDGE_LEN/2, EDGE_LEN/2, t);
-    const z = mm(bow) * Math.sin(t*Math.PI*1.0);
-    const y = mm(1.2) * Math.cos(t*Math.PI*2);
-    points.push(new THREE.Vector3(x,y,z));
+const ANN_RES = 96;
+function dShapePoints(Rlat=mm(18), Rantr=mm(15), saddle=mm(6)){
+  const pts=[];
+  for(let i=0;i<ANN_RES;i++){
+    const t=i/(ANN_RES);
+    const theta=t*Math.PI*2;
+    const w=(Math.cos(theta)>0)?0.5:1.0; // flatten anterior
+    const rX=THREE.MathUtils.lerp(Rantr,Rlat,w);
+    const rZ=Rlat;
+    const x=rX*Math.cos(theta);
+    const z=rZ*Math.sin(theta);
+    const y=saddle*Math.cos(2*theta);
+    pts.push(new THREE.Vector3(x,y,z));
   }
-  return new THREE.CatmullRomCurve3(points);
+  return pts;
 }
-function offsetCurve(curve, dz){ return new THREE.CatmullRomCurve3(curve.getPoints(EDGE_SEGS).map(p=>p.clone().add(new THREE.Vector3(0,0,dz)))); }
+const annPts = dShapePoints(18,15,6);
+const annCurve = new THREE.CatmullRomCurve3(annPts,true,'catmullrom',0.0);
 
-let caseKind="mid", gapDZ=mm(6);
-let left = makeEdgeCurve(caseKind);
-let right = offsetCurve(left, gapDZ);
+// annulus mesh
+const annGeo = new THREE.TubeGeometry(annCurve, ANN_RES, 1.3, 32, true);
+const annMat = new THREE.MeshStandardMaterial({color:0x8fa6c2, metalness:.45, roughness:.35});
+const annulus = new THREE.Mesh(annGeo,annMat); annulus.castShadow=annulus.receiveShadow=true; scene.add(annulus);
 
-function makeStrip(curve, color, alpha=0.92){
+// papillary muscles
+const papAL = new THREE.Mesh(new THREE.ConeGeometry(3.4, 16, 24), new THREE.MeshStandardMaterial({color:0x405a70, metalness:.4, roughness:.55}));
+const papPM = papAL.clone();
+papAL.position.set(+15,-36,+15); papAL.rotation.x=Math.PI;
+papPM.position.set(-18,-40,-18); papPM.rotation.x=Math.PI;
+scene.add(papAL,papPM);
+
+// leaflet “fabric” texture
+function makeLeafletTexture(){
+  const c=document.createElement('canvas'); c.width=512; c.height=512; const g=c.getContext('2d');
+  // base ivory gradient
+  const grd=g.createLinearGradient(0,0,0,512); grd.addColorStop(0,'#eef5ff'); grd.addColorStop(1,'#e7eefc'); g.fillStyle=grd; g.fillRect(0,0,512,512);
+  // collagen “veins”
+  g.globalAlpha=0.18; g.strokeStyle='#c9d7ef'; for(let i=0;i<220;i++){ const x=Math.random()*512, y=Math.random()*512, R=8+Math.random()*28;
+    g.beginPath(); g.ellipse(x,y,R, R*0.35, Math.random()*Math.PI, 0, Math.PI*2); g.stroke(); }
+  // light noise
+  const img=g.getImageData(0,0,512,512); for(let i=0;i<img.data.length;i+=4){ img.data[i]+= (Math.random()*8)|0; img.data[i+1]+= (Math.random()*8)|0; img.data[i+2]+= (Math.random()*6)|0; } g.putImageData(img,0,0);
+  const tex=new THREE.CanvasTexture(c); tex.wrapS=tex.wrapT=THREE.RepeatWrapping; tex.repeat.set(2,1);
+  return tex;
+}
+const leafletTex = makeLeafletTexture();
+
+// posterior leaflet with wedge: we show only the **cut edges** (two narrow ribbons) for suturing realism
+const EDGE_SEGS = 56;
+const STRIP_W = mm(8);
+
+// build posterior scallop centerline (P1–P3 arc)
+function posteriorEdgeCurve(){
+  // take posterior half of annulus and push ventricular (−y) a little
+  const pts=[];
+  for(let i=ANN_RES*0.55;i<ANN_RES*0.98;i+= (ANN_RES*0.43)/EDGE_SEGS ){
+    const p=annPts[Math.floor(i)%ANN_RES].clone();
+    p.y -= 1.5*Math.cos((i/(ANN_RES*0.43))*Math.PI); // crown
+    pts.push(p);
+  }
+  return new THREE.CatmullRomCurve3(pts,false,'catmullrom',0.0);
+}
+let basePosterior = posteriorEdgeCurve();
+
+function resectionPair(base, dz){
+  // right edge is offset in +Z; left stays as base
+  const pts=base.getPoints(EDGE_SEGS);
+  const rightPts=pts.map(p=>p.clone().add(new THREE.Vector3(0,0,dz)));
+  return { left: new THREE.CatmullRomCurve3(pts), right: new THREE.CatmullRomCurve3(rightPts) };
+}
+let gapDZ = mm(6);
+let edges = resectionPair(basePosterior, gapDZ);
+
+function stripFromCurve(curve, color, alpha=0.95, paintDepth=false){
   const pts = curve.getPoints(EDGE_SEGS);
   const geom = new THREE.BufferGeometry();
-  const vtx = new Float32Array((EDGE_SEGS+1)*2*3);
-  const idx = [];
+  const vtx = new Float32Array((EDGE_SEGS+1)*2*3), uv=new Float32Array((EDGE_SEGS+1)*2*2), idx=[];
   for(let i=0;i<=EDGE_SEGS;i++){
-    const p = pts[i];
-    const dir = (i<EDGE_SEGS? pts[i+1].clone().sub(pts[i]) : pts[i].clone().sub(pts[i-1])).normalize();
-    const up  = new THREE.Vector3(0,1,0);
-    const n = new THREE.Vector3().crossVectors(dir, up).normalize();
-    const a = p.clone().add(n.clone().multiplyScalar(STRIP_W/2));
-    const b = p.clone().add(n.clone().multiplyScalar(-STRIP_W/2));
-    vtx.set([a.x,a.y,a.z], i*6+0);
-    vtx.set([b.x,b.y,b.z], i*6+3);
-    if(i<EDGE_SEGS){ const k=i*2; idx.push(k,k+1,k+2,  k+1,k+3,k+2); }
+    const p=pts[i];
+    const dir=(i<EDGE_SEGS? pts[i+1].clone().sub(pts[i]) : pts[i].clone().sub(pts[i-1])).normalize();
+    const up=new THREE.Vector3(0,1,0);
+    const n=new THREE.Vector3().crossVectors(dir, up).normalize(); // lateral
+    const a=p.clone().add(n.clone().multiplyScalar(STRIP_W/2));
+    const b=p.clone().add(n.clone().multiplyScalar(-STRIP_W/2));
+    vtx.set([a.x,a.y,a.z], i*6+0); vtx.set([b.x,b.y,b.z], i*6+3);
+    uv.set([0, i/EDGE_SEGS], i*4+0); uv.set([1, i/EDGE_SEGS], i*4+2);
+    if(i<EDGE_SEGS){ const k=i*2; idx.push(k,k+1,k+2, k+1,k+3,k+2); }
   }
   geom.setAttribute('position', new THREE.BufferAttribute(vtx,3));
-  geom.setIndex(idx); geom.computeVertexNormals();
-  const mat = new THREE.MeshStandardMaterial({color, metalness:.08, roughness:.85, side:THREE.DoubleSide, transparent:true, opacity:alpha});
-  const mesh = new THREE.Mesh(geom, mat); mesh.castShadow=true; mesh.receiveShadow=true;
+  geom.setAttribute('uv', new THREE.BufferAttribute(uv,2));
+  geom.setIndex(idx);
+  geom.computeVertexNormals();
+
+  // depth bands texture (2–8 mm)
+  let mat;
+  if(paintDepth){
+    const c=document.createElement('canvas'); c.width=256; c.height=1024; const g=c.getContext('2d');
+    g.fillStyle='rgba(240,248,255,0.97)'; g.fillRect(0,0,256,1024);
+    g.strokeStyle='rgba(60,90,150,0.55)'; g.lineWidth=2;
+    // bands every 1 mm across strip width
+    for(let x=16;x<256;x+= (STRIP_W/6)*(256/STRIP_W) ){ g.beginPath(); g.moveTo(x,0); g.lineTo(x,1024); g.stroke(); }
+    // highlight 4–6 mm zone
+    const mm2px = 256/STRIP_W; const x1=Math.round((STRIP_W/2-6)*mm2px), x2=Math.round((STRIP_W/2-4)*mm2px);
+    g.fillStyle='rgba(255,235,153,0.35)'; g.fillRect(x1,0,(x2-x1),1024);
+    const tex=new THREE.CanvasTexture(c); tex.wrapS=tex.wrapT=THREE.RepeatWrapping; tex.repeat.set(1,1);
+    mat=new THREE.MeshStandardMaterial({map:tex, color:color, metalness:.06, roughness:.82, side:THREE.DoubleSide, transparent:true, opacity:alpha});
+  }else{
+    mat=new THREE.MeshStandardMaterial({color, metalness:.06, roughness:.82, side:THREE.DoubleSide, transparent:true, opacity:alpha, map:leafletTex});
+  }
+  const mesh=new THREE.Mesh(geom,mat); mesh.castShadow=mesh.receiveShadow=true;
   return mesh;
 }
-let leftStrip = makeStrip(left, 0xf0f6ff, 0.95);
-let rightStrip= makeStrip(right,0xe3ecff, 0.92);
+let leftStrip  = stripFromCurve(edges.left, 0xf1f7ff, 0.98, true);
+let rightStrip = stripFromCurve(edges.right,0xe7efff, 0.95, true);
 scene.add(leftStrip,rightStrip);
 
-const apexBall = new THREE.Mesh(new THREE.SphereGeometry(1.6), new THREE.MeshStandardMaterial({color:0xffd28a, metalness:.3, roughness:.5}));
-scene.add(apexBall); placeApex();
-
-function placeApex(){
-  const p = left.getPoint(EDGE_SEGS/2).clone().add(right.getPoint(EDGE_SEGS/2)).multiplyScalar(0.5);
-  apexBall.position.copy(p); apexBall.position.y += mm(0.6);
+// anterior leaflet (visual context)
+function anteriorSurface(){
+  // build a soft sail over the anterior half
+  const pts=[];
+  for(let i=ANN_RES*0.05;i<ANN_RES*0.55;i+= (ANN_RES*0.5)/42 ){
+    const p=annPts[Math.floor(i)%ANN_RES].clone();
+    const n=annPts[(Math.floor(i+1))%ANN_RES].clone().sub(annPts[(Math.floor(i-1+ANN_RES))%ANN_RES]).normalize();
+    const up=new THREE.Vector3(0,1,0);
+    const lat=new THREE.Vector3().crossVectors(n, up).normalize();
+    p.addScaledVector(lat, -mm(18)); // leaflet length
+    p.y -= mm(2)*Math.sin(i); // crown
+    pts.push(p);
+  }
+  const grid=new THREE.BufferGeometry().setFromPoints(pts);
+  // just use a tube to have a surface
+  const curve=new THREE.CatmullRomCurve3(pts);
+  const g=new THREE.TubeGeometry(curve, 42, 9, 32, false);
+  const m=new THREE.MeshStandardMaterial({map:leafletTex, color:0xf7fbff, metalness:.06, roughness:.82, transparent:true, opacity:0.22, side:THREE.DoubleSide});
+  const mesh=new THREE.Mesh(g,m); mesh.receiveShadow=true; return mesh;
 }
-function frameView(){
-  const box = new THREE.Box3().setFromObject(leftStrip).union(new THREE.Box3().setFromObject(rightStrip));
-  const c = box.getCenter(new THREE.Vector3());
-  controls.target.copy(c);
-  camera.position.set(c.x, c.y+60, c.z+150);
-}
+scene.add(anteriorSurface());
 
-/* ===== needle & rope ===== */
+// scallop labels
+function label(text,pos){
+  const c=document.createElement('canvas'); c.width=256; c.height=64; const g=c.getContext('2d');
+  g.fillStyle='rgba(0,0,0,0)'; g.fillRect(0,0,256,64); g.fillStyle='#cfe8ff'; g.font='bold 36px Segoe UI';
+  g.textAlign='center'; g.textBaseline='middle'; g.fillText(text,128,32);
+  const tex=new THREE.CanvasTexture(c);
+  const m=new THREE.SpriteMaterial({map:tex, transparent:true});
+  const s=new THREE.Sprite(m); s.scale.set(12,3,1); s.position.copy(pos.clone().add(new THREE.Vector3(0,6,0)));
+  scene.add(s);
+}
+label('P2 left edge', edges.left.getPoint(0.6));
+label('P2 right edge', edges.right.getPoint(0.6));
+
+/* ===================== needle & suture rope ===================== */
 const needleGroup = new THREE.Group(); scene.add(needleGroup);
 function makeNeedle(radius=mm(8), span=Math.PI*3/8){
-  const tube = new THREE.TorusGeometry(radius, 0.5, 16, 96, span);
-  const mat  = new THREE.MeshStandardMaterial({color:0x9ab5c9, metalness:.8, roughness:.25});
+  const tube = new THREE.TorusGeometry(radius, 0.5, 18, 96, span);
+  const mat  = new THREE.MeshStandardMaterial({color:0xa0b8cd, metalness:.8, roughness:.25});
   const mesh = new THREE.Mesh(tube, mat); mesh.rotation.y = Math.PI/2;
   return mesh;
 }
@@ -296,22 +419,19 @@ class Rope {
     }
   }
   mesh(){
-    const g = new THREE.BufferGeometry();
-    const pos = new Float32Array(this.nodes.length*3);
-    for(let i=0;i<this.nodes.length;i++){ const p=this.nodes[i]; pos.set([p.x,p.y,p.z], i*3); }
-    g.setAttribute('position', new THREE.BufferAttribute(pos,3));
-    const m = new THREE.LineBasicMaterial({color:0xfff2c2});
-    const line = new THREE.Line(g,m);
+    const geo=new LineGeometry();
+    const arr=[]; for(const p of this.nodes){ arr.push(p.x,p.y,p.z); }
+    geo.setPositions(arr);
+    const mat=new LineMaterial({ color:0xfff2c2, linewidth:2, worldUnits:true });
+    const line=new Line2(geo,mat); line.computeLineDistances();
     line.userData.update = ()=>{
-      const a = line.geometry.getAttribute('position');
-      for(let i=0;i<this.nodes.length;i++){ const p=this.nodes[i]; a.setXYZ(i,p.x,p.y,p.z); }
-      a.needsUpdate=true;
+      const a=[]; for(const p of this.nodes){ a.push(p.x,p.y,p.z); } geo.setPositions(a); geo.attributes.instanceStart && (geo.needsUpdate=true);
     };
     return line;
   }
 }
 
-/* ===== UI / task state ===== */
+/* ===================== interaction & UI ===================== */
 const ui = {
   mode: document.getElementById('mode'),
   caseSel: document.getElementById('case'),
@@ -319,23 +439,38 @@ const ui = {
   startBtn: document.getElementById('start'),
   resetBtn: document.getElementById('reset'),
   exportBtn: document.getElementById('export'),
+
   tool_place: document.getElementById('tool_place'),
   tool_tension: document.getElementById('tool_tension'),
   tool_remove: document.getElementById('tool_remove'),
   tool_finish: document.getElementById('tool_finish'),
+
   stepText: document.getElementById('stepText'),
   fb: document.getElementById('fb'),
+
   biteN: document.getElementById('biteN'),
   depthErr: document.getElementById('depthErr'),
   angleErr: document.getElementById('angleErr'),
   spacing: document.getElementById('spacing'),
   sym: document.getElementById('sym'),
   gap: document.getElementById('gap'),
+  time: document.getElementById('time'),
   overall: document.getElementById('overall'),
+
   tensionBox: document.getElementById('tensionBox'),
   tens: document.getElementById('tens'),
-  tv: document.getElementById('tv')
+  tv: document.getElementById('tv'),
+
+  coachFeed: document.getElementById('coachFeed'),
+  coachBox: document.getElementById('coachBox'),
+  coachTitle: document.getElementById('coachTitle'),
+  coachText: document.getElementById('coachText'),
+  coachPrev: document.getElementById('coachPrev'),
+  coachNext: document.getElementById('coachNext'),
+
+  ghostNext: document.getElementById('ghostNext')
 };
+
 let tool='place'; setTool('place');
 ui.tool_place.onclick  = ()=> setTool('place');
 ui.tool_tension.onclick= ()=> setTool('tension');
@@ -347,29 +482,25 @@ document.addEventListener('keydown', (e)=>{
   if(e.key==='f' || e.key==='F') finalize();
 });
 
-/* load cases */
-ui.loadBtn.onclick = ()=>{
-  caseKind = ui.caseSel.value==='p2_wide'? "wide" : ui.caseSel.value==='p2_small'? "small" : "mid";
-  gapDZ = (caseKind==="wide"? mm(8): caseKind==="small"? mm(4): mm(6));
+/* ===================== cases / camera framing ===================== */
+function loadCase(kind){
+  caseKind = kind==='p2_wide'?'wide':kind==='p2_small'?'small':'mid';
+  gapDZ = (caseKind==='wide'? mm(8): caseKind==='small'? mm(4): mm(6));
   scene.remove(leftStrip,rightStrip);
-  left = makeEdgeCurve(caseKind); right = offsetCurve(left, gapDZ);
-  leftStrip=makeStrip(left,0xf0f6ff,0.95); rightStrip=makeStrip(right,0xe3ecff,0.92);
-  scene.add(leftStrip,rightStrip); placeApex(); frameView(); clearAll();
-  ui.fb.textContent='Case loaded.';
-};
-ui.startBtn.onclick = ()=>{ ui.fb.textContent='Start: click left edge (entry), then right edge (exit).'; };
-ui.resetBtn.onclick = clearAll;
-ui.exportBtn.onclick = exportJSON;
-
-function setTool(t){
-  tool=t;
-  ['place','tension','remove','finish'].forEach(k=>{
-    document.getElementById('tool_'+k).classList.toggle('active', k===t);
-  });
-  ui.stepText.textContent = (t==='place' ? 'Click left edge (entry)' : t==='tension' ? 'Select last bite then adjust tension' : t==='remove' ? 'Remove last bite' : 'Finish & score');
+  basePosterior = posteriorEdgeCurve();
+  edges = resectionPair(basePosterior, gapDZ);
+  leftStrip  = stripFromCurve(edges.left,  0xf1f7ff, 0.98, true);
+  rightStrip = stripFromCurve(edges.right, 0xe7efff, 0.95, true);
+  scene.add(leftStrip,rightStrip);
+  placeApex(); frameView(); clearAll();
+}
+function frameView(){
+  const box = new THREE.Box3().setFromObject(leftStrip).union(new THREE.Box3().setFromObject(rightStrip));
+  const c = box.getCenter(new THREE.Vector3()); const s=box.getSize(new THREE.Vector3()).length();
+  controls.target.copy(c); camera.position.set(c.x, c.y+60, c.z+160);
 }
 
-/* ===== placement workflow ===== */
+/* ===================== picking ===================== */
 const ray = new THREE.Raycaster(); const mouse = new THREE.Vector2();
 renderer.domElement.addEventListener('pointermove',(e)=> {
   const r = renderer.domElement.getBoundingClientRect();
@@ -377,142 +508,170 @@ renderer.domElement.addEventListener('pointermove',(e)=> {
 });
 renderer.domElement.addEventListener('pointerdown', onClick);
 
-let step=0;           // 0: entry on LEFT, 1: exit on RIGHT
+/* ===================== task state ===================== */
+let step=0; // 0=entry(left), 1=exit(right)
 let entryP=null, exitP=null;
-const bites = [];     // stored bites
-let activeBiteIdx = -1;
+const bites = [];
+let sessionStart=now();
 
-function onClick(){
-  if(BUSY) return;                    // <-- FIX: lock during needle animation
-  if(tool!=='place') return;
+/* ===================== teaching script ===================== */
+const TEACH_STEPS = [
+  { id:'intro', title:'Orientation', text:'This is the posterior leaflet (P2) with a triangular wedge excised. \nDepth bands (2–8 mm) are painted on each edge. Target depth is 4–6 mm (gold zone). \nYou will place the apex bite first.' ,
+    gate: ()=>true },
+  { id:'apex', title:'Apex bite', text:'Place the apex bite: LEFT entry then RIGHT exit, both at ~5 mm depth and angle ~60°. \nTip: aim for the gold band; keep entry and exit symmetric.' ,
+    gate: ()=> bites.length>=1 && within(bites[0], {depth:[4,6], angle:15, sym:1.0}) },
+  { id:'midline', title:'Second bite (mid)', text:'Place the second bite ~5 mm from apex on both edges. Same rules: depth 4–6 mm, angle ~60°, symmetric.' ,
+    gate: ()=> bites.length>=2 && within(bites[1], {depth:[4,6], angle:15, sym:1.0}) },
+  { id:'series', title:'Complete series', text:'Complete closure with evenly spaced bites (~4–5 mm). Make sure spacing stays uniform. Then choose “Tighten knot”.',
+    gate: ()=> bites.length>=4 },
+  { id:'tension', title:'Tension & coaptation', text:'Switch to “Tighten knot” and adjust until the residual gap is minimal without strangulation (stay in green zone). Then “Finish & score”.',
+    gate: ()=>avgResidual()<=2.0 }
+];
+let teachIdx=0;
+function within(b, lim){ // simple acceptance
+  const okD = (b.depthL>=lim.depth[0] && b.depthL<=lim.depth[1] && b.depthR>=lim.depth[0] && b.depthR<=lim.depth[1]);
+  const okA = (b.angleErr<=lim.angle);
+  const okS = (b.symmetry<=lim.sym);
+  return okD && okA && okS;
+}
+function avgResidual(){ if(!bites.length) return Infinity; return bites.reduce((a,b)=>a+b.residual,0)/bites.length; }
+function showCoach(){
+  if(ui.mode.value!=='teach'){ ui.coachBox.style.display='none'; return; }
+  ui.coachBox.style.display='block';
+  ui.coachTitle.textContent = `Teaching — Step ${teachIdx+1}/${TEACH_STEPS.length}: ${TEACH_STEPS[teachIdx].title}`;
+  ui.coachText.textContent  = TEACH_STEPS[teachIdx].text;
+}
+ui.coachPrev.onclick = ()=>{ teachIdx=Math.max(0, teachIdx-1); showCoach(); };
+ui.coachNext.onclick = ()=>{ if(TEACH_STEPS[teachIdx].gate()) teachIdx=Math.min(TEACH_STEPS.length-1, teachIdx+1); showCoach(); };
 
-  ray.setFromCamera(mouse, camera);
-  const hitL = ray.intersectObject(leftStrip, false)[0];
-  const hitR = ray.intersectObject(rightStrip,false)[0];
-
-  if(step===0){
-    if(!hitL || hitL.object!==leftStrip){ ui.fb.textContent='Place entry on LEFT edge.'; return; } // strict
-    entryP = hitL.point.clone(); step=1;
-    ui.stepText.textContent='Click right edge (exit)'; ui.fb.textContent='Good. Now click exit on RIGHT edge.';
-    flash(entryP, 0x52e2c0);
-  } else {
-    if(!hitR || hitR.object!==rightStrip){ ui.fb.textContent='Place exit on RIGHT edge.'; return; } // strict
-    exitP = hitR.point.clone();
-    BUSY=true;
-    animateNeedle(entryP, exitP, ()=>{
-      const rope = new Rope(entryP, exitP, 18);
-      const line = rope.mesh(); scene.add(line);
-      bites.push( scoreBite(entryP, exitP, rope, line) );
-      activeBiteIdx = bites.length-1;
-      refreshScore();
-      step=0; entryP=null; exitP=null; BUSY=false;
-      ui.stepText.textContent='Click left edge (entry)';
-      ui.fb.textContent='Bite placed. Switch to “Tighten knot” to set tension.';
-    });
+/* ===================== coach / copilot feedback ===================== */
+function coachSay(msg){ ui.coachFeed.textContent = msg; }
+function aiCopilotAdvice(b){
+  const adv=[];
+  // angle
+  if(b.angleErr>25) adv.push('Angle too parallel — roll wrist to drive more perpendicular (~60°).');
+  else if(b.angleErr>15) adv.push('Slightly shallow angle — bias the needle toward perpendicular.');
+  // depth
+  if(b.depthL<4 || b.depthR<4) adv.push('Depth too shallow — move to gold band (4–6 mm).');
+  if(b.depthL>6 || b.depthR>6) adv.push('Depth too deep — stay within 4–6 mm band.');
+  // symmetry
+  if(Math.abs(b.depthL-b.depthR)>1.2) adv.push('Asymmetric entry/exit — adjust exit ~1–2 mm to match.');
+  // spacing
+  if(bites.length>1){
+    const spacing = b.entry.distanceTo(bites.at(-2).entry);
+    if(spacing<3.2) adv.push('Bites too close — target ~4–5 mm spacing.');
+    if(spacing>6.0) adv.push('Bites too far — target ~4–5 mm spacing.');
   }
-}
-function flash(p, color=0x52e2c0){
-  const m=new THREE.Mesh(new THREE.SphereGeometry(1.2), new THREE.MeshBasicMaterial({color}));
-  m.position.copy(p); scene.add(m); setTimeout(()=>scene.remove(m), 900);
+  if(!adv.length) adv.push('Nice bite. Maintain this pattern along the wedge.');
+  return adv.join('\n');
 }
 
-/* ===== scoring helpers ===== */
-function nearestOnCurve(curve, p){
+/* ===================== measurements ===================== */
+function nearestOn(curve, p){
   let bestT=0, bestD=1e9;
-  for(let i=0;i<=EDGE_SEGS;i++){ const t=i/EDGE_SEGS, q=curve.getPoint(t); const d=q.distanceTo(p); if(d<bestD){ bestD=d; bestT=t; } }
+  for(let i=0;i<=EDGE_SEGS;i++){ const t=i/EDGE_SEGS, q=curve.getPoint(t), d=q.distanceTo(p); if(d<bestD){ bestD=d; bestT=t; } }
   const q=curve.getPoint(bestT), tangent=curve.getTangent(bestT).normalize();
   const lateral=new THREE.Vector3().crossVectors(tangent,new THREE.Vector3(0,1,0)).normalize();
   return {pos:q,tangent,lateral};
 }
 function depthFromEdge(curve, p){
-  const pr=nearestOnCurve(curve,p); const d=p.clone().sub(pr.pos);
+  const pr=nearestOn(curve,p); const d=p.clone().sub(pr.pos);
   const depth = Math.abs(d.dot(pr.lateral));
   return {depth, tangent:pr.tangent, base:pr.pos, lateral:pr.lateral};
 }
-function angleErrorDegrees(edgeTangent, chordVec){
-  const edge = edgeTangent.clone().normalize();
-  const chord= chordVec.clone().normalize();
-  const d = clamp(Math.abs(edge.dot(chord)), 0, 1);      // <-- FIX: clamp dot
-  const ang = Math.acos(d) * 180/Math.PI;                // 0=parallel, 90=perp
-  return Math.abs(ang - 60); // target ~60°
+function angleError(edgeTangent, chordVec){
+  const edge=edgeTangent.clone().normalize(); const chord=chordVec.clone().normalize();
+  const d = clamp(Math.abs(edge.dot(chord)), 0, 1); const ang = Math.acos(d)*180/Math.PI;
+  return Math.abs(ang - 60);
 }
-function residualGapAfterTension(rope){
-  const L = rope.totalLength(), want = rope.restLen*rope.targetScale, gain=L-want;
-  return clamp( (gapDZ - gain*0.4), 0, gapDZ );
+function residualGap(rope){ const L=rope.totalLength(), want=rope.restLen*rope.targetScale, gain=L-want; return clamp((gapDZ - gain*0.4), 0, gapDZ); }
+
+/* ===================== place bite workflow ===================== */
+const ghostNext = ui.ghostNext;
+function hintNextTarget(){
+  if(ui.mode.value!=='practice'){ ghostNext.style.display='none'; return; }
+  // propose next position ~5 mm along arc from last entry
+  const last = bites.at(-1); if(!last){ ghostNext.style.display='block'; return; }
+  ghostNext.style.display='block';
+}
+let entryStrict=leftStrip, exitStrict=rightStrip;
+const raycaster = new THREE.Raycaster(), mouseN = new THREE.Vector2();
+function onClick(){
+  if(BUSY) return;
+  if(tool!=='place') return;
+
+  raycaster.setFromCamera(mouse, camera);
+  const hitL = raycaster.intersectObject(entryStrict, false)[0];
+  const hitR = raycaster.intersectObject(exitStrict , false)[0];
+
+  if(step===0){
+    if(!hitL || hitL.object!==leftStrip){ ui.fb.textContent='Place ENTRY on LEFT edge (gold band 4–6 mm).'; return; }
+    entryP = hitL.point.clone(); step=1;
+    ui.stepText.textContent='Click right edge (exit)'; ui.fb.textContent='Good. Now place EXIT on RIGHT edge.';
+    flash(entryP, 0xFFEB99);
+  } else {
+    if(!hitR || hitR.object!==rightStrip){ ui.fb.textContent='Place EXIT on RIGHT edge.'; return; }
+    exitP = hitR.point.clone();
+    BUSY=true;
+    animateNeedle(entryP, exitP, ()=>{
+      const rope=new Rope(entryP, exitP, 18); const line=rope.mesh(); scene.add(line);
+      const dL=depthFromEdge(edges.left , entryP); const dR=depthFromEdge(edges.right, exitP);
+      const chord=exitP.clone().sub(entryP); const angErr=angleError(dL.tangent, chord);
+      const symErr=Math.abs(dL.depth-dR.depth);
+      const spacing = bites.length? entryP.distanceTo(bites.at(-1).entry) : NaN;
+
+      const bite = {
+        entry:entryP.clone(), exit:exitP.clone(), rope, line,
+        depthL:dL.depth, depthR:dR.depth, angleErr:angErr, symmetry:symErr,
+        spacingFromPrev: spacing,
+        get residual(){ return residualGap(rope); },
+        get tension(){ return 1.0 - rope.targetScale; }
+      };
+      bites.push(bite);
+
+      // Copilot advice or teaching gate
+      if(ui.mode.value==='practice'){ coachSay(aiCopilotAdvice(bite)); }
+      if(ui.mode.value==='teach'){ if(TEACH_STEPS[teachIdx].gate()) teachIdx=Math.min(teachIdx+1, TEACH_STEPS.length-1); showCoach(); }
+
+      activeBiteIdx = bites.length-1;
+      showTensionFor(bite);
+      refreshScore();
+      step=0; entryP=null; exitP=null; BUSY=false;
+      ui.stepText.textContent='Click left edge (entry)'; ui.fb.textContent='Bite placed.';
+      hintNextTarget();
+    });
+  }
+}
+function flash(p, color=0xFFEB99){
+  const m=new THREE.Mesh(new THREE.SphereGeometry(1.4), new THREE.MeshBasicMaterial({color}));
+  m.position.copy(p); scene.add(m); setTimeout(()=>scene.remove(m), 900);
 }
 
-/* ===== scoring a bite ===== */
-function scoreBite(entry, exit, rope, line){
-  // one shared tension widget bound to the most recent bite
-  attachTensionWidget(rope, line);
-
-  const dL = depthFromEdge(left,  entry);
-  const dR = depthFromEdge(right, exit );
-  const chord = exit.clone().sub(entry);
-  const angErr = angleErrorDegrees(dL.tangent, chord);
-  const symErr = Math.abs(dL.depth - dR.depth);
-  const spacing = bites.length>0 ? entry.distanceTo(bites.at(-1).entry) : NaN;
-
-  return {
-    entry, exit, rope, line,
-    depthL:dL.depth, depthR:dR.depth, angleErr:angErr,
-    spacingFromPrev:spacing, symmetry:symErr,
-    get residual(){ return residualGapAfterTension(rope); },
-    get tension(){ return 1.0 - rope.targetScale; }
-  };
-}
-
-/* ===== tension widget (single, re-bound to active bite) ===== */
-function attachTensionWidget(rope, line){
-  const box = ui.tensionBox; const slider = ui.tens; const label = ui.tv;
-  box.style.display='block';
-  slider.value = rope.targetScale.toFixed(2);
-  const updateLabel = ()=>{ const t=1-parseFloat(slider.value); label.textContent = (t<0.05?'loose': t>0.25?'tight':'ok'); };
-  slider.oninput = ()=>{ rope.tighten(parseFloat(slider.value)); updateLabel(); };
+/* ===================== tension UI (single widget) ===================== */
+let activeBiteIdx = -1;
+function showTensionFor(b){
+  ui.tensionBox.style.display='block';
+  const slider=ui.tens, label=ui.tv;
+  slider.value = b.rope.targetScale.toFixed(2);
+  const updateLabel = ()=>{ const t=1-parseFloat(slider.value); label.textContent = (t<0.05?'loose': t>0.25?'tight':'ok'); label.style.color=(t<0.05?'#9fb3c4': t>0.25?'#ffb020':'#2ed573'); };
+  slider.oninput = ()=>{ b.rope.tighten(parseFloat(slider.value)); updateLabel(); };
   updateLabel();
-  // animate rope tightening with rAF (smoother than setInterval)
-  if (box._raf) cancelAnimationFrame(box._raf);
-  (function loop(){
-    rope.step(); line.userData.update && line.userData.update();
-    box._raf = requestAnimationFrame(loop);
-  })();
+
+  if(ui.mode.value==='practice'){
+    // live residual prompt
+    const r = b.residual; if(r>4) coachSay('Tension under-corrected — tighten until edges approximate (avoid strangulation).');
+  }
 }
 
-/* ===== remove / reset / finalize ===== */
-function removeLastBite(){
-  const b = bites.pop(); if(!b) return;
-  scene.remove(b.line); refreshScore(); ui.fb.textContent='Removed last bite.';
-  if(bites.length===0) ui.tensionBox.style.display='none';
-}
-function clearAll(){
-  while(bites.length){ const b=bites.pop(); scene.remove(b.line); }
-  entryP=null; exitP=null; step=0; activeBiteIdx=-1;
-  ui.biteN.textContent='0'; ui.depthErr.textContent='—'; ui.angleErr.textContent='—';
-  ui.spacing.textContent='—'; ui.sym.textContent='—'; ui.gap.textContent='—'; ui.overall.textContent='—';
-  ui.stepText.textContent='Click left edge (entry)'; ui.fb.textContent='—';
-  needleGroup.clear(); ui.tensionBox.style.display='none';
-}
-function finalize(){
-  if(bites.length===0){ ui.fb.textContent='Place at least one bite before finishing.'; return; }
-  const s = computeScores();
-  ui.fb.innerHTML = `<span class="${s.overall>=4?'ok':s.overall>=3?'warn':'bad'}">Finished. Overall ${s.overall.toFixed(1)}/5</span>`;
-}
+/* ===================== scoring & export ===================== */
+function mean(a){ return a.reduce((x,y)=>x+y,0)/a.length; }
+function stdev(a){ const m=mean(a); return Math.sqrt(mean(a.map(v=>(v-m)*(v-m)))); }
+function cv(a){ return mean(a)>0 ? stdev(a)/mean(a) : NaN; }
 
-/* ===== refresh metrics ===== */
-function refreshScore(){
-  const s = computeScores();
-  ui.biteN.textContent=bites.length+'';
-  ui.depthErr.textContent = isFinite(s.depthErr)? s.depthErr.toFixed(1)+' mm':'—';
-  ui.angleErr.textContent = isFinite(s.angleErr)? s.angleErr.toFixed(1)+'°':'—';
-  ui.spacing.textContent  = isFinite(s.spacingCV)? (s.spacingCV*100).toFixed(0)+'%':'—';
-  ui.sym.textContent      = isFinite(s.symErr)? s.symErr.toFixed(1)+' mm':'—';
-  ui.gap.textContent      = isFinite(s.resGap)? s.resGap.toFixed(1)+' mm':'—';
-  ui.overall.textContent  = isFinite(s.overall)? s.overall.toFixed(1)+'/5':'—';
-}
 function computeScores(){
-  if(bites.length===0) return {overall:NaN};
+  if(!bites.length) return {overall:NaN};
   const targetDepth=5;
-  let depthErrs=[], angErrs=[], spacings=[], symErrs=[], resGaps=[];
+  const depthErrs=[], angErrs=[], spacings=[], symErrs=[], resGaps=[];
   for(let i=0;i<bites.length;i++){
     const b=bites[i];
     depthErrs.push((Math.abs(b.depthL-targetDepth)+Math.abs(b.depthR-targetDepth))/2);
@@ -521,39 +680,76 @@ function computeScores(){
     symErrs.push(b.symmetry);
     resGaps.push(b.residual);
   }
-  const mean=a=>a.reduce((x,y)=>x+y,0)/a.length;
-  const stdev=a=>{ const m=mean(a); return Math.sqrt(mean(a.map(v=>(v-m)*(v-m)))); };
-  const cv=a=> mean(a)>0 ? stdev(a)/mean(a) : NaN;
   const dE=mean(depthErrs), aE=mean(angErrs), spCV=spacings.length?cv(spacings):NaN, sE=mean(symErrs), rG=mean(resGaps);
   const sDepth=clamp(5-dE*0.8,1,5), sAngle=clamp(5-Math.max(0,aE-5)*0.12,1,5), sSpace=isFinite(spCV)?clamp(5-spCV*8,1,5):3, sSym=clamp(5-sE*0.6,1,5), sGap=clamp(5-rG*0.6,1,5);
   const overall = (sDepth*0.28 + sAngle*0.18 + sSpace*0.18 + sSym*0.18 + sGap*0.18);
-  return {depthErr:dE, angleErr:aE, spacingCV:spCV, symErr:sE, resGap:rG, overall};
+  return {dE,aE,spCV,sE,rG,overall};
 }
-
-/* ===== export ===== */
+function refreshScore(){
+  const s=computeScores();
+  ui.biteN.textContent=bites.length+'';
+  ui.depthErr.textContent = isFinite(s.dE)? s.dE.toFixed(1)+' mm':'—';
+  ui.angleErr.textContent = isFinite(s.aE)? s.aE.toFixed(1)+'°':'—';
+  ui.spacing.textContent  = isFinite(s.spCV)? (s.spCV*100).toFixed(0)+'%':'—';
+  ui.sym.textContent      = isFinite(s.sE)? s.sE.toFixed(1)+' mm':'—';
+  ui.gap.textContent      = isFinite(s.rG)? s.rG.toFixed(1)+' mm':'—';
+  ui.overall.textContent  = isFinite(s.overall)? s.overall.toFixed(1)+'/5':'—';
+  ui.time.textContent     = ((now()-sessionStart)/1000).toFixed(1)+' s';
+}
 function exportJSON(){
   const payload = {
     when: new Date().toISOString(),
-    mode: ui.mode.value,
-    case: ui.caseSel.value,
-    bites: bites.map(b=>({
-      entry:{x:b.entry.x,y:b.entry.y,z:b.entry.z}, exit:{x:b.exit.x,y:b.exit.y,z:b.exit.z},
-      depthL:b.depthL, depthR:b.depthR, angleErr:b.angleErr, symmetry:b.symmetry,
-      tension:b.tension, residualGap:b.residual
-    })),
-    summary: computeScores()
+    mode: ui.mode.value, case: ui.caseSel.value,
+    bites: bites.map(b=>({ entry:b.entry, exit:b.exit, depthL:b.depthL, depthR:b.depthR, angleErr:b.angleErr, symmetry:b.symmetry, residual:b.residual, tension:b.tension })),
+    summary: computeScores(), time_s: ((now()-sessionStart)/1000).toFixed(1)
   };
   const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
-  const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='mitral_suture_session.json'; a.click(); URL.revokeObjectURL(url);
+  const url = URL.createObjectURL(blob); const a=document.createElement('a');
+  a.href=url; a.download='mitral_suture_session.json'; a.click(); URL.revokeObjectURL(url);
 }
 
-/* ===== render & resize ===== */
-function tick(){ requestAnimationFrame(tick); controls.update(); renderer.render(scene,camera); }
+/* ===================== remove / reset / finalize ===================== */
+function removeLastBite(){
+  const b=bites.pop(); if(!b) return; scene.remove(b.line); refreshScore(); ui.fb.textContent='Removed last bite.';
+  if(!bites.length) ui.tensionBox.style.display='none';
+}
+function clearAll(){
+  while(bites.length){ const b=bites.pop(); scene.remove(b.line); }
+  entryP=null; exitP=null; step=0; activeBiteIdx=-1; ui.tensionBox.style.display='none'; sessionStart=now();
+  ui.biteN.textContent='0'; ui.depthErr.textContent='—'; ui.angleErr.textContent='—'; ui.spacing.textContent='—'; ui.sym.textContent='—'; ui.gap.textContent='—'; ui.overall.textContent='—'; ui.time.textContent='—';
+  ui.stepText.textContent='Click left edge (entry)'; ui.fb.textContent='—'; needleGroup.clear();
+  if(ui.mode.value==='teach'){ teachIdx=0; showCoach(); }
+}
+function finalize(){
+  if(!bites.length){ ui.fb.textContent='Place at least one bite before finishing.'; return; }
+  const s = computeScores();
+  ui.fb.innerHTML = `<span class="${s.overall>=4?'ok':s.overall>=3?'warn':'bad'}">Finished. Overall ${s.overall.toFixed(1)}/5</span>`;
+  if(ui.mode.value==='practice'){
+    if(s.overall<3.5) coachSay('Run it again focusing on angle (aim 60°) and symmetric depth. I’ve tightened the gold band visibility.');
+    else coachSay('Strong work. You’re within target. Try a wide wedge next.');
+  }
+}
+
+/* ===================== toolbar wiring ===================== */
+ui.loadBtn.onclick = ()=>{ loadCase(ui.caseSel.value); };
+ui.startBtn.onclick= ()=>{ sessionStart=now(); if(ui.mode.value==='teach'){ ui.coachBox.style.display='block'; showCoach(); } if(ui.mode.value==='practice'){ ui.ghostNext.style.display='block'; } };
+ui.resetBtn.onclick= ()=>{ clearAll(); };
+ui.exportBtn.onclick= exportJSON;
+function setTool(t){ tool=t; ['place','tension','remove','finish'].forEach(k=>document.getElementById('tool_'+k).classList.toggle('active',k===t));
+  ui.stepText.textContent=(t==='place'?'Click left edge (entry)': t==='tension'?'Select last bite then adjust tension':''); }
+ui.mode.onchange = ()=>{ clearAll(); if(ui.mode.value==='teach'){ ui.coachBox.style.display='block'; showCoach(); ui.ghostNext.style.display='none'; } else if(ui.mode.value==='practice'){ ui.coachBox.style.display='none'; ui.ghostNext.style.display='block'; } else { ui.coachBox.style.display='none'; ui.ghostNext.style.display='none'; } };
+
+/* ===================== render loop & resize ===================== */
+function tick(){ requestAnimationFrame(tick);
+  // animate suture if widget open
+  if(activeBiteIdx>=0 && bites[activeBiteIdx]){ const b=bites[activeBiteIdx]; b.rope.step(); b.line.userData.update && b.line.userData.update(); }
+  controls.update(); renderer.render(scene,camera);
+}
 tick();
 window.addEventListener('resize', ()=>{ renderer.setSize(stage.clientWidth, stage.clientHeight); camera.aspect=stage.clientWidth/stage.clientHeight; camera.updateProjectionMatrix(); });
 
-/* ===== boot ===== */
-function boot(){ frameView(); setStatus('Ready','ok'); ui.fb.textContent='Load a case, then place bites (left→right). Tighten tension, finish & score.'; }
+/* ===================== boot ===================== */
+function boot(){ loadCase('p2_mid'); setStatus('Ready','ok'); ui.coachFeed.textContent='Select a mode: Teaching guides step-by-step; Practice gives AI Copilot tips; Assess scores strictly.'; }
 boot();
 </script>
 </body>
