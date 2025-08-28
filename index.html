@@ -112,10 +112,9 @@
   <!-- All logic inline as one ES module -->
   <script type="module">
     // External ESM modules
-    import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
-    import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
-    import { WebGPURenderer } from 'https://unpkg.com/three@0.160.0/examples/jsm/renderers/webgpu/WebGPURenderer.js';
-
+    import * as THREE from 'https://esm.sh/three@0.160.0';
+    import { OrbitControls } from 'https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+    import { WebGPURenderer } from 'https://esm.sh/three@0.160.0/examples/jsm/renderers/webgpu/WebGPURenderer.js';
     // =============== Engine Core ===============
     class EventBus extends EventTarget {
       on(type, listener) { this.addEventListener(type, listener); }
