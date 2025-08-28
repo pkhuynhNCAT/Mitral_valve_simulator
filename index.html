@@ -1134,7 +1134,7 @@
     (async function main(){
       try {
         const canvas = document.getElementById('sim');
-        const engine = new Engine({ canvas, useWebGPU: true, fixedHz: 120 });
+        const engine = new Engine({ canvas, useWebGPU: false, fixedHz: 120 });        
         engine.addPlugin(new SurgicalShellPlugin());
         engine.addPlugin(new LeafletXPBDPlugin());            // posterior
         engine.addPlugin(new NeedleDriverPlugin());           // tool
