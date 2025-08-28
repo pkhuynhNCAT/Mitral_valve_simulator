@@ -1,732 +1,1870 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<title>Mitral Valve Suturing — Single-File Simulator</title>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<style>
-  html, body { height:100%; margin:0; background:#0b0f12; color:#e9eef2; font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, sans-serif; }
-  #wrap { position:fixed; inset:0; }
-  #gl { width:100%; height:100%; display:block; }
-  .ui { position:fixed; inset:0; pointer-events:none; }
-  .panel { pointer-events:auto; background:rgba(12,16,20,.64); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:10px 12px; backdrop-filter: blur(8px); }
-  .top-left { position:absolute; top:10px; left:10px; max-width:380px; }
-  .top-right { position:absolute; top:10px; right:10px; max-width:380px; }
-  .bottom-right { position:absolute; bottom:10px; right:10px; max-width:360px; }
-  .btn { padding:8px 12px; border-radius:8px; border:1px solid #2a3947; background:#12202b; color:#cde0f0; cursor:pointer; }
-  .btn:hover { filter:brightness(1.2); }
-  .badge { display:inline-block; padding:2px 6px; border-radius:6px; border:1px solid #2b3b49; background:#10191f; font-size:12px; color:#9ec5ff; }
-  .meter { height:8px; background:#0f1a21; border:1px solid #2a3845; border-radius:999px; overflow:hidden; }
-  .meter>i { display:block; height:100%; background:linear-gradient(90deg,#3bb273,#5cd1a6); width:0%; }
-  ul { margin:6px 0; padding-left:18px; }
-  a { color:#7fc6ff; }
-  canvas#radar { width:220px; height:120px; background:rgba(255,255,255,0.03); border-radius:8px; display:block; }
-</style>
+  <meta charset="utf-8" />
+  <title>Mitral Valve Simulator — Professional Web App (Foundation)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="color-scheme" content="dark light" />
+  <meta name="description" content="Professional mitral valve training simulator with AI guidance and scoring." />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="theme-color" content="#0b0f12" />
+  <style>
+    /* ---------------------- Design System (Tokens) ---------------------- */
+    :root {
+      --bg: #0b0f12;
+      --bg-2: #0e141a;
+      --panel: rgba(12, 16, 20, 0.64);
+      --panel-border: rgba(255,255,255,0.08);
+      --text: #e9eef2;
+      --muted: #9fb3c8;
+      --brand: #7fc6ff;
+      --ok: #a7e3b8;
+      --warn: #ffde84;
+      --danger: #ff968a;
+      --accent-1: #66ff99;
+      --accent-2: #89c2ff;
+      --grid: #1b2a35;
+      --grid-2: #243744;
+
+      --radius: 14px;
+      --shadow: 0 6px 24px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.03);
+      --blur: blur(10px);
+
+      --font: system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+
+      --pad: 12px;
+      --pad-lg: 16px;
+      --pad-xl: 20px;
+    }
+    @media (prefers-color-scheme: light) {
+      :root { --text:#0f1418; --panel-border: rgba(0,0,0,.12); --panel: rgba(255,255,255,0.75); --bg:#f9fbfd; --bg-2:#eef4f9; }
+    }
+
+    /* ---------------------- Reset / Base ---------------------- */
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; background: radial-gradient(1200px 700px at 70% -10%, #12212c 0%, var(--bg) 48%) no-repeat;
+      color: var(--text); font-family: var(--font); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+    }
+    a { color: var(--brand); text-decoration: none; }
+    button { font: inherit; }
+
+    /* ---------------------- Layout ---------------------- */
+    #app {
+      position: fixed; inset: 0; display: grid; grid-template-rows: auto 1fr auto; gap: 0;
+    }
+    header#topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--pad-lg) var(--pad-xl); backdrop-filter: var(--blur);
+      background: linear-gradient(180deg, rgba(12,16,20,.75), rgba(12,16,20,.35));
+      border-bottom: 1px solid var(--panel-border);
+    }
+    #brand { display:flex; gap:12px; align-items:center; }
+    #brand .mark { width:30px; height:30px; border-radius:8px; background: linear-gradient(135deg, #1e3b55, #174a63); box-shadow: var(--shadow); display:grid; place-items:center; }
+    #brand .name { font-weight: 700; letter-spacing: .2px; }
+    #brand .sub { font-size: 12px; color: var(--muted); }
+
+    #main {
+      position: relative; overflow: hidden;
+      background:
+        radial-gradient(900px 500px at 10% 110%, #0a151d 0%, transparent 60%),
+        radial-gradient(900px 500px at 120% -10%, #0a151d 0%, transparent 60%);
+    }
+
+    /* Canvas */
+    #simWrap { position:absolute; inset:0; }
+    #sim { width: 100%; height: 100%; display: block; background: transparent; }
+
+    /* Panels */
+    .panel {
+      position: absolute; padding: 12px 14px; max-width: 420px;
+      background: var(--panel); border: 1px solid var(--panel-border);
+      box-shadow: var(--shadow); border-radius: var(--radius);
+      backdrop-filter: var(--blur);
+    }
+    .panel h3, .panel h4 { margin: 6px 0 8px; }
+    .panel .muted { color: var(--muted); }
+    .panel .row { display:flex; gap:8px; align-items:center; flex-wrap: wrap; }
+    .panel .grid { display:grid; gap:8px 14px; align-items:center; grid-template-columns: auto auto; }
+    .tl { top: 14px; left: 14px; }
+    .tr { top: 14px; right: 14px; }
+    .br { bottom: 14px; right: 14px; }
+    .bl { bottom: 14px; left: 14px; }
+
+    .badge {
+      display:inline-block; padding:2px 6px; font-size:12px; color: var(--brand);
+      border: 1px solid var(--panel-border); border-radius: 8px; background: rgba(255,255,255,.03);
+    }
+    .btn {
+      padding: 8px 12px; border-radius: 10px; cursor: pointer; border: 1px solid #2a3947;
+      background: linear-gradient(180deg, #0f1a22, #0e1720); color: #cfe5f8;
+      transition: transform .08s ease, filter .08s ease; user-select: none;
+    }
+    .btn:hover { filter: brightness(1.15); }
+    .btn:active { transform: translateY(1px); }
+    .btn.ghost { background: transparent; color: var(--brand); border-color: #2b3b49; }
+
+    /* HUD meters */
+    .meter { height: 10px; background: #0e151b; border: 1px solid #283645; border-radius: 999px; overflow: hidden; }
+    .meter > i { display:block; height:100%; width:0%; background: linear-gradient(90deg, #3bb273, #5cd1a6); transition: width .18s ease; }
+
+    /* Coach list */
+    ul#coachList { margin: 6px 0; padding-left: 18px; }
+    ul#coachList li { margin: 3px 0; }
+    .info { color: var(--ok); } .warn { color: var(--warn); } .danger { color: var(--danger); }
+
+    /* Score card */
+    #scoreCard { width: 260px; padding-bottom: 8px; }
+    #radar { width: 230px; height: 130px; display:block; background: rgba(255,255,255,0.03); border-radius: 10px; }
+
+    /* Status bar */
+    #statusbar {
+      display:flex; gap:14px; align-items:center; justify-content:space-between;
+      padding: 8px 14px; font-size: 12px; color: var(--muted);
+      border-top: 1px solid var(--panel-border); background: rgba(0,0,0,.2);
+    }
+    #log { font-family: var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Toasts */
+    #toasts { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); display:grid; gap:8px; z-index: 20; }
+    .toast {
+      background: var(--panel); border: 1px solid var(--panel-border); box-shadow: var(--shadow);
+      border-radius: 10px; padding: 10px 12px; min-width: 260px; text-align: center;
+      animation: toast-in .18s ease-out;
+    }
+    @keyframes toast-in { from { transform: translateY(8px); opacity: .0; } to { transform: translateY(0); opacity: 1; } }
+
+    /* Error overlay */
+    #errorOverlay {
+      position: fixed; inset: 0; display:none; place-items:center; z-index: 50;
+      background: linear-gradient(180deg, rgba(28,6,6,.9), rgba(12,0,0,.94));
+      color: #ffe5e5; text-align: left;
+    }
+    #errorOverlay .box {
+      max-width: 900px; background: rgba(20,0,0,.6); border: 1px solid rgba(255,0,0,.25);
+      padding: 18px; border-radius: 12px; font-family: var(--mono); white-space: pre-wrap; box-shadow: var(--shadow);
+    }
+
+    /* Modal (Settings / Help) */
+    dialog.modal {
+      border: 1px solid var(--panel-border);
+      background: var(--panel); color: var(--text);
+      border-radius: var(--radius); padding: 0; width: min(680px, 96vw); box-shadow: var(--shadow);
+    }
+    .modal header { padding: 12px 14px; border-bottom: 1px solid var(--panel-border); display:flex; justify-content:space-between; align-items:center; }
+    .modal .content { padding: 14px; }
+    .modal footer { padding: 12px 14px; border-top: 1px solid var(--panel-border); display:flex; justify-content:flex-end; gap:10px; }
+    dialog::backdrop { background: rgba(0,0,0,.55); }
+
+    /* Reduce motion */
+    @media (prefers-reduced-motion: reduce) {
+      .btn, .meter > i { transition: none; }
+    }
+  </style>
 </head>
 <body>
-<div id="wrap">
-  <canvas id="gl"></canvas>
-  <div class="ui">
-    <div class="panel top-left">
-      <h3 style="margin:6px 0 8px">Mitral Valve Suturing — <span id="modeLabel">TUTORIAL</span></h3>
-      <div style="display:flex; gap:8px; flex-wrap:wrap">
-        <button class="btn" id="btnTutorial">Tutorial</button>
-        <button class="btn" id="btnPractice">Practice</button>
-        <button class="btn" id="btnExam">Exam</button>
-        <button class="btn" id="btnReset">Reset</button>
+  <div id="app" aria-busy="true">
+    <header id="topbar" aria-label="Application Top Bar">
+      <div id="brand" role="banner" aria-roledescription="brand">
+        <div class="mark" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="#9ad1ff" aria-hidden="true">
+            <path d="M8 1c-3.9 0-7 3.1-7 7 0 2.8 1.6 5.2 4 6.3.4.2.9-.2.8-.6-.2-.7-.4-1.7-.4-2.7 0-2 1.3-3.3 2.2-3.3.8 0 1.2.6 1.2 1.3 0 .8-.5 2-0.8 3-.2.8.4 1.5 1.2 1.5 2.4 0 4.3-2.2 4.3-5 0-3.7-3.1-6.5-6.5-6.5z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="name" aria-label="App Name">Mitral Valve Simulator</div>
+          <div class="sub">Professional training • AI guidance • Scoring</div>
+        </div>
       </div>
-      <p style="opacity:.8;margin-top:8px">Left-move: move driver • Right-drag: rotate • Space: clamp • Enter: take stitch</p>
-      <div style="display:grid; grid-template-columns:auto auto; gap:6px 12px; align-items:center">
-        <span class="badge">Bite depth</span><strong id="hudDepth">—</strong>
-        <span class="badge">Entry angle</span><strong id="hudAngle">—</strong>
-        <span class="badge">Tension</span><strong id="hudTension">—</strong>
+      <div class="row" role="toolbar" aria-label="Global actions">
+        <button class="btn ghost" id="btnHelp" aria-haspopup="dialog" aria-controls="dlgHelp">Help</button>
+        <button class="btn ghost" id="btnSettings" aria-haspopup="dialog" aria-controls="dlgSettings">Settings</button>
+        <button class="btn" id="btnReset" title="Reset session (R)">Reset</button>
       </div>
-      <div class="meter" style="margin-top:8px"><i id="tensionBar" style="width:0%"></i></div>
-    </div>
-    <div class="panel top-right">
-      <h4 style="margin:6px 0">AI Co-Pilot</h4>
-      <ul id="adviceList"><li style="opacity:.7">Take a stitch (Enter) to receive feedback.</li></ul>
-      <p style="opacity:.6;font-size:12px;margin-top:8px">Tips appear after each stitch. In Exam mode, only safety alerts.</p>
-    </div>
-    <div class="panel bottom-right">
-      <h4 style="margin:6px 0">Performance</h4>
-      <canvas id="radar" width="220" height="120"></canvas>
-      <div style="display:flex; gap:12px; margin-top:8px">
-        <div><div class="badge">Stitches</div><div id="sumStitches" style="margin-top:4px;font-weight:700">0</div></div>
-        <div><div class="badge">Score</div><div id="sumScore" style="margin-top:4px;font-weight:700">—</div></div>
+    </header>
+
+    <main id="main" role="main" aria-label="Simulation">
+      <div id="simWrap" aria-live="polite">
+        <canvas id="sim" aria-label="Simulation Canvas"></canvas>
+
+        <!-- Top-left: Mode & HUD -->
+        <section class="panel tl" id="panelHUD" aria-label="Mode and HUD">
+          <h3>Mode: <span id="mode" class="badge" aria-live="polite">TUTORIAL</span></h3>
+          <div class="row" style="margin-bottom:8px">
+            <button class="btn" id="mTutorial">Tutorial</button>
+            <button class="btn" id="mPractice">Practice</button>
+            <button class="btn" id="mExam">Exam</button>
+          </div>
+
+          <div class="grid" role="group" aria-label="Live metrics">
+            <span class="badge">Bite depth</span><strong id="hudDepth">—</strong>
+            <span class="badge">Entry angle</span><strong id="hudAngle">—</strong>
+            <span class="badge">Tension</span><strong id="hudTension">—</strong>
+          </div>
+          <div class="meter" style="margin-top:8px" aria-label="Tension meter"><i id="tensionBar"></i></div>
+          <p class="muted" style="margin:8px 0 0">Controls: Left-move to position • Right-drag to rotate • <kbd>Space</kbd> clamp • <kbd>Enter</kbd> stitch</p>
+        </section>
+
+        <!-- Top-right: Coach -->
+        <section class="panel tr" id="panelCoach" aria-label="AI Co-Pilot">
+          <h4 style="margin:6px 0">AI Co-Pilot</h4>
+          <ul id="coachList"><li class="muted">Take a stitch to receive feedback.</li></ul>
+          <p class="muted" style="font-size:12px;margin-top:8px">Exam mode only surfaces safety alerts.</p>
+        </section>
+
+        <!-- Bottom-right: Score -->
+        <section class="panel br" id="scoreCard" aria-label="Performance">
+          <h4 style="margin:6px 0">Performance</h4>
+          <canvas id="radar" width="230" height="130" aria-label="Score radar"></canvas>
+          <div class="row" style="margin-top:8px">
+            <div><div class="badge">Stitches</div><div id="sumStitches" style="margin-top:4px;font-weight:700">0</div></div>
+            <div><div class="badge">Score</div><div id="sumScore" style="margin-top:4px;font-weight:700">—</div></div>
+          </div>
+        </section>
+
+        <!-- Bottom-left: Debug / Perf -->
+        <section class="panel bl" id="perfPanel" aria-label="Performance Panel" style="min-width:240px">
+          <h4 style="margin:6px 0">System</h4>
+          <div class="grid" style="grid-template-columns:auto 1fr">
+            <span class="badge">Renderer</span><span id="gpuRenderer" class="muted">—</span>
+            <span class="badge">WebGL</span><span id="glCaps" class="muted">—</span>
+            <span class="badge">FPS</span><span id="fps" class="muted">—</span>
+          </div>
+        </section>
       </div>
-      <p style="opacity:.7; font-size:12px; margin-top:8px">Radar = normalized deviations from targets.</p>
+    </main>
+
+    <footer id="statusbar" role="contentinfo" aria-live="polite">
+      <div id="log">Booting…</div>
+      <div class="row">
+        <span class="muted">v0.1 • Foundation</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Toasts -->
+  <div id="toasts" aria-live="assertive" aria-atomic="true"></div>
+
+  <!-- Error Overlay -->
+  <div id="errorOverlay" role="alertdialog" aria-modal="true" aria-labelledby="errTitle">
+    <div class="box">
+      <div id="errTitle" style="font-weight:700;margin-bottom:8px">A fatal error occurred</div>
+      <div id="errBody"></div>
+      <div style="margin-top:8px"><button class="btn" onclick="location.reload()">Reload</button></div>
     </div>
   </div>
-</div>
 
-<script>
-/* ===== Tiny linear algebra (vec3/mat4) ===== */
-const v3 = {
-  create: (x=0,y=0,z=0)=>new Float32Array([x,y,z]),
-  set: (o,x,y,z)=>{o[0]=x;o[1]=y;o[2]=z;return o;},
-  add:(o,a,b)=>{o[0]=a[0]+b[0];o[1]=a[1]+b[1];o[2]=a[2]+b[2];return o;},
-  sub:(o,a,b)=>{o[0]=a[0]-b[0];o[1]=a[1]-b[1];o[2]=a[2]-b[2];return o;},
-  scale:(o,a,s)=>{o[0]=a[0]*s;o[1]=a[1]*s;o[2]=a[2]*s;return o;},
-  cross:(o,a,b)=>{const ax=a[0],ay=a[1],az=a[2],bx=b[0],by=b[1],bz=b[2];o[0]=ay*bz-az*by;o[1]=az*bx-ax*bz;o[2]=ax*by-ay*bx;return o;},
-  dot:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],
-  len:(a)=>Math.hypot(a[0],a[1],a[2]),
-  norm:(o,a)=>{const L=v3.len(a)||1;return v3.scale(o,a,1/L);}
-};
-const m4 = {
-  create:()=>new Float32Array([1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]),
-  mul:(o,a,b)=>{const r=new Float32Array(16);
-    for(let i=0;i<4;i++){for(let j=0;j<4;j++){r[i*4+j]=a[i*4+0]*b[0*4+j]+a[i*4+1]*b[1*4+j]+a[i*4+2]*b[2*4+j]+a[i*4+3]*b[3*4+j];}}
-    o.set(r);return o;},
-  translate:(o,a,x,y,z)=>{o.set(a);o[12]+=x;o[13]+=y;o[14]+=z;return o;},
-  rotX:(o,a,rad)=>{const c=Math.cos(rad),s=Math.sin(rad);const r=m4.create();
-    r[5]=c;r[6]=s;r[9]=-s;r[10]=c;return m4.mul(o,a,r);},
-  rotY:(o,a,rad)=>{const c=Math.cos(rad),s=Math.sin(rad);const r=m4.create();
-    r[0]=c;r[2]=-s;r[8]=s;r[10]=c;return m4.mul(o,a,r);},
-  scale:(o,a,x,y,z)=>{const r=m4.create();r[0]=x;r[5]=y;r[10]=z;return m4.mul(o,a,r);},
-  perspective:(o,fovy,aspect,near,far)=>{const f=1/Math.tan(fovy/2);o.fill(0);
-    o[0]=f/aspect;o[5]=f;o[10]=(far+near)/(near-far);o[11]=-1;o[14]=(2*far*near)/(near-far);return o;},
-  lookAt:(o,eye,center,up)=>{
-    const z=v3.create(); v3.sub(z,eye,center); v3.norm(z,z);
-    const x=v3.create(); v3.cross(x,up,z); v3.norm(x,x);
-    const y=v3.create(); v3.cross(y,z,x);
-    o.set([x[0],y[0],z[0],0, x[1],y[1],z[1],0, x[2],y[2],z[2],0, -v3.dot(x,eye),-v3.dot(y,eye),-v3.dot(z,eye),1]); return o;
+  <!-- Settings Modal -->
+  <dialog id="dlgSettings" class="modal" aria-labelledby="dlgSettingsTitle">
+    <header>
+      <h3 id="dlgSettingsTitle">Settings</h3>
+      <button class="btn ghost" onclick="(document.getElementById('dlgSettings')).close()">Close</button>
+    </header>
+    <div class="content">
+      <div class="grid" style="grid-template-columns: 1fr auto; align-items:center;">
+        <label for="chkHiDPI">High DPI Rendering</label><input id="chkHiDPI" type="checkbox" checked />
+        <label for="rngExposure">Exposure</label><input id="rngExposure" type="range" min="0.6" max="1.6" step="0.05" value="1.0" />
+        <label for="chkPerf">Show FPS</label><input id="chkPerf" type="checkbox" checked />
+      </div>
+    </div>
+    <footer><button class="btn" onclick="(document.getElementById('dlgSettings')).close()">Done</button></footer>
+  </dialog>
+
+  <!-- Help Modal -->
+  <dialog id="dlgHelp" class="modal" aria-labelledby="dlgHelpTitle">
+    <header>
+      <h3 id="dlgHelpTitle">Help</h3>
+      <button class="btn ghost" onclick="(document.getElementById('dlgHelp')).close()">Close</button>
+    </header>
+    <div class="content">
+      <p><strong>Goal:</strong> Practice precise posterior leaflet suturing with safe depth, spacing, and angle.</p>
+      <ul>
+        <li><b>Left move</b> to position instrument, <b>Right-drag</b> to rotate.</li>
+        <li><kbd>Space</kbd> toggles clamp; <kbd>Enter</kbd> takes a stitch.</li>
+        <li>Modes: <i>Tutorial</i> (assists), <i>Practice</i> (coaching), <i>Exam</i> (safety alerts).</li>
+      </ul>
+      <p class="muted" style="font-size:12px">Foundation build includes diagnostics & self-test; physics/AI/valve arrive in subsequent parts.</p>
+    </div>
+    <footer><button class="btn" onclick="(document.getElementById('dlgHelp')).close()">Got it</button></footer>
+  </dialog>
+
+  <!-- ======================== BOOTSTRAP / FOUNDATION SCRIPT ======================== -->
+  <script type="module">
+    // =============== Utilities & Diagnostics ===============
+    const $ = sel => document.querySelector(sel);
+    const logEl = $('#log');
+    const perfEl = { fps: $('#fps'), gpu: $('#gpuRenderer'), caps: $('#glCaps') };
+    function log(msg) { logEl.textContent = msg; }
+    function toast(msg, cls='') {
+      const t = document.createElement('div'); t.className = 'toast ' + cls; t.textContent = msg;
+      const wrap = document.getElementById('toasts'); wrap.appendChild(t);
+      setTimeout(()=> { t.style.opacity='0'; setTimeout(()=>wrap.removeChild(t), 180); }, 1800);
+    }
+    function showError(err) {
+      const body = document.getElementById('errBody');
+      const ov = document.getElementById('errorOverlay');
+      body.textContent = String(err?.stack || err?.message || err);
+      ov.style.display = 'grid';
+    }
+    function tryGuard(fn) { try { fn(); } catch (e) { console.error(e); showError(e); } }
+
+    // =============== Service Worker (inline, single-file friendly) ===============
+    tryGuard(() => {
+      if ('serviceWorker' in navigator) {
+        const swCode = `
+          self.addEventListener('install', e => { self.skipWaiting(); });
+          self.addEventListener('activate', e => { e.waitUntil(self.clients.claim()); });
+          self.addEventListener('fetch', e => {
+            // Cache-first for this single document and same-origin assets
+            e.respondWith((async () => {
+              const url = new URL(e.request.url);
+              if (url.origin !== location.origin) return fetch(e.request);
+              const cache = await caches.open('mitral-sim-cache-v1');
+              const cached = await cache.match(e.request);
+              if (cached) return cached;
+              const res = await fetch(e.request);
+              if (e.request.method === 'GET' && res.status === 200 && res.type === 'basic') {
+                cache.put(e.request, res.clone());
+              }
+              return res;
+            })());
+          });
+        `;
+        const blob = new Blob([swCode], { type: 'text/javascript' });
+        const swUrl = URL.createObjectURL(blob);
+        navigator.serviceWorker.register(swUrl).catch(console.warn);
+      }
+    });
+
+    // =============== Input Layer ===============
+    const modeEl = document.getElementById('mode');
+    const ui = {
+      setMode: m => { modeEl.textContent = m.toUpperCase(); state.mode = m; },
+      setHUD: (depth, angle, tension) => {
+        document.getElementById('hudDepth').textContent = isFinite(depth) ? depth.toFixed(1) + ' mm' : '—';
+        document.getElementById('hudAngle').textContent = isFinite(angle) ? Math.round(angle) + '°' : '—';
+        document.getElementById('hudTension').textContent = isFinite(tension) ? tension.toFixed(2) + ' N' : '—';
+        document.getElementById('tensionBar').style.width = Math.max(0, Math.min(1, (tension || 0) / 1.2)) * 100 + '%';
+      },
+      setCoach: (items) => {
+        const ul = document.getElementById('coachList'); ul.innerHTML = '';
+        if (!items || !items.length) { const li = document.createElement('li'); li.className='muted'; li.textContent='No advice.'; ul.appendChild(li); return; }
+        for (const { level, text } of items) {
+          const li = document.createElement('li'); li.className = level || 'info'; li.textContent = text; ul.appendChild(li);
+        }
+      },
+      setScore: (stitches, score) => {
+        document.getElementById('sumStitches').textContent = stitches;
+        document.getElementById('sumScore').textContent = isFinite(score) ? String(Math.round(score)) : '—';
+      },
+      drawRadar: ({ depth, spacing, angle, tension, score }) => {
+        const c = document.getElementById('radar'); const ctx = c.getContext('2d');
+        ctx.clearRect(0,0,c.width,c.height);
+        const cx=150, cy=72, r=46, labels=['depth','spacing','angle','tension'];
+        function normDepth(v){ const lo=2, hi=3; if(v==null) return 0; if(v>=lo && v<=hi) return 1; const d=(v<lo)?lo-v:v-hi; return Math.max(0,1-d/1.0); }
+        function normSpacing(v){ const lo=2, hi=3; if(v==null) return 0; if(v>=lo && v<=hi) return 1; const d=(v<lo)?lo-v:v-hi; return Math.max(0,1-d/1.0); }
+        function normAngle(v){ const lo=60, hi=90; if(v==null) return 0; if(v>=lo&&v<=hi) return 1; const d=(v<lo)?lo-v:v-hi; return Math.max(0,1-d/12); }
+        function normTension(v){ const lim=1.0; if(v==null) return 0; return Math.max(0,1-(Math.max(0,v-lim)/0.5)); }
+        const vals=[normDepth(depth), normSpacing(spacing), normAngle(angle), normTension(tension)];
+        ctx.strokeStyle='#35546f'; ctx.fillStyle='rgba(127,198,255,0.16)'; ctx.lineWidth=1;
+        for(let ring=1; ring<=3; ring++){
+          ctx.beginPath();
+          for(let i=0;i<labels.length;i++){
+            const a = i/labels.length*Math.PI*2 - Math.PI/2;
+            const rr = r*ring/3, x=cx+Math.cos(a)*rr, y=cy+Math.sin(a)*rr;
+            if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+          } ctx.closePath(); ctx.stroke();
+        }
+        ctx.beginPath();
+        for(let i=0;i<labels.length;i++){
+          const a = i/labels.length*Math.PI*2 - Math.PI/2;
+          const rr = r*vals[i], x=cx+Math.cos(a)*rr, y=cy+Math.sin(a)*rr;
+          if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+        }
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.font='bold 28px var(--font)'; ctx.fillStyle='#a7e3b8';
+        ctx.fillText(isFinite(score)? String(Math.round(score)) : '—', 12, 48);
+      }
+    };
+
+    // Mode buttons
+    document.getElementById('mTutorial').onclick = () => ui.setMode('tutorial');
+    document.getElementById('mPractice').onclick = () => ui.setMode('practice');
+    document.getElementById('mExam').onclick = () => ui.setMode('exam');
+    document.getElementById('btnReset').onclick = () => resetSession();
+    document.getElementById('btnSettings').onclick = () => document.getElementById('dlgSettings').showModal();
+    document.getElementById('btnHelp').onclick = () => document.getElementById('dlgHelp').showModal();
+    document.getElementById('chkPerf').onchange = (e)=> perf.enabled = e.target.checked;
+    document.getElementById('chkHiDPI').onchange = ()=> resize();
+    document.getElementById('rngExposure').oninput = (e)=> exposure = +e.target.value;
+
+    // Shortcuts
+    window.addEventListener('keydown', (e)=>{
+      if (e.key === 'r' || e.key === 'R') resetSession();
+      if (e.key === '1') ui.setMode('tutorial');
+      if (e.key === '2') ui.setMode('practice');
+      if (e.key === '3') ui.setMode('exam');
+      if (e.key === '?') document.getElementById('dlgHelp').showModal();
+    });
+
+    // =============== GL Boot (Self-test Renderer) ===============
+    const canvas = document.getElementById('sim');
+    /** @type {WebGL2RenderingContext | WebGLRenderingContext} */
+    let gl = canvas.getContext('webgl2', { antialias:true, alpha:false, desynchronized:true }) ||
+             canvas.getContext('webgl',  { antialias:true, alpha:false, desynchronized:true });
+
+    const caps = {
+      isWebGL2: !!(gl && gl instanceof WebGL2RenderingContext),
+      debugRenderer: null
+    };
+    if (!gl) { showError('WebGL not available. Please enable hardware acceleration.'); throw new Error('No WebGL'); }
+
+    // Debug renderer info (if available)
+    try {
+      const ext = gl.getExtension('WEBGL_debug_renderer_info');
+      if (ext) caps.debugRenderer = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL);
+    } catch {}
+    perfEl.gpu.textContent = caps.debugRenderer || 'Generic Renderer';
+    perfEl.caps.textContent = caps.isWebGL2 ? 'WebGL2 ✓' : 'WebGL1 (fallback)';
+    log('Boot complete — self-test running.');
+
+    // =============== Resize / DPR ===============
+    let exposure = 1.0;
+    function resize() {
+      const dprPref = document.getElementById('chkHiDPI').checked ? Math.min(devicePixelRatio || 1, 2) : 1;
+      const w = canvas.clientWidth | 0, h = canvas.clientHeight | 0;
+      const W = Math.max(1, (w * dprPref) | 0), H = Math.max(1, (h * dprPref) | 0);
+      if (canvas.width !== W || canvas.height !== H) {
+        canvas.width = W; canvas.height = H; gl.viewport(0,0,W,H);
+      }
+    }
+    new ResizeObserver(resize).observe(canvas);
+
+    // =============== Minimal Self-Test Draw (non-blank assurance) ===============
+    // This will be replaced by the full renderer in Part 2.
+    const vs = `
+      precision highp float;
+      attribute vec2 a;
+      varying vec2 v;
+      void main(){ v=a; gl_Position=vec4(a,0.0,1.0); }`;
+    const fs = `
+      precision highp float;
+      varying vec2 v;
+      uniform float uT, uExposure;
+      void main(){
+        vec2 p = v;
+        float g = 0.5 + 0.5*sin(uT*0.5) * 0.25 + 0.25 * (1.0 - length(p));
+        vec3 col = mix(vec3(0.06,0.10,0.14), vec3(0.14,0.25,0.36), g);
+        // soft grid
+        vec2 q = (p*0.5+0.5)*16.0;
+        float line = (smoothstep(0.49,0.495,fract(q.x)) - smoothstep(0.505,0.51,fract(q.x))) +
+                     (smoothstep(0.49,0.495,fract(q.y)) - smoothstep(0.505,0.51,fract(q.y)));
+        col += vec3(0.05,0.08,0.1) * line;
+        // vignette
+        float vgn = smoothstep(1.1, 0.2, length(p));
+        col *= vgn * uExposure;
+        gl_FragColor = vec4(col, 1.0);
+      }`;
+    function compile(type, src){
+      const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+      if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s;
+    }
+    const prog = gl.createProgram();
+    gl.attachShader(prog, compile(gl.VERTEX_SHADER, vs));
+    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fs));
+    gl.linkProgram(prog);
+    if(!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+    const loc = { a: gl.getAttribLocation(prog,'a'), uT: gl.getUniformLocation(prog,'uT'), uE: gl.getUniformLocation(prog,'uExposure') };
+    const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,  1,-1,  -1, 1,   1,1]), gl.STATIC_DRAW);
+
+    // =============== FPS / Perf ===============
+    const perf = { enabled: true, frames: 0, last: performance.now(), fps: 0 };
+    function tickFPS(){
+      perf.frames++; const now = performance.now();
+      if (now - perf.last >= 1000){
+        perf.fps = perf.frames; perf.frames = 0; perf.last = now;
+        if (perf.enabled) perfEl.fps.textContent = String(perf.fps);
+        else perfEl.fps.textContent = '—';
+      }
+    }
+
+    // =============== Input (pointer & keys) ===============
+    const state = {
+      mode: 'tutorial',
+      rotating: false,
+      clamp: false
+    };
+    canvas.addEventListener('pointerdown', (e) => { if (e.button === 2) state.rotating = true; });
+    window.addEventListener('pointerup', () => state.rotating = false);
+    window.addEventListener('contextmenu', (e) => e.preventDefault());
+    window.addEventListener('keydown', (e)=>{
+      if (e.code === 'Space') { state.clamp = !state.clamp; toast(state.clamp? 'Clamp: ON' : 'Clamp: OFF'); }
+      if (e.code === 'Enter') { toast('Stitch (demo)'); } // real stitch handler arrives in Part 5
+    });
+
+    // =============== Session Control ===============
+    function resetSession(){
+      ui.setHUD(NaN, NaN, NaN);
+      ui.setCoach([{ level:'info', text: 'Session reset. Ready when you are.' }]);
+      ui.setScore(0, NaN);
+      ui.drawRadar({ depth:NaN, spacing:NaN, angle:NaN, tension:NaN, score:NaN });
+      toast('Session reset');
+    }
+
+    // =============== Main Loop ===============
+    // ============== Render loop (updated for Part 4) ==============
+    let tPrev = performance.now();
+    let accum = 0;
+    const fixed = 1 / 120;
+    
+    function frame(){
+      // timing & FPS
+      const now = performance.now();
+      const dt = Math.min(0.05, (now - tPrev)/1000);
+      tPrev = now; tickFPS();
+    
+      // camera damping (orbit/pan/zoom)
+      if (Math.abs(ctrl.vZoom) > 1e-3) { camera.dist = Math.max(80, camera.dist * (1 + ctrl.vZoom)); ctrl.vZoom *= 0.86; }
+      if (Math.abs(ctrl.vPan[0])>1e-4 || Math.abs(ctrl.vPan[2])>1e-4) {
+        camera.target[0] += ctrl.vPan[0]; camera.target[2] += ctrl.vPan[2];
+        ctrl.vPan[0]*=0.82; ctrl.vPan[2]*=0.82;
+      }
+      const aspect = canvas.width / canvas.height;
+      camera.update(aspect);
+    
+      // instrument & anchor (needle tip)
+      updateAnchor(dt);           // positions tool & sets anchor at tool tip
+    
+      // physics fixed-step
+      accum += dt;
+      while (accum >= fixed) { world.step(fixed); accum -= fixed; }
+    
+      // GPU sync for rope + HUD
+      updateSutureGPUFromRope();
+      updateHUDLive();
+    
+      // draw
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    
+      // background
+      gl.disable(gl.DEPTH_TEST);
+      gl.useProgram(progBG);
+      gl.bindBuffer(gl.ARRAY_BUFFER, bgBuf);
+      gl.enableVertexAttribArray(bgLoc.a);
+      gl.vertexAttribPointer(bgLoc.a, 2, gl.FLOAT, false, 0, 0);
+      gl.uniform1f(bgLoc.uT, now/1000);
+      gl.uniform1f(bgLoc.uE, exposure);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      gl.enable(gl.DEPTH_TEST);
+    
+      // lines
+      for (const L of Scene.lines){
+        setUniformsLine(L.model, L.color);
+        gl.bindBuffer(gl.ARRAY_BUFFER, L.line.vb);
+        if (L.line.dynamic && L.line.data && (L.line.count||L.line.data.length)) {
+          gl.bufferSubData(gl.ARRAY_BUFFER, 0, L.line.data);
+        }
+        const loc = gl.getAttribLocation(progLine,'aPos');
+        gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,3,gl.FLOAT,false,0,0);
+        const count = L.line.count || L.line.data.length/3;
+        if (L.mode==='segments') gl.drawArrays(gl.LINES, 0, count);
+        else gl.drawArrays(gl.LINE_STRIP, 0, count);
+      }
+    
+      // meshes (leaflet + tool parts)
+      for (const E of Scene.meshes){
+        setUniformsTri(E.model, E.color, hemiSky, hemiGround, dirL, dirI);
+        gl.bindBuffer(gl.ARRAY_BUFFER, E.mesh.vb);
+        let loc = gl.getAttribLocation(progTri,'aPos'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,3,gl.FLOAT,false,0,0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, E.mesh.nb);
+        loc = gl.getAttribLocation(progTri,'aNorm'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,3,gl.FLOAT,false,0,0);
+        gl.drawArrays(gl.TRIANGLES, 0, E.mesh.count);
+      }
+    
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+
+
+    // First UI state
+    resetSession();
+    toast('Foundation ready — graphics self-test OK');
+  </script>
+
+  <!-- =============== GL Boot (Engine & Scene Core) — Part 2 =============== -->
+  <script type="module">
+    // Keep using the same utilities and UI handles from Part 1:
+    const $ = sel => document.querySelector(sel);
+    const logEl = $('#log');
+    const perfEl = { fps: $('#fps'), gpu: $('#gpuRenderer'), caps: $('#glCaps') };
+    function log(msg) { logEl.textContent = msg; }
+    function toast(msg, cls='') {
+      const t = document.createElement('div'); t.className = 'toast ' + cls; t.textContent = msg;
+      const wrap = document.getElementById('toasts'); wrap.appendChild(t);
+      setTimeout(()=> { t.style.opacity='0'; setTimeout(()=>wrap.removeChild(t), 180); }, 1800);
+    }
+    function showError(err) {
+      const body = document.getElementById('errBody');
+      const ov = document.getElementById('errorOverlay');
+      body.textContent = String(err?.stack || err?.message || err);
+      ov.style.display = 'grid';
+    }
+    function tryGuard(fn) { try { fn(); } catch (e) { console.error(e); showError(e); } }
+
+    // Service Worker stays registered from Part 1 – nothing to change.
+
+    // ========= Input, UI bindings, and Settings (reuse from Part 1) =========
+    const modeEl = document.getElementById('mode');
+    const ui = {
+      setMode: m => { modeEl.textContent = m.toUpperCase(); state.mode = m; },
+      setHUD: (depth, angle, tension) => {
+        $('#hudDepth').textContent = isFinite(depth) ? depth.toFixed(1)+' mm' : '—';
+        $('#hudAngle').textContent = isFinite(angle) ? Math.round(angle)+'°' : '—';
+        $('#hudTension').textContent = isFinite(tension) ? tension.toFixed(2)+' N' : '—';
+        $('#tensionBar').style.width = Math.max(0, Math.min(1, (tension || 0)/1.2))*100+'%';
+      },
+      setCoach: (items) => {
+        const ul = $('#coachList'); ul.innerHTML = '';
+        if (!items || !items.length) { const li = document.createElement('li'); li.className='muted'; li.textContent='No advice.'; ul.appendChild(li); return; }
+        for (const a of items) {
+          const li = document.createElement('li'); li.className = a.level || 'info'; li.textContent = a.text; ul.appendChild(li);
+        }
+      },
+      setScore: (st, sc) => { $('#sumStitches').textContent = st; $('#sumScore').textContent = isFinite(sc)? String(Math.round(sc)) : '—'; },
+      drawRadar: ({ depth, spacing, angle, tension, score }) => {
+        const c = $('#radar'), ctx = c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height);
+        const cx=150, cy=72, r=46, labels=['depth','spacing','angle','tension'];
+        function normRange(v,[lo,hi],tol=1){ if(v==null) return 0; if(v>=lo&&v<=hi) return 1; const d=(v<lo)?lo-v:v-hi; return Math.max(0,1-d/tol); }
+        const vals=[
+          normRange(depth,[2,3],1), normRange(spacing,[2,3],1),
+          normRange(angle,[60,90],12), Math.max(0,1-(Math.max(0,(tension??0)-1.0)/0.5))
+        ];
+        ctx.strokeStyle='#35546f'; ctx.fillStyle='rgba(127,198,255,0.16)'; ctx.lineWidth=1;
+        for(let ring=1; ring<=3; ring++){ ctx.beginPath(); for(let i=0;i<labels.length;i++){ const a=i/labels.length*Math.PI*2-Math.PI/2; const rr=r*ring/3;
+          const x=cx+Math.cos(a)*rr, y=cy+Math.sin(a)*rr; if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);} ctx.closePath(); ctx.stroke();}
+        ctx.beginPath(); for(let i=0;i<labels.length;i++){ const a=i/labels.length*Math.PI*2-Math.PI/2; const rr=r*vals[i]; const x=cx+Math.cos(a)*rr, y=cy+Math.sin(a)*rr;
+          if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);} ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.font='bold 28px var(--font)'; ctx.fillStyle='#a7e3b8'; ctx.fillText(isFinite(score)? String(Math.round(score)) : '—', 12, 48);
+      }
+    };
+    $('#mTutorial').onclick = ()=>{ ui.setMode('tutorial'); resetTask(); };
+    $('#mPractice').onclick = ()=>{ ui.setMode('practice'); resetTask(); };
+    $('#mExam').onclick     = ()=>{ ui.setMode('exam');     resetTask(); };
+    $('#btnReset').onclick  = ()=> resetSession();
+    $('#btnSettings').onclick = ()=> $('#dlgSettings').showModal();
+    $('#btnHelp').onclick = ()=> $('#dlgHelp').showModal();
+    $('#chkPerf').onchange = (e)=> perf.enabled = e.target.checked;
+    $('#chkHiDPI').onchange = ()=> resize();
+    $('#rngExposure').oninput = (e)=> exposure = +e.target.value;
+
+    window.addEventListener('keydown', (e)=>{
+      if (e.key==='r' || e.key==='R') resetSession();
+      if (e.key==='1') ui.setMode('tutorial');
+      if (e.key==='2') ui.setMode('practice');
+      if (e.key==='3') ui.setMode('exam');
+      if (e.key==='?') $('#dlgHelp').showModal();
+    });
+
+    // ================= GL Setup & Capabilities =================
+    const canvas = document.getElementById('sim');
+    /** @type {WebGL2RenderingContext | WebGLRenderingContext} */
+    let gl = canvas.getContext('webgl2', { antialias:true, alpha:false, desynchronized:true }) ||
+             canvas.getContext('webgl',  { antialias:true, alpha:false, desynchronized:true });
+    if (!gl) { showError('WebGL not available. Enable hardware acceleration.'); throw new Error('No WebGL'); }
+    const isWebGL2 = (typeof WebGL2RenderingContext !== 'undefined') && (gl instanceof WebGL2RenderingContext);
+
+    // GPU/caps info
+    try { const ext = gl.getExtension('WEBGL_debug_renderer_info');
+      perfEl.gpu.textContent = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : 'Generic Renderer';
+    } catch { perfEl.gpu.textContent = 'Generic Renderer'; }
+    perfEl.caps.textContent = isWebGL2 ? 'WebGL2 ✓' : 'WebGL1 (fallback)';
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LEQUAL);
+    gl.clearDepth(1.0);
+    gl.clearColor(0.05, 0.07, 0.09, 1);
+
+    // ============== Math helpers (Vec3/Mat4 minimal) ==============
+    const V = {
+      create:(x=0,y=0,z=0)=>new Float32Array([x,y,z]),
+      set:(o,x,y,z)=>{o[0]=x;o[1]=y;o[2]=z;return o;},
+      add:(o,a,b)=>{o[0]=a[0]+b[0];o[1]=a[1]+b[1];o[2]=a[2]+b[2];return o;},
+      sub:(o,a,b)=>{o[0]=a[0]-b[0];o[1]=a[1]-b[1];o[2]=a[2]-b[2];return o;},
+      scale:(o,a,s)=>{o[0]=a[0]*s;o[1]=a[1]*s;o[2]=a[2]*s;return o;},
+      cross:(o,a,b)=>{const ax=a[0],ay=a[1],az=a[2],bx=b[0],by=b[1],bz=b[2];o[0]=ay*bz-az*by;o[1]=az*bx-ax*bz;o[2]=ax*by-ay*bx;return o;},
+      dot:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],
+      len:(a)=>Math.hypot(a[0],a[1],a[2]),
+      norm:(o,a)=>{const L=V.len(a)||1;return V.scale(o,a,1/L);}
+    };
+    const M = {
+      I:()=>new Float32Array([1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]),
+      mul:(o,a,b)=>{const r=new Float32Array(16);
+        for(let i=0;i<4;i++)for(let j=0;j<4;j++)r[i*4+j]=a[i*4+0]*b[0*4+j]+a[i*4+1]*b[1*4+j]+a[i*4+2]*b[2*4+j]+a[i*4+3]*b[3*4+j];
+        o.set(r); return o;},
+      translate:(o,a,x,y,z)=>{o.set(a);o[12]+=x;o[13]+=y;o[14]+=z;return o;},
+      rotX:(o,a,r)=>{const c=Math.cos(r),s=Math.sin(r),R=M.I(); R[5]=c;R[6]=s;R[9]=-s;R[10]=c; return M.mul(o,a,R);},
+      rotY:(o,a,r)=>{const c=Math.cos(r),s=Math.sin(r),R=M.I(); R[0]=c;R[2]=-s;R[8]=s;R[10]=c; return M.mul(o,a,R);},
+      rotZ:(o,a,r)=>{const c=Math.cos(r),s=Math.sin(r),R=M.I(); R[0]=c;R[1]=s;R[4]=-s;R[5]=c; return M.mul(o,a,R);},
+      scale:(o,a,x,y,z)=>{const R=M.I(); R[0]=x;R[5]=y;R[10]=z; return M.mul(o,a,R);},
+      perspective:(o,fovy,aspect,near,far)=>{const f=1/Math.tan(fovy/2); o.fill(0);
+        o[0]=f/aspect; o[5]=f; o[10]=(far+near)/(near-far); o[11]=-1; o[14]=(2*far*near)/(near-far); return o;},
+      lookAt:(o,eye,center,up)=>{
+        const z=V.create(); V.sub(z,eye,center); V.norm(z,z);
+        const x=V.create(); V.cross(x,up,z); V.norm(x,x);
+        const y=V.create(); V.cross(y,z,x);
+        o.set([x[0],y[0],z[0],0, x[1],y[1],z[1],0, x[2],y[2],z[2],0, -V.dot(x,eye),-V.dot(y,eye),-V.dot(z,eye),1]); return o;
+      }
+    };
+    const PI = Math.PI, RAD = d=>d*PI/180;
+
+    // ============== Shader helpers ==============
+    function compile(gl, type, src){
+      const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+      if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s;
+    }
+    function link(gl, vsSrc, fsSrc){
+      const p = gl.createProgram();
+      gl.attachShader(p, compile(gl, gl.VERTEX_SHADER, vsSrc));
+      gl.attachShader(p, compile(gl, gl.FRAGMENT_SHADER, fsSrc));
+      gl.linkProgram(p);
+      if(!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+      return p;
+    }
+
+    // ============== Programs ==============
+    // Background full-screen triangle with vignette & subtle radial splash. Exposure-aware.
+    const VS_BG = `
+      precision highp float;
+      attribute vec2 a; varying vec2 v;
+      void main(){ v=a; gl_Position=vec4(a,0.,1.); }`;
+    const FS_BG = `
+      precision highp float;
+      varying vec2 v; uniform float uT, uExposure;
+      void main(){
+        vec2 p = v;
+        // gradient base
+        vec3 base = mix(vec3(0.05,0.08,0.11), vec3(0.10,0.16,0.22), 0.5+0.5*sin(uT*0.25));
+        // grid softly
+        vec2 q = (p*0.5+0.5)*18.0;
+        float grid = (smoothstep(0.49,0.495,fract(q.x)) - smoothstep(0.505,0.51,fract(q.x))) +
+                     (smoothstep(0.49,0.495,fract(q.y)) - smoothstep(0.505,0.51,fract(q.y)));
+        base += vec3(0.04,0.06,0.08) * grid;
+        float vign = smoothstep(1.15, 0.15, length(p));
+        gl_FragColor = vec4(base * vign * uExposure, 1.0);
+      }`;
+    // Triangles: hemisphere + directional light with soft spec and exposure control.
+    const VS_TRI = `
+      precision highp float;
+      attribute vec3 aPos, aNorm;
+      uniform mat4 uModel, uView, uProj;
+      varying vec3 vN, vW;
+      void main(){
+        vec4 w = uModel * vec4(aPos,1.0);
+        vW = w.xyz;
+        vN = mat3(uModel) * aNorm;
+        gl_Position = uProj * uView * w;
+      }`;
+    const FS_TRI = `
+      precision highp float;
+      varying vec3 vN, vW;
+      uniform vec3 uEye, uColor, uHemiSky, uHemiGround, uDirL;
+      uniform float uDirI, uExposure;
+      void main(){
+        vec3 N = normalize(vN);
+        float hemi = 0.5 + 0.5*N.y;
+        vec3 hemiCol = mix(uHemiGround, uHemiSky, hemi);
+        float ndl = max(dot(N, normalize(uDirL)), 0.0);
+        vec3 L = hemiCol*0.60 + uDirI*ndl*vec3(1.0);
+        vec3 V = normalize(uEye - vW);
+        vec3 H = normalize(normalize(uDirL)+V);
+        float spec = pow(max(dot(N,H),0.0), 32.0)*0.25;
+        vec3 col = (uColor * L + spec) * uExposure;
+        gl_FragColor = vec4(col, 1.0);
+      }`;
+    // Lines
+    const VS_LINE = `
+      precision highp float;
+      attribute vec3 aPos;
+      uniform mat4 uModel, uView, uProj;
+      void main(){ gl_Position = uProj * uView * uModel * vec4(aPos,1.0); }`;
+    const FS_LINE = `precision highp float; uniform vec3 uColor; uniform float uExposure; void main(){ gl_FragColor=vec4(uColor*uExposure,1.0); }`;
+
+    const progBG  = link(gl, VS_BG,  FS_BG);
+    const progTri = link(gl, VS_TRI, FS_TRI);
+    const progLine= link(gl, VS_LINE, FS_LINE);
+
+    // ============== Geometry builders ==============
+    function createTriMesh(positions, normals) {
+      const vb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,vb); gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+      const nb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,nb); gl.bufferData(gl.ARRAY_BUFFER, normals, gl.STATIC_DRAW);
+      return { vb, nb, count: positions.length/3 };
+    }
+    function createLines(positions, dynamic=false) {
+      const vb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,vb);
+      gl.bufferData(gl.ARRAY_BUFFER, positions, dynamic? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);
+      return { vb, data: positions, count: positions.length/3, dynamic };
+    }
+
+    function buildGridXZ(size=600, step=20) {
+      const half = size/2, pts=[];
+      for(let x=-half; x<=half; x+=step){ pts.push(x,0,-half, x,0,half); }
+      for(let z=-half; z<=half; z+=step){ pts.push(-half,0,z, half,0,z); }
+      return new Float32Array(pts);
+    }
+    function buildEllipse(rx, rz, steps=180){
+      const pts=[]; for(let i=0;i<=steps;i++){ const a=i/steps*Math.PI*2; pts.push(rx*Math.cos(a), 0, rz*Math.sin(a)); }
+      return new Float32Array(pts);
+    }
+    function buildBox(w,h,d){
+      const x=w/2,y=h/2,z=d/2;
+      const p=[ x,-y,-z,  x,y,-z,  x,y,z,   x,-y,-z,  x,y,z,  x,-y,z,  -x,-y,-z, -x,-y,z, -x,y,z,  -x,-y,-z, -x,y,z, -x,y,-z,
+                -x,y,-z,  -x,y,z,  x,y,z,   -x,y,-z,  x,y,z,  x,y,-z,   -x,-y,-z, x,-y,-z, x,-y,z,  -x,-y,-z, x,-y,z, -x,-y,z,
+                -x,-y,z,  x,-y,z,  x,y,z,   -x,-y,z,  x,y,z,  -x,y,z,   -x,-y,-z, -x,y,-z, x,y,-z,  -x,-y,-z, x,y,-z, x,-y,-z];
+      const n=[ 1,0,0,1,0,0,1,0,0, 1,0,0,1,0,0,1,0,0, -1,0,0,-1,0,0,-1,0,0, -1,0,0,-1,0,0,-1,0,0,
+               0,1,0,0,1,0,0,1,0, 0,1,0,0,1,0,0,1,0,  0,-1,0,0,-1,0,0,-1,0, 0,-1,0,0,-1,0,0,-1,0,
+               0,0,1,0,0,1,0,0,1, 0,0,1,0,0,1,0,0,1,  0,0,-1,0,0,-1,0,0,-1, 0,0,-1,0,0,-1,0,0,-1 ];
+      return { P:new Float32Array(p), N:new Float32Array(n) };
+    }
+
+    // ============== Camera & Controller ==============
+    const camera = {
+      target: V.create(0,0,0),
+      eye: V.create(0,140,280),
+      up: V.create(0,1,0),
+      rx: RAD(-12), ry: RAD(0), dist: 320, fov: RAD(45), near: 0.1, far: 3000,
+      view: M.I(), proj: M.I(),
+      update(aspect){
+        const cx = camera.target[0] + camera.dist*Math.cos(camera.rx)*Math.sin(camera.ry);
+        const cy = camera.target[1] + camera.dist*Math.sin(camera.rx);
+        const cz = camera.target[2] + camera.dist*Math.cos(camera.rx)*Math.cos(camera.ry);
+        V.set(camera.eye, cx,cy,cz);
+        M.lookAt(camera.view, camera.eye, camera.target, camera.up);
+        M.perspective(camera.proj, camera.fov, aspect, camera.near, camera.far);
+      }
+    };
+    const ctrl = {
+      rotating:false, panning:false, lastX:0,lastY:0, vPan:V.create(0,0,0), vZoom:0,
+      onDown(e){ if(e.button===2) ctrl.rotating=true; if(e.button===1 || (e.button===0 && e.shiftKey)) ctrl.panning=true; ctrl.lastX=e.clientX; ctrl.lastY=e.clientY; },
+      onUp(){ ctrl.rotating=false; ctrl.panning=false; },
+      onMove(e){
+        const dx=e.clientX-ctrl.lastX, dy=e.clientY-ctrl.lastY; ctrl.lastX=e.clientX; ctrl.lastY=e.clientY;
+        if(ctrl.rotating){ camera.ry += dx*0.005; camera.rx += dy*0.005; camera.rx = Math.max(RAD(-85), Math.min(RAD(20), camera.rx)); }
+        if(ctrl.panning){
+          // Pan in screen space (scale by distance/fov)
+          const scale = camera.dist * Math.tan(camera.fov/2) * 2 / canvas.height;
+          ctrl.vPan[0] -= dx * scale; ctrl.vPan[2] += dy * scale; // x,z pan on ground plane
+        }
+      },
+      onWheel(e){ ctrl.vZoom += e.deltaY * 0.0015; }
+    };
+    canvas.addEventListener('pointerdown', ctrl.onDown); window.addEventListener('pointerup', ctrl.onUp);
+    window.addEventListener('contextmenu', e=>e.preventDefault()); canvas.addEventListener('pointermove', ctrl.onMove);
+    canvas.addEventListener('wheel', (e)=>{ e.preventDefault(); ctrl.onWheel(e); }, { passive:false });
+
+    // ============== Engine (background + tri + line lists) ==============
+    let exposure = 1.0; // bound to Settings
+    function setUniformsTri(model, color, hemiSky, hemiGround, dirL, dirI){
+      gl.useProgram(progTri);
+      gl.uniformMatrix4fv(gl.getUniformLocation(progTri,'uModel'), false, model);
+      gl.uniformMatrix4fv(gl.getUniformLocation(progTri,'uView'), false, camera.view);
+      gl.uniformMatrix4fv(gl.getUniformLocation(progTri,'uProj'), false, camera.proj);
+      gl.uniform3fv(gl.getUniformLocation(progTri,'uEye'), camera.eye);
+      gl.uniform3fv(gl.getUniformLocation(progTri,'uColor'), color);
+      gl.uniform3fv(gl.getUniformLocation(progTri,'uHemiSky'), hemiSky);
+      gl.uniform3fv(gl.getUniformLocation(progTri,'uHemiGround'), hemiGround);
+      gl.uniform3fv(gl.getUniformLocation(progTri,'uDirL'), dirL);
+      gl.uniform1f(gl.getUniformLocation(progTri,'uDirI'), dirI);
+      gl.uniform1f(gl.getUniformLocation(progTri,'uExposure'), exposure);
+    }
+    function setUniformsLine(model, color){
+      gl.useProgram(progLine);
+      gl.uniformMatrix4fv(gl.getUniformLocation(progLine,'uModel'), false, model);
+      gl.uniformMatrix4fv(gl.getUniformLocation(progLine,'uView'), false, camera.view);
+      gl.uniformMatrix4fv(gl.getUniformLocation(progLine,'uProj'), false, camera.proj);
+      gl.uniform1f(gl.getUniformLocation(progLine,'uExposure'), exposure);
+      gl.uniform3fv(gl.getUniformLocation(progLine,'uColor'), color);
+    }
+
+    // Fullscreen BG
+    const bgBuf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, bgBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,  1,-1,  -1, 1,  1, 1]), gl.STATIC_DRAW);
+    const bgLoc = { a: gl.getAttribLocation(progBG,'a'), uT: gl.getUniformLocation(progBG,'uT'), uE: gl.getUniformLocation(progBG,'uExposure') };
+    function drawBackground(t){
+      gl.useProgram(progBG);
+      gl.bindBuffer(gl.ARRAY_BUFFER, bgBuf);
+      gl.enableVertexAttribArray(bgLoc.a);
+      gl.vertexAttribPointer(bgLoc.a, 2, gl.FLOAT, false, 0, 0);
+      gl.uniform1f(bgLoc.uT, t);
+      gl.uniform1f(bgLoc.uE, exposure);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    }
+
+    // Scene graph (very light)
+    const Scene = {
+      meshes: [], // { mesh, model, color }
+      lines:  [], // { line, model, color, mode:'strip'|'segments' }
+      addMesh(entry){ Scene.meshes.push(entry); return entry; },
+      addLine(entry){ Scene.lines.push(entry); return entry; },
+      clear(){ Scene.meshes.length=0; Scene.lines.length=0; }
+    };
+
+    // ============== Resize, DPR, and Perf ==============
+    function resize(){
+      const dprPref = $('#chkHiDPI').checked ? Math.min(devicePixelRatio || 1, 2) : 1;
+      const w = canvas.clientWidth | 0, h = canvas.clientHeight | 0;
+      const W = Math.max(1, (w*dprPref)|0), H = Math.max(1, (h*dprPref)|0);
+      if (canvas.width !== W || canvas.height !== H) { canvas.width = W; canvas.height = H; gl.viewport(0,0,W,H); }
+    }
+    new ResizeObserver(resize).observe(canvas);
+
+    const perf = { enabled:true, frames:0, last:performance.now(), fps:0 };
+    function tickFPS(){
+      perf.frames++; const now = performance.now();
+      if (now - perf.last >= 1000){ perf.fps = perf.frames; perf.frames=0; perf.last=now;
+        perfEl.fps.textContent = perf.enabled ? String(perf.fps) : '—';
+      }
+    }
+
+    // ============== Build a clean scene (grid, origin, demo box) ==============
+    const hemiSky   = new Float32Array([0.80,0.90,1.00]);
+    const hemiGround= new Float32Array([0.12,0.16,0.20]);
+    const dirL      = new Float32Array([0.6,1.0,0.5]); // from above
+    const dirI      = 1.0;
+
+    // Grid
+    const gridData = createLines(buildGridXZ(600, 20), false);
+    const gridModel= M.I();
+    Scene.addLine({ line:gridData, model:gridModel, color:new Float32Array([0.18,0.26,0.33]), mode:'segments' });
+
+    // Annulus ellipse (placeholder visual reference — will be replaced by the anatomical ring later)
+    const ringData = createLines(buildEllipse(48, 32, 160), false);
+    const ringModel= M.I(); M.translate(ringModel, ringModel, 0, 0.6, 0);
+    Scene.addLine({ line:ringData, model:ringModel, color:new Float32Array([0.54,0.76,1.0]), mode:'strip' });
+
+    // Small origin box
+    const demoBox = buildBox(8,3,8);
+    const demoMesh= createTriMesh(demoBox.P, demoBox.N);
+    const demoModel= M.I(); M.translate(demoModel, demoModel, 0, 1.5, 0);
+    Scene.addMesh({ mesh:demoMesh, model:demoModel, color:new Float32Array([0.20,0.28,0.31]) });
+
+    // ============== State & Controls reused for later tasks ==============
+    const state = { mode:'tutorial', clamp:false };
+    window.addEventListener('keydown', (e)=>{
+      if (e.code === 'Space') { state.clamp = !state.clamp; toast(state.clamp? 'Clamp: ON' : 'Clamp: OFF'); }
+      // Enter will trigger stitch in Part 5
+    });
+
+    // ============== Render loop ==============
+    let t0 = performance.now();
+    function frame(){
+      resize(); tickFPS();
+      const t = (performance.now() - t0) / 1000;
+
+      // damp pan/zoom
+      if (Math.abs(ctrl.vZoom) > 1e-3){ camera.dist = Math.max(80, camera.dist * (1 + ctrl.vZoom)); ctrl.vZoom *= 0.86; }
+      if (Math.abs(ctrl.vPan[0])>1e-4 || Math.abs(ctrl.vPan[2])>1e-4){
+        camera.target[0] += ctrl.vPan[0]; camera.target[2] += ctrl.vPan[2];
+        ctrl.vPan[0]*=0.82; ctrl.vPan[2]*=0.82;
+      }
+
+      const aspect = canvas.width / canvas.height;
+      camera.update(aspect);
+
+      // Background
+      gl.disable(gl.DEPTH_TEST); drawBackground(t); gl.enable(gl.DEPTH_TEST);
+
+      // Draw lines
+      for (const L of Scene.lines){
+        setUniformsLine(L.model, L.color);
+        gl.bindBuffer(gl.ARRAY_BUFFER, L.line.vb);
+        const loc = gl.getAttribLocation(progLine,'aPos');
+        gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,3,gl.FLOAT,false,0,0);
+        if (L.mode==='segments') gl.drawArrays(gl.LINES, 0, L.line.count);
+        else gl.drawArrays(gl.LINE_STRIP, 0, L.line.count);
+      }
+      // Draw meshes
+      for (const E of Scene.meshes){
+        setUniformsTri(E.model, E.color, hemiSky, hemiGround, dirL, dirI);
+        // pos
+        gl.bindBuffer(gl.ARRAY_BUFFER, E.mesh.vb);
+        let loc = gl.getAttribLocation(progTri,'aPos'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,3,gl.FLOAT,false,0,0);
+        // norm
+        gl.bindBuffer(gl.ARRAY_BUFFER, E.mesh.nb);
+        loc = gl.getAttribLocation(progTri,'aNorm'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,3,gl.FLOAT,false,0,0);
+        gl.drawArrays(gl.TRIANGLES, 0, E.mesh.count);
+      }
+
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+
+    // ============== Session reset & initial UI ==============
+    function resetSession(){
+      ui.setHUD(NaN,NaN,NaN);
+      ui.setCoach([{ level:'info', text:'Session reset. Foundation renderer active.' }]);
+      ui.setScore(0,NaN);
+      ui.drawRadar({ depth:NaN, spacing:NaN, angle:NaN, tension:NaN, score:NaN });
+      toast('Session reset');
+    }
+
+    // Initial state
+    resetSession();
+    log('Engine ready — Renderer & Scene Core active.');
+  </script>
+  <!-- ===================== End of Part 2 block ===================== -->
+/* ==================== Part 3: Physics Core (PBD) ==================== */
+
+/** Minimal, robust PBD world with fixed substeps. */
+class PBDWorld {
+  constructor({ substeps = 2, iters = 8, gravity = [0, -9.81, 0] } = {}) {
+    this.substeps = substeps;
+    this.iters = iters;
+    this.g = new Float32Array(gravity);
+    this.entities = new Set(); // ent must implement: integrate(h, g), project(iters), postStep?()
   }
-};
-function mulPos(m, x,y,z){ const w= m[3]*x+m[7]*y+m[11]*z+m[15]; return [
-  (m[0]*x+m[4]*y+m[8]*z+m[12])/(w||1),
-  (m[1]*x+m[5]*y+m[9]*z+m[13])/(w||1),
-  (m[2]*x+m[6]*y+m[10]*z+m[14])/(w||1)
-];}
-function deg(rad){return rad*180/Math.PI;}
-function rad(deg){return deg*Math.PI/180;}
-/* ===== WebGL helpers ===== */
-const vsTri = `
-precision highp float;
-attribute vec3 aPos, aNorm;
-uniform mat4 uModel, uView, uProj;
-varying vec3 vN, vW;
-void main(){
-  vec4 wpos = uModel * vec4(aPos,1.0);
-  vW = wpos.xyz;
-  vN = mat3(uModel) * aNorm;
-  gl_Position = uProj * uView * wpos;
-}`;
-const fsTri = `
-precision highp float;
-varying vec3 vN, vW;
-uniform vec3 uEye;
-uniform vec3 uColor;
-uniform vec3 uHemiSky, uHemiGround;
-uniform vec3 uDirL; uniform float uDirI;
-void main(){
-  vec3 N = normalize(vN);
-  float hemi = 0.5 + 0.5*N.y;
-  vec3 hemiCol = mix(uHemiGround, uHemiSky, hemi);
-  float ndl = max(dot(N, normalize(uDirL)), 0.0);
-  vec3 L = hemiCol*0.6 + uDirI*ndl*vec3(1.0);
-  vec3 base = uColor;
-  vec3 V = normalize(uEye - vW);
-  vec3 H = normalize(normalize(uDirL)+V);
-  float spec = pow(max(dot(N,H),0.0), 32.0)*0.25;
-  gl_FragColor = vec4(base*L + spec, 1.0);
-}`;
-const vsLine = `
-precision highp float;
-attribute vec3 aPos;
-uniform mat4 uModel, uView, uProj;
-void main(){ gl_Position = uProj * uView * uModel * vec4(aPos,1.0); }`;
-const fsLine = `precision highp float; uniform vec3 uColor; void main(){ gl_FragColor=vec4(uColor,1.0); }`;
-
-function makeProgram(gl, vs, fs){
-  function compile(type, src){ const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
-    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s;}
-  const p = gl.createProgram();
-  const v = compile(gl.VERTEX_SHADER, vs), f = compile(gl.FRAGMENT_SHADER, fs);
-  gl.attachShader(p,v); gl.attachShader(p,f); gl.linkProgram(p);
-  if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
-  return p;
-}
-function makeMesh(gl, positions, normals, triProg){
-  const vao = {}; // simple holder
-  vao.vb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vao.vb); gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
-  vao.nb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vao.nb); gl.bufferData(gl.ARRAY_BUFFER, normals, gl.STATIC_DRAW);
-  vao.count = positions.length/3;
-  vao.draw = (model, color)=>{
-    gl.useProgram(triProg);
-    // pos
-    gl.bindBuffer(gl.ARRAY_BUFFER, vao.vb);
-    const locPos = gl.getAttribLocation(triProg, 'aPos'); gl.enableVertexAttribArray(locPos); gl.vertexAttribPointer(locPos,3,gl.FLOAT,false,0,0);
-    // norm
-    gl.bindBuffer(gl.ARRAY_BUFFER, vao.nb);
-    const locN = gl.getAttribLocation(triProg, 'aNorm'); gl.enableVertexAttribArray(locN); gl.vertexAttribPointer(locN,3,gl.FLOAT,false,0,0);
-    // uniforms
-    gl.uniformMatrix4fv(gl.getUniformLocation(triProg,'uModel'),false,model);
-    gl.uniform3fv(gl.getUniformLocation(triProg,'uColor'),color);
-    gl.drawArrays(gl.TRIANGLES, 0, vao.count);
-  };
-  return vao;
-}
-function makeLines(gl, positions, lineProg, dynamic=false){
-  const vbo = gl.createBuffer();
-  const data = positions instanceof Float32Array ? positions : new Float32Array(positions);
-  gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-  gl.bufferData(gl.ARRAY_BUFFER, data, dynamic? gl.DYNAMIC_DRAW: gl.STATIC_DRAW);
-  const obj = { vbo, count: data.length/3, data };
-  obj.draw = (model, color)=>{
-    gl.useProgram(lineProg);
-    gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-    const loc = gl.getAttribLocation(lineProg,'aPos'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,3,gl.FLOAT,false,0,0);
-    gl.uniformMatrix4fv(gl.getUniformLocation(lineProg,'uModel'), false, model);
-    gl.uniform3fv(gl.getUniformLocation(lineProg,'uColor'), color);
-    gl.drawArrays(gl.LINE_STRIP, 0, obj.count);
-  };
-  obj.update = ()=>{ gl.bindBuffer(gl.ARRAY_BUFFER, vbo); gl.bufferSubData(gl.ARRAY_BUFFER, 0, obj.data); };
-  return obj;
-}
-
-/* ===== Scene setup ===== */
-const canvas = document.getElementById('gl');
-const gl = canvas.getContext('webgl', {antialias:true, alpha:false});
-if(!gl){ alert('WebGL not available'); throw new Error('WebGL not available'); }
-
-let W=0,H=0, aspect=1;
-function resize(){
-  const dpr = Math.min(devicePixelRatio||1, 2);
-  const w = canvas.clientWidth, h = canvas.clientHeight;
-  if (w!==W || h!==H){
-    W=w; H=h; aspect = w/h;
-    canvas.width = Math.max(1, (w*dpr)|0);
-    canvas.height= Math.max(1, (h*dpr)|0);
-    gl.viewport(0,0,canvas.width, canvas.height);
+  add(ent) { this.entities.add(ent); return ent; }
+  remove(ent) { this.entities.delete(ent); }
+  step(h) {
+    // Integrate (verlet)
+    for (const e of this.entities) e.integrate?.(h, this.g);
+    // Project constraints
+    for (let k = 0; k < this.iters; k++) for (const e of this.entities) e.project?.(h);
+    // Post step hooks (e.g., compute derived signals)
+    for (const e of this.entities) e.postStep?.(h);
   }
 }
-window.addEventListener('resize', resize); resize();
 
-const progTri = makeProgram(gl, vsTri, fsTri);
-const progLine= makeProgram(gl, vsLine, fsLine);
-gl.enable(gl.DEPTH_TEST);
+/** Suture rope (verlet + distance constraints + optional bending). */
+class RopePBD {
+  /**
+   * @param {number} count segments+1 particles
+   * @param {number} segLen segment length in mm
+   * @param {() => Float32Array | number[]} anchorFn world-space head position
+   */
+  constructor(count = 70, segLen = 2.2, anchorFn = () => new Float32Array([0, 60, 120])) {
+    this.n = count;
+    this.segLen = segLen;
+    this.anchorFn = anchorFn;
 
-/* Global uniforms (set once per frame) */
-const U = {
-  view: m4.create(), proj: m4.create(),
-  eye: v3.create(0,140,280),
-  sky: new Float32Array([0.8,0.9,1.0]),
-  ground: new Float32Array([0.12,0.16,0.2]),
-  dirL: new Float32Array([0.6,1.0,0.5]), dirI: 1.0
-};
-function setFrameUniforms(){
-  gl.useProgram(progTri);
-  gl.uniformMatrix4fv(gl.getUniformLocation(progTri,'uView'), false, U.view);
-  gl.uniformMatrix4fv(gl.getUniformLocation(progTri,'uProj'), false, U.proj);
-  gl.uniform3fv(gl.getUniformLocation(progTri,'uEye'), U.eye);
-  gl.uniform3fv(gl.getUniformLocation(progTri,'uHemiSky'), U.sky);
-  gl.uniform3fv(gl.getUniformLocation(progTri,'uHemiGround'), U.ground);
-  gl.uniform3fv(gl.getUniformLocation(progTri,'uDirL'), U.dirL);
-  gl.uniform1f(gl.getUniformLocation(progTri,'uDirI'), U.dirI);
+    this.p = new Float32Array(count * 3);
+    this.q = new Float32Array(count * 3);
+    this.inv = new Float32Array(count).fill(1);
+    this.inv[0] = 0; // head pinned to anchor
 
-  gl.useProgram(progLine);
-  gl.uniformMatrix4fv(gl.getUniformLocation(progLine,'uView'), false, U.view);
-  gl.uniformMatrix4fv(gl.getUniformLocation(progLine,'uProj'), false, U.proj);
+    // init straight down from anchor
+    const a = this.anchorFn();
+    for (let i = 0; i < count; i++) {
+      const y = a[1] - i * segLen;
+      this.p[i * 3 + 0] = a[0];
+      this.p[i * 3 + 1] = y;
+      this.p[i * 3 + 2] = a[2];
+      this.q[i * 3 + 0] = a[0];
+      this.q[i * 3 + 1] = y;
+      this.q[i * 3 + 2] = a[2];
+    }
+
+    // live metrics
+    this.tensionN = 0;
+    this._tmp = new Float32Array(3);
+    // collision plane: y >= 0
+    this.planeY = 0;
+    // toggles
+    this.enableBending = true;
+    this.bendCompliance = 0.015; // larger = more flexible
+    this.damping = 0.002; // small numerical damping
+  }
+
+  anchor(out) {
+    const a = this.anchorFn();
+    out[0] = a[0]; out[1] = a[1]; out[2] = a[2];
+    return out;
+  }
+
+  integrate(h, g) {
+    // pin head to anchor (verlet convention: overwrite p AND q for index 0)
+    const ah = this._tmp;
+    this.anchor(ah);
+    this.p[0] = ah[0]; this.p[1] = ah[1]; this.p[2] = ah[2];
+    this.q[0] = ah[0]; this.q[1] = ah[1]; this.q[2] = ah[2];
+
+    // verlet integrate others
+    const n = this.n, p = this.p, q = this.q, inv = this.inv, damp = this.damping;
+    const gx = g[0] * h * h, gy = g[1] * h * h, gz = g[2] * h * h;
+    for (let i = 1; i < n; i++) {
+      const idx = i * 3;
+      const x = p[idx + 0], y = p[idx + 1], z = p[idx + 2];
+      const px = q[idx + 0], py = q[idx + 1], pz = q[idx + 2];
+      // velocity = x - px  (apply light damping)
+      const vx = (x - px) * (1 - damp);
+      const vy = (y - py) * (1 - damp);
+      const vz = (z - pz) * (1 - damp);
+      // push prev forward
+      q[idx + 0] = x; q[idx + 1] = y; q[idx + 2] = z;
+      // integrate
+      p[idx + 0] = x + vx + gx * inv[i];
+      p[idx + 1] = y + vy + gy * inv[i];
+      p[idx + 2] = z + vz + gz * inv[i];
+    }
+
+    // plane collisions (y >= planeY)
+    const py = this.planeY;
+    for (let i = 1; i < n; i++) {
+      const idx = i * 3;
+      if (this.p[idx + 1] < py) this.p[idx + 1] = py;
+    }
+  }
+
+  project(h) {
+    // distance constraints
+    const n = this.n, p = this.p, inv = this.inv, L0 = this.segLen;
+    for (let i = 0; i < n - 1; i++) {
+      const a = i * 3, b = (i + 1) * 3;
+      let dx = p[b] - p[a], dy = p[b + 1] - p[a + 1], dz = p[b + 2] - p[a + 2];
+      const L = Math.hypot(dx, dy, dz) || 1;
+      const w1 = inv[i], w2 = inv[i + 1], wsum = w1 + w2 || 1e-8;
+      const corr = (L - L0) / wsum;
+      dx /= L; dy /= L; dz /= L;
+      if (w1 > 0) { p[a] += dx * corr * w1; p[a + 1] += dy * corr * w1; p[a + 2] += dz * corr * w1; }
+      if (w2 > 0) { p[b] -= dx * corr * w2; p[b + 1] -= dy * corr * w2; p[b + 2] -= dz * corr * w2; }
+    }
+
+    // simple bending (angle smoothing) — optional but helps visual drape
+    if (!this.enableBending) return;
+    const c = this.bendCompliance;
+    for (let i = 1; i < n - 1; i++) {
+      const a = (i - 1) * 3, b = i * 3, d = (i + 1) * 3;
+      // vectors
+      let abx = this.p[b] - this.p[a], aby = this.p[b + 1] - this.p[a + 1], abz = this.p[b + 2] - this.p[a + 2];
+      let bdx = this.p[d] - this.p[b], bdy = this.p[d + 1] - this.p[b + 1], bdz = this.p[d + 2] - this.p[b + 2];
+      const lab = Math.hypot(abx, aby, abz) || 1, lbd = Math.hypot(bdx, bdy, bdz) || 1;
+      abx /= lab; aby /= lab; abz /= lab;
+      bdx /= lbd; bdy /= lbd; bdz /= lbd;
+      // target: keep angle change small -> move middle point opposite to curvature
+      const curvx = bdx - abx, curvy = bdy - aby, curvz = bdz - abz;
+      const w = this.inv[i] || 0;
+      this.p[b] -= curvx * c * w;
+      this.p[b + 1] -= curvy * c * w;
+      this.p[b + 2] -= curvz * c * w;
+    }
+  }
+
+  postStep() {
+    // proxy "tension": average stretch over rope times a scale (N)
+    const n = this.n, p = this.p, L0 = this.segLen;
+    let acc = 0;
+    for (let i = 0; i < n - 1; i++) {
+      const a = i * 3, b = (i + 1) * 3;
+      const L = Math.hypot(p[b] - p[a], p[b + 1] - p[a + 1], p[b + 2] - p[a + 2]);
+      acc += Math.max(0, L - L0);
+    }
+    // scale is heuristic; tuned for UI gauge ~0–1.2 N
+    this.tensionN = acc * 0.04;
+  }
 }
 
-/* Camera control (simple orbit on right-drag) */
-const cam = { rx: rad(-10), ry: 0, dist: 320, target: v3.create(0,0,0) };
-let rotating=false;
-canvas.addEventListener('pointerdown',(e)=>{ if(e.button===2) rotating=true; });
-window.addEventListener('pointerup',()=>rotating=false);
-window.addEventListener('contextmenu',e=>e.preventDefault());
-canvas.addEventListener('pointermove',(e)=>{
-  if(rotating){ cam.ry += e.movementX*0.005; cam.rx += e.movementY*0.005; cam.rx = Math.max(rad(-80), Math.min(rad(10), cam.rx)); }
+/* -------------------- Anchor & Input binding (Left-move) -------------------- */
+const anchor = {
+  cur: new Float32Array([0, 60, 120]),
+  target: new Float32Array([0, 60, 120]),
+  lerp: 0.35
+};
+
+// Convert client (x,y) to world intersection with plane y=0
+function screenToPlaneY0(clientX, clientY) {
+  const rect = canvas.getBoundingClientRect();
+  const nx = ((clientX - rect.left) / rect.width) * 2 - 1;
+  const ny = -(((clientY - rect.top) / rect.height) * 2 - 1);
+
+  // Reconstruct camera basis from view matrix (orthonormal)
+  const X = [camera.view[0], camera.view[1], camera.view[2]];
+  const Y = [camera.view[4], camera.view[5], camera.view[6]];
+  const Z = [camera.view[8], camera.view[9], camera.view[10]];
+  const right = V.create(X[0], X[1], X[2]);
+  const up = V.create(Y[0], Y[1], Y[2]);
+  const fwd = V.create(-Z[0], -Z[1], -Z[2]);
+  const tan = Math.tan(camera.fov / 2);
+  const vx = nx * tan * (canvas.width / canvas.height);
+  const vy = ny * tan;
+  const dir = V.create(fwd[0] + vx * right[0] + vy * up[0], fwd[1] + vx * right[1] + vy * up[1], fwd[2] + vx * right[2] + vy * up[2]);
+  V.norm(dir, dir);
+  const cy = camera.eye[1], t = (0 - cy) / (dir[1] || 1e-6);
+  return new Float32Array([camera.eye[0] + dir[0] * t, 0, camera.eye[2] + dir[2] * t]);
+}
+
+// Left-move updates the anchor (unless panning/rotating)
+canvas.addEventListener('pointermove', (e) => {
+  if (ctrl.rotating || ctrl.panning) return;
+  if (e.buttons === 0 || e.buttons === 1) {
+    const p = screenToPlaneY0(e.clientX, e.clientY);
+    anchor.target[0] = p[0]; anchor.target[2] = p[2]; // y fixed at 60 via lerp step below
+  }
 });
-function updateCamera(){
-  const cx = cam.target[0] + cam.dist*Math.cos(cam.rx)*Math.sin(cam.ry);
-  const cy = cam.target[1] + cam.dist*Math.sin(cam.rx);
-  const cz = cam.target[2] + cam.dist*Math.cos(cam.rx)*Math.cos(cam.ry);
-  v3.set(U.eye, cx,cy,cz);
-  m4.lookAt(U.view, U.eye, cam.target, v3.create(0,1,0));
-  m4.perspective(U.proj, rad(45), aspect, 0.1, 4000);
+
+/* -------------------- Suture rope entity & debug primitives -------------------- */
+
+// Dynamic GPU line for rope visualization
+function createDynamicLine(capacityVertices) {
+  const vb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vb);
+  const data = new Float32Array(capacityVertices * 3);
+  gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
+  return { vb, data, count: 0, dynamic: true };
 }
 
-/* ===== Geometry builders ===== */
-function buildPosteriorLeaflet(width=80, depth=24, segX=40, segZ=12){
-  // Make a curved ribbon (saddle-ish), y is up.
+// Small crosshair to visualize anchor
+const anchorCross = createLines(new Float32Array([
+  -2, 60, 0,   2, 60, 0,
+   0, 58, 0,   0, 62, 0,
+   0, 60, -2,  0, 60, 2
+]), true);
+const anchorModel = M.I();
+
+// Build rope and attach to PBD world
+const world = new PBDWorld({ substeps: 2, iters: 8, gravity: [0, -9.81, 0] });
+const sutureLine = createDynamicLine(256);
+const sutureModel = M.I();
+
+const rope = new RopePBD(70, 2.2, () => anchor.cur);
+world.add(rope);
+
+// Add to Scene so they render automatically
+Scene.addLine({ line: sutureLine, model: sutureModel, color: new Float32Array([1, 1, 1]), mode: 'strip' });
+Scene.addLine({ line: anchorCross, model: anchorModel, color: new Float32Array([0.40, 1.00, 0.70]), mode: 'segments' });
+
+// Helper to update dynamic line from rope positions
+function updateSutureGPUFromRope() {
+  const n = rope.n;
+  if (sutureLine.data.length < n * 3) return; // capacity guard
+  for (let i = 0; i < n; i++) {
+    sutureLine.data[i * 3 + 0] = rope.p[i * 3 + 0];
+    sutureLine.data[i * 3 + 1] = rope.p[i * 3 + 1];
+    sutureLine.data[i * 3 + 2] = rope.p[i * 3 + 2];
+  }
+  sutureLine.count = n;
+}
+
+// Utility: smooth anchor, keep y=60 baseline
+function updateAnchor(dt) {
+  const a = anchor;
+  a.cur[0] = a.cur[0] * (1 - a.lerp) + a.target[0] * a.lerp;
+  a.cur[2] = a.cur[2] * (1 - a.lerp) + a.target[2] * a.lerp;
+  a.cur[1] = 60; // working height
+  // move cross model to anchor
+  const T = M.I(); M.translate(T, T, a.cur[0], a.cur[1], a.cur[2]);
+  anchorModel.set(T);
+}
+
+/* -------------------- HUD binding for tension -------------------- */
+function updateHUDTension() {
+  // depth/angle not yet computed until instruments/leaflet (Part 4/5)
+  ui.setHUD(NaN, NaN, rope.tensionN);
+}
+/* ==================== Part 4: Anatomy + Instruments ==================== */
+
+/* ---------- Extra builders ---------- */
+function buildPosteriorLeaflet(width=80, depth=24, segX=48, segZ=16){
+  // Curved ribbon surface; Y is up; posterior free edge at z = -depth/2
   const vx = segX+1, vz = segZ+1;
-  const positions = [];
-  for(let iz=0; iz<vz; iz++){
+  const grid = new Float32Array(vx*vz*3);
+  for (let iz=0; iz<vz; iz++){
     const tz = iz/segZ, z = (tz-0.5)*depth;
-    for(let ix=0; ix<vx; ix++){
+    for (let ix=0; ix<vx; ix++){
       const tx = ix/segX, x = (tx-0.5)*width;
       const y = -0.12*(z*z)/(depth*0.5) + 0.06*(x*x)/(width*0.5);
-      positions.push(x,y,z);
+      const i = (iz*vx + ix)*3;
+      grid[i+0]=x; grid[i+1]=y; grid[i+2]=z;
     }
   }
   const tris = [];
   function idx(ix,iz){ return iz*vx + ix; }
-  for(let iz=0; iz<segZ; iz++){
-    for(let ix=0; ix<segX; ix++){
+  for (let iz=0; iz<segZ; iz++){
+    for (let ix=0; ix<segX; ix++){
       const a=idx(ix,iz), b=idx(ix+1,iz), c=idx(ix,iz+1), d=idx(ix+1,iz+1);
-      tris.push(a,b,c,  b,d,c);
+      tris.push(a,b,c, b,d,c);
     }
   }
-  // positions & normals
   const P = new Float32Array(tris.length*3);
   const N = new Float32Array(tris.length*3);
-  const tempA=v3.create(), tempB=v3.create(), tempC=v3.create(), n=v3.create();
-  for(let i=0;i<tris.length;i+=3){
-    const ia=tris[i]*3, ib=tris[i+1]*3, ic=tris[i+2]*3;
-    v3.set(tempA, positions[ia], positions[ia+1], positions[ia+2]);
-    v3.set(tempB, positions[ib], positions[ib+1], positions[ib+2]);
-    v3.set(tempC, positions[ic], positions[ic+1], positions[ic+2]);
-    const e1=v3.create(), e2=v3.create(); v3.sub(e1,tempB,tempA); v3.sub(e2,tempC,tempA);
-    v3.cross(n,e1,e2); v3.norm(n,n);
-    P.set(tempA, (i+0)*3); P.set(tempB, (i+1)*3); P.set(tempC, (i+2)*3);
-    N.set(n, (i+0)*3); N.set(n, (i+1)*3); N.set(n, (i+2)*3);
+  const A=[0,0,0], B=[0,0,0], C=[0,0,0], e1=[0,0,0], e2=[0,0,0], n=[0,0,0];
+  for (let t=0; t<tris.length; t+=3){
+    const ia=tris[t]*3, ib=tris[t+1]*3, ic=tris[t+2]*3;
+    A[0]=grid[ia];A[1]=grid[ia+1];A[2]=grid[ia+2];
+    B[0]=grid[ib];B[1]=grid[ib+1];B[2]=grid[ib+2];
+    C[0]=grid[ic];C[1]=grid[ic+1];C[2]=grid[ic+2];
+    e1[0]=B[0]-A[0]; e1[1]=B[1]-A[1]; e1[2]=B[2]-A[2];
+    e2[0]=C[0]-A[0]; e2[1]=C[1]-A[1]; e2[2]=C[2]-A[2];
+    // n = normalize(e1 x e2)
+    n[0]=e1[1]*e2[2]-e1[2]*e2[1];
+    n[1]=e1[2]*e2[0]-e1[0]*e2[2];
+    n[2]=e1[0]*e2[1]-e1[1]*e2[0];
+    const L=Math.hypot(n[0],n[1],n[2])||1; n[0]/=L;n[1]/=L;n[2]/=L;
+    P.set(A,(t+0)*3); P.set(B,(t+1)*3); P.set(C,(t+2)*3);
+    N.set(n,(t+0)*3); N.set(n,(t+1)*3); N.set(n,(t+2)*3);
   }
   return { P, N, width, depth };
 }
-function buildBox(w,h,d){
-  const x=w/2,y=h/2,z=d/2;
-  const p=[ // 12 tris
-    // +X
-    x,-y,-z,  x,y,-z,  x,y,z,   x,-y,-z,  x,y,z,  x,-y,z,
-    // -X
-    -x,-y,-z, -x,-y,z, -x,y,z,  -x,-y,-z, -x,y,z, -x,y,-z,
-    // +Y
-    -x,y,-z,  -x,y,z,  x,y,z,   -x,y,-z,  x,y,z,  x,y,-z,
-    // -Y
-    -x,-y,-z, x,-y,-z, x,-y,z,  -x,-y,-z, x,-y,z, -x,-y,z,
-    // +Z
-    -x,-y,z,  x,-y,z,  x,y,z,   -x,-y,z,  x,y,z,  -x,y,z,
-    // -Z
-    -x,-y,-z, -x,y,-z, x,y,-z,  -x,-y,-z, x,y,-z, x,-y,-z
-  ];
-  const n=[ // per-face normals
-    1,0,0, 1,0,0, 1,0,0,  1,0,0, 1,0,0, 1,0,0,
-    -1,0,0,-1,0,0,-1,0,0, -1,0,0,-1,0,0,-1,0,0,
-    0,1,0, 0,1,0, 0,1,0,  0,1,0, 0,1,0, 0,1,0,
-    0,-1,0,0,-1,0,0,-1,0, 0,-1,0,0,-1,0,0,-1,0,
-    0,0,1, 0,0,1, 0,0,1,  0,0,1, 0,0,1, 0,0,1,
-    0,0,-1,0,0,-1,0,0,-1, 0,0,-1,0,0,-1,0,0,-1
-  ];
-  return {P:new Float32Array(p), N:new Float32Array(n)};
-}
-function buildArcTube(radius=10, arcDeg=135, tubeR=0.8, seg=64, ring=6){
-  // Thin tube along arc for needle
+function buildArcTube(radius=10, arcDeg=135, tubeR=0.8, seg=72, ring=8){
+  // Thin tube along arc in XZ plane, centered at origin, Y is tube radial
   const P=[], N=[];
   for(let i=0;i<seg;i++){
     const t0=i/seg, t1=(i+1)/seg;
-    const a0=rad(-arcDeg/2 + t0*arcDeg), a1=rad(-arcDeg/2 + t1*arcDeg);
+    const a0=( -arcDeg/2 + t0*arcDeg ) * Math.PI/180;
+    const a1=( -arcDeg/2 + t1*arcDeg ) * Math.PI/180;
     const c0=[radius*Math.cos(a0), 0, radius*Math.sin(a0)];
     const c1=[radius*Math.cos(a1), 0, radius*Math.sin(a1)];
     for(let j=0;j<ring;j++){
-      const th0=j/ring*Math.PI*2, th1=(j+1)/ring*Math.PI*2;
+      const th0=j/ring*2*Math.PI, th1=(j+1)/ring*2*Math.PI;
       const n0=[Math.cos(th0), Math.sin(th0), 0], n1=[Math.cos(th1), Math.sin(th1), 0];
       const p00=[c0[0]+n0[0]*tubeR, n0[1]*tubeR, c0[2]+n0[2]*tubeR];
       const p01=[c0[0]+n1[0]*tubeR, n1[1]*tubeR, c0[2]+n1[2]*tubeR];
       const p10=[c1[0]+n0[0]*tubeR, n0[1]*tubeR, c1[2]+n0[2]*tubeR];
       const p11=[c1[0]+n1[0]*tubeR, n1[1]*tubeR, c1[2]+n1[2]*tubeR];
-      // two tris
       P.push(...p00,...p10,...p11,  ...p00,...p11,...p01);
       N.push(...n0,...n0,...n1,     ...n0,...n1,...n1);
     }
   }
-  return {P:new Float32Array(P), N:new Float32Array(N)};
+  return { P:new Float32Array(P), N:new Float32Array(N) };
 }
-function buildLineLoopEllipse(rx, rz, steps=128){
-  const pts=[];
-  for(let i=0;i<=steps;i++){
-    const a=i/steps*Math.PI*2;
-    pts.push(rx*Math.cos(a), 0, rz*Math.sin(a));
-  }
-  return new Float32Array(pts);
-}
-
-/* ===== Leaflet + annulus ===== */
-const leaflet = buildPosteriorLeaflet(80,24,40,12);
-const meshLeaflet = makeMesh(gl, leaflet.P, leaflet.N, progTri);
-const annulus = makeLines(gl, buildLineLoopEllipse(80*0.6, 24*0.8, 160), progLine, false);
-const edge = makeLines(gl, new Float32Array([-leaflet.width/2,0,-leaflet.depth/2,  leaflet.width/2,0,-leaflet.depth/2]), progLine, false);
-
-/* ===== Instrument (needle driver + needle) ===== */
-const handleBox = buildBox(40, 4, 4);
-const jawBox = buildBox(8, 2, 14);
-const meshHandle = makeMesh(gl, handleBox.P, handleBox.N, progTri);
-const meshJawL = makeMesh(gl, jawBox.P, jawBox.N, progTri);
-const meshJawR = makeMesh(gl, jawBox.P, jawBox.N, progTri);
-const needleGeo = buildArcTube(10,135,0.8,70,8);
-const meshNeedle = makeMesh(gl, needleGeo.P, needleGeo.N, progTri);
-const tool = {
-  pos: v3.create(0,40,120),
-  rx: 0, ry: 0,
-  clamped: false,
-  needleLocal: m4.create(), jawL: m4.create(), jawR: m4.create(), handle: m4.create(),
-  group: m4.create(),
-  rotate(dx,dy){ this.ry += dx*0.01; this.rx += dy*0.01; },
-  setClamp(b){ this.clamped=b; }
-};
-function composeTool(){
-  const G = m4.create(); m4.translate(G,G,tool.pos[0],tool.pos[1],tool.pos[2]); m4.rotY(G,G,tool.ry); m4.rotX(G,G,tool.rx);
-  tool.group.set(G);
-  // handle
-  const H = m4.create(); H.set(G); m4.rotZ&&(m4.rotZ); // (no rotZ helper; not needed)
-  m4.scale(H,H, 1,1,1); // center
-  m4.translate(H,H, 0, 0, 0);
-  tool.handle.set(H);
-  // jaws
-  const JL = m4.create(); JL.set(G);
-  m4.translate(JL,JL, 0, 0, 10);
-  m4.rotY(JL,JL, tool.clamped? 0.2 : 0.8);
-  tool.jawL.set(JL);
-  const JR = m4.create(); JR.set(G);
-  m4.translate(JR,JR, 0, 0, -10);
-  m4.rotY(JR,JR, tool.clamped? -0.2 : -0.8);
-  tool.jawR.set(JR);
-  // needle (centered at group origin)
-  const N = m4.create(); N.set(G);
-  tool.needleLocal.set(N);
-}
-tool.handle = m4.create(); tool.jawL = m4.create(); tool.jawR = m4.create(); tool.needleLocal = m4.create(); composeTool();
-
-/* ===== Suture rope (PBD) ===== */
-const rope = {
-  count: 60,
-  p: new Float32Array(60*3),
-  q: new Float32Array(60*3),
-  inv: new Float32Array(60).fill(1),
-  segLen: 2.0
-};
-function ropeSet(i,x,y,z){ rope.p[i*3]=x; rope.p[i*3+1]=y; rope.p[i*3+2]=z; }
-function ropeInit(){
-  const tip = needleTipWorld();
-  for(let i=0;i<rope.count;i++){ ropeSet(i, tip[0], tip[1]-i*rope.segLen, tip[2]); rope.q.set(rope.p); }
-  rope.inv[0]=0;
-}
-ropeInit();
-const ropeLines = makeLines(gl, rope.p, progLine, true);
-function ropeIntegrate(dt){
-  for(let i=0;i<rope.count;i++){
-    const idx=i*3, inv=rope.inv[i]; if(inv===0) continue;
-    const x=rope.p[idx], y=rope.p[idx+1], z=rope.p[idx+2];
-    const px=rope.q[idx], py=rope.q[idx+1], pz=rope.q[idx+2];
-    const vx=x-px, vy=y-py, vz=z-pz;
-    rope.q[idx]=x; rope.q[idx+1]=y; rope.q[idx+2]=z;
-    const gx=0, gy=-9.81, gz=0;
-    rope.p[idx]=x+vx+gx*dt*dt; rope.p[idx+1]=y+vy+gy*dt*dt; rope.p[idx+2]=z+vz+gz*dt*dt;
-  }
-}
-function ropeProject(iter=6){
-  for(let k=0;k<iter;k++){
-    for(let i=0;i<rope.count-1;i++){
-      const a=i,b=i+1, ia=a*3, ib=b*3;
-      let dx=rope.p[ib]-rope.p[ia], dy=rope.p[ib+1]-rope.p[ia+1], dz=rope.p[ib+2]-rope.p[ia+2];
-      const L=Math.hypot(dx,dy,dz)||1; const w1=rope.inv[a], w2=rope.inv[b], wsum=w1+w2||1e-6;
-      const corr=(L-rope.segLen)/wsum; dx/=L; dy/=L; dz/=L;
-      if(w1>0){ rope.p[ia]+=dx*corr*w1; rope.p[ia+1]+=dy*corr*w1; rope.p[ia+2]+=dz*corr*w1; }
-      if(w2>0){ rope.p[ib]-=dx*corr*w2; rope.p[ib+1]-=dy*corr*w2; rope.p[ib+2]-=dz*corr*w2; }
-    }
-  }
-}
-
-/* ===== Targets, scoring, copilot ===== */
-const cfg = {
-  weights: { biteDepth:.18, spacing:.18, entryAngle:.12, exitAngle:.08, symmetry:.08, tensionSafety:.16, chordaeAvoidance:.10, efficiency:.10 },
-  targets: { biteDepthMM:[2,3], spacingMM:[2,3], entryAngleDeg:[60,90], exitAngleDeg:[60,90], tensionMaxN:1.0 }
-};
-let mode = 'tutorial'; // tutorial | practice | exam
-const state = {
-  liveDepth: 0, liveAngle: 0, liveTension: 0,
-  stitches: [],
-  nextTargetX: -leaflet.width*0.45,
-  targetSpacing: (cfg.targets.spacingMM[0]+cfg.targets.spacingMM[1])/2,
-};
-function bandScore(x,[lo,hi],tol=0.7){ if(x>=lo&&x<=hi) return 1; const d=(x<lo)?lo-x:x-hi; return Math.max(0,1-d/tol); }
-function scoreStitch(m){
-  const s = {
-    biteDepth: bandScore(m.biteDepthMM, cfg.targets.biteDepthMM),
-    spacing:   bandScore(m.spacingMM, cfg.targets.spacingMM),
-    entryAngle:bandScore(m.entryAngleDeg, cfg.targets.entryAngleDeg,12),
-    exitAngle: bandScore(m.exitAngleDeg, cfg.targets.exitAngleDeg,12),
-    symmetry:  Math.max(0,1-m.symmetryMM/1.0),
-    tensionSafety: Math.max(0,1-Math.max(0,m.tensionMaxN-cfg.targets.tensionMaxN)/0.5),
-    chordaeAvoidance: Math.min(1,m.distNoGoMM/3.0),
-    efficiency: Math.max(0,1-(m.timeS-10)/10)
-  };
-  const w=cfg.weights; const total = s.biteDepth*w.biteDepth + s.spacing*w.spacing + s.entryAngle*w.entryAngle + s.exitAngle*w.exitAngle +
-                                   s.symmetry*w.symmetry + s.tensionSafety*w.tensionSafety + s.chordaeAvoidance*w.chordaeAvoidance + s.efficiency*w.efficiency;
-  const wsum = Object.values(w).reduce((a,b)=>a+b,0);
-  return 100*total/wsum;
-}
-function copilot(m){
-  const out=[];
-  const [bdLo,bdHi]=cfg.targets.biteDepthMM, [aLo,aHi]=cfg.targets.entryAngleDeg;
-  if(m.biteDepthMM<bdLo) out.push({level:'warn', msg:`Bite too shallow (${m.biteDepthMM.toFixed(1)} mm). Aim ${bdLo}–${bdHi} mm.`});
-  if(m.biteDepthMM>bdHi) out.push({level:'warn', msg:`Bite too deep (${m.biteDepthMM.toFixed(1)} mm). Keep ${bdLo}–${bdHi} mm from free edge.`});
-  if(m.entryAngleDeg<aLo) out.push({level:'warn', msg:`Entry angle shallow (${Math.round(m.entryAngleDeg)}°). Rotate toward perpendicular (${aLo}–${aHi}°).`});
-  if(m.tensionMaxN>cfg.targets.tensionMaxN) out.push({level:'danger', msg:`Tension high. Ease traction to avoid leaflet tear.`});
-  if(m.distNoGoMM<1.5) out.push({level:'danger', msg:`Near chordae zone. Shift laterally ≥ 1.5 mm.`});
-  if(out.length===0 && mode!=='exam') out.push({level:'info', msg:'Good bite. Maintain depth and perpendicular entry.'});
-  if(mode==='exam') return out.filter(a=>a.level!=='info'); // safety only
-  return out;
-}
-
-/* ===== Targets visualization ===== */
-const targetModel = m4.create(); m4.translate(targetModel,targetModel, state.nextTargetX, 0.6, -leaflet.depth/2);
-const targetLine = makeLines(gl, new Float32Array([0,0,0, 0,6,0]), progLine, false);
-function advanceTarget(){
-  state.nextTargetX += state.targetSpacing;
-  if(state.nextTargetX>leaflet.width*0.45) state.nextTargetX = -leaflet.width*0.45;
-  m4.translate(targetModel, m4.create(), state.nextTargetX, 0.6, -leaflet.depth/2);
-}
-
-/* ===== UI wires ===== */
-const hudDepth = document.getElementById('hudDepth');
-const hudAngle = document.getElementById('hudAngle');
-const hudTension = document.getElementById('hudTension');
-const tensionBar = document.getElementById('tensionBar');
-const adviceList = document.getElementById('adviceList');
-const modeLabel = document.getElementById('modeLabel');
-const sumStitches = document.getElementById('sumStitches');
-const sumScore = document.getElementById('sumScore');
-document.getElementById('btnTutorial').onclick=()=>{ mode='tutorial'; modeLabel.textContent='TUTORIAL'; resetAttempt(); };
-document.getElementById('btnPractice').onclick=()=>{ mode='practice'; modeLabel.textContent='PRACTICE'; resetAttempt(); };
-document.getElementById('btnExam').onclick=()=>{ mode='exam'; modeLabel.textContent='EXAM'; resetAttempt(); };
-document.getElementById('btnReset').onclick=()=> resetAttempt();
-
-function setAdvice(items){
-  adviceList.innerHTML='';
-  if(!items || !items.length){ adviceList.innerHTML='<li style="opacity:.7">No advice.</li>'; return; }
-  for(const a of items){
-    const li=document.createElement('li');
-    li.textContent=a.msg;
-    li.style.color = a.level==='info' ? '#a7e3b8' : a.level==='warn' ? '#ffde84' : '#ff968a';
-    adviceList.appendChild(li);
-  }
-}
-function updateHUD(){
-  hudDepth.textContent = state.liveDepth? state.liveDepth.toFixed(1)+' mm' : '—';
-  hudAngle.textContent = state.liveAngle? Math.round(state.liveAngle)+'°' : '—';
-  hudTension.textContent= state.liveTension? state.liveTension.toFixed(2)+' N' : '—';
-  const pct = Math.max(0, Math.min(1, (state.liveTension||0)/1.2))*100;
-  tensionBar.style.width = pct.toFixed(0)+'%';
-}
-function drawRadar(biteDepthMM, spacingMM, entryAngleDeg, tensionMaxN, score){
-  const c=document.getElementById('radar'); const ctx=c.getContext('2d');
-  ctx.clearRect(0,0,c.width,c.height);
-  const cx=140, cy=70, r=42;
-  const labels=['depth','spacing','angle','tension'];
-  function norm(k,v){
-    if(v==null) return 0;
-    if(k==='depth'||k==='spacing'){ const [lo,hi]=cfg.targets[k+'MM']; if(v>=lo&&v<=hi) return 1; const d = (v<lo)?lo-v:v-hi; return Math.max(0,1-d/1.0); }
-    if(k==='angle'){ const [lo,hi]=cfg.targets.entryAngleDeg; if(v>=lo&&v<=hi) return 1; const d=(v<lo)?lo-v:v-hi; return Math.max(0,1-d/12); }
-    if(k==='tension'){ const lim=cfg.targets.tensionMaxN; return Math.max(0, 1-(Math.max(0,v-lim)/0.5)); }
-    return 0;
-  }
-  const vals=[
-    norm('depth', biteDepthMM),
-    norm('spacing', spacingMM),
-    norm('angle', entryAngleDeg),
-    norm('tension', tensionMaxN)
+function mulPos(m, x,y,z){
+  const w = m[3]*x + m[7]*y + m[11]*z + m[15];
+  return [
+    (m[0]*x + m[4]*y + m[8]*z + m[12])/(w||1),
+    (m[1]*x + m[5]*y + m[9]*z + m[13])/(w||1),
+    (m[2]*x + m[6]*y + m[10]*z + m[14])/(w||1)
   ];
-  // grid
-  ctx.strokeStyle='#33506b'; ctx.fillStyle='rgba(127,198,255,0.15)'; ctx.lineWidth=1;
-  for(let ring=1; ring<=3; ring++){
-    ctx.beginPath();
-    for(let i=0;i<labels.length;i++){
-      const a=i/labels.length*Math.PI*2 - Math.PI/2;
-      const rr = r*ring/3, x=Math.cos(a)*rr, y=Math.sin(a)*rr;
-      if(i===0) ctx.moveTo(cx+x,cy+y); else ctx.lineTo(cx+x,cy+y);
-    }
-    ctx.closePath(); ctx.stroke();
-  }
-  // polygon
-  ctx.beginPath();
-  for(let i=0;i<labels.length;i++){
-    const a=i/labels.length*Math.PI*2 - Math.PI/2;
-    const rr = r*vals[i], x=Math.cos(a)*rr, y=Math.sin(a)*rr;
-    if(i===0) ctx.moveTo(cx+x,cy+y); else ctx.lineTo(cx+x,cy+y);
-  }
-  ctx.closePath(); ctx.fill(); ctx.stroke();
-  // labels
-  ctx.fillStyle='#9ec5ff'; ctx.font='12px system-ui';
-  for(let i=0;i<labels.length;i++){
-    const a=i/labels.length*Math.PI*2 - Math.PI/2; const x=Math.cos(a)*(r+10), y=Math.sin(a)*(r+10);
-    ctx.fillText(labels[i], cx+x-18, cy+y+4);
-  }
-  // score
-  ctx.font='bold 28px system-ui'; ctx.fillStyle='#a7e3b8';
-  ctx.fillText(isFinite(score)? String(Math.round(score)) : '—', 12, 48);
 }
 
-/* ===== Input: move tool on left move; rotate on right drag; keys ===== */
-let leftActive=true; // follow pointer on plane if not rotating
-canvas.addEventListener('pointermove',(e)=>{
-  if(!rotating){
-    const p = intersectWorkplane(e.clientX, e.clientY, 0); // y=0
-    // smooth lerp
-    const alpha=0.35; tool.pos[0]=tool.pos[0]*(1-alpha)+p[0]*alpha; tool.pos[2]=tool.pos[2]*(1-alpha)+p[2]*alpha;
-  }
-});
-window.addEventListener('keydown',(e)=>{
-  if(e.code==='Space'){ tool.setClamp(!tool.clamped); }
-  if(e.code==='Enter'){ takeStitch(); }
-});
-function intersectWorkplane(clientX, clientY, y=0){
-  const rect = canvas.getBoundingClientRect();
-  const nx = ((clientX-rect.left)/rect.width)*2-1;
-  const ny = -(((clientY-rect.top)/rect.height)*2-1);
-  // ray from camera through NDC
-  const invViewProj = inv4(m4.mul(new Float32Array(16), U.proj, U.view)); // we need inverse; implement a tiny inv
-  // Instead of general inverse, compute ray in view-space: simpler
-  // We'll compute world ray manually:
-  const cx=U.eye[0], cy=U.eye[1], cz=U.eye[2];
-  // build camera basis from view matrix columns (inverse of view upper 3x3)
-  // From lookAt, view = [x0 y0 z0 0; x1 y1 z1 0; x2 y2 z2 0; ...]
-  const X=[U.view[0],U.view[1],U.view[2]], Y=[U.view[4],U.view[5],U.view[6]], Z=[U.view[8],U.view[9],U.view[10]];
-  // Reconstruct forward = -Z, right = X, up = Y
-  const right = v3.create(...X), up=v3.create(...Y), fwd=v3.create(-Z[0],-Z[1],-Z[2]);
-  const tanFov = Math.tan(rad(45)/2);
-  const dir = v3.create();
-  const vx = nx * tanFov * aspect, vy = ny * tanFov;
-  // Ray in camera space: normalize(fwd + vx*right + vy*up)
-  v3.set(dir, fwd[0]+vx*right[0]+vy*up[0], fwd[1]+vx*right[1]+vy*up[1], fwd[2]+vx*right[2]+vy*up[2]); v3.norm(dir,dir);
-  // Intersect with plane y=const
-  const t = (y - cy) / (dir[1]||1e-6);
-  return [cx + dir[0]*t, y, cz + dir[2]*t];
-}
-function inv4(m){ // minimal Gauss-Jordan for 4x4 (used rarely here); from small template
-  const inv=new Float32Array(16), a=new Float32Array(m); inv.set([1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]);
-  for(let i=0;i<4;i++){
-    // pivot
-    let p=i; for(let r=i+1;r<4;r++) if(Math.abs(a[r*4+i])>Math.abs(a[p*4+i])) p=r;
-    if(p!==i){ for(let c=0;c<4;c++){ const t=a[i*4+c]; a[i*4+c]=a[p*4+c]; a[p*4+c]=t; const u=inv[i*4+c]; inv[i*4+c]=inv[p*4+c]; inv[p*4+c]=u; } }
-    const f=a[i*4+i]||1e-9; for(let c=0;c<4;c++){ a[i*4+c]/=f; inv[i*4+c]/=f; }
-    for(let r=0;r<4;r++){ if(r===i) continue; const g=a[r*4+i]; for(let c=0;c<4;c++){ a[r*4+c]-=g*a[i*4+c]; inv[r*4+c]-=g*inv[i*4+c]; } }
-  }
-  return inv;
+/* ---------- Anatomy: posterior leaflet + posterior edge ---------- */
+const leafletData = buildPosteriorLeaflet(80, 24, 48, 16);
+const leafletMesh = createTriMesh(leafletData.P, leafletData.N);
+const leafletModel = M.I();
+Scene.addMesh({ mesh:leafletMesh, model:leafletModel, color:new Float32Array([1.00,0.95,0.95]) });
+
+const posteriorEdge = createLines(new Float32Array([
+  -leafletData.width/2, 0, -leafletData.depth/2,
+   leafletData.width/2, 0, -leafletData.depth/2
+]));
+const posteriorEdgeModel = M.I();
+Scene.addLine({ line:posteriorEdge, model:posteriorEdgeModel, color:new Float32Array([0.90,0.50,0.50]), mode:'segments' });
+
+function nearestEdgePointWorld(point /* [x,y,z] */){
+  const x = Math.max(-leafletData.width/2, Math.min(leafletData.width/2, point[0]));
+  return [x, 0, -leafletData.depth/2];
 }
 
-/* ===== Stitch metrics ===== */
-function needleTipWorld(){
-  // tip at arc start in needle local space: (radius,0,0) with our arc builder
-  const R=10; const local=[R*Math.cos(rad(-135/2)),0,R*Math.sin(rad(-135/2))];
-  const M = tool.needleLocal;
-  return mulPos(M, local[0], local[1], local[2]);
+/* ---------- Instrument: needle driver + jaws + curved needle ---------- */
+const tool = {
+  // kinematic state
+  pos: V.create(0, 42, 120),
+  target: V.create(0, 42, 120),
+  rx: 0, ry: 0, rz: 0,
+  jawOpen: 0.8, clamped: false,
+  // geometry
+  handle: createTriMesh(buildBox(42, 4, 4).P, buildBox(42,4,4).N),
+  jawL:   createTriMesh(buildBox(8, 2, 16).P, buildBox(8,2,16).N),
+  jawR:   createTriMesh(buildBox(8, 2, 16).P, buildBox(8,2,16).N),
+  needle: createTriMesh(buildArcTube(10, 135, 0.8, 72, 8).P, buildArcTube(10,135,0.8,72,8).N),
+  // models
+  Mgroup: M.I(),
+  Mhandle: M.I(), MjawL: M.I(), MjawR: M.I(), Mneedle: M.I(),
+  // controls
+  setClamp(b){ this.clamped = b; this.jawOpen = b ? 0.2 : 0.85; },
+  // compose transforms from state
+  compose(){
+    const G = M.I(); M.translate(G, G, this.pos[0], this.pos[1], this.pos[2]);
+    M.rotY(G,G,this.ry); M.rotX(G,G,this.rx); M.rotZ(G,G,this.rz);
+    this.Mgroup.set(G);
+
+    const H = M.I(); H.set(G); this.Mhandle.set(H); // center handle
+
+    const JL = M.I(); JL.set(G); M.translate(JL,JL, 0, 0, 12); M.rotY(JL,JL, this.jawOpen); this.MjawL.set(JL);
+    const JR = M.I(); JR.set(G); M.translate(JR,JR, 0, 0,-12); M.rotY(JR,JR,-this.jawOpen); this.MjawR.set(JR);
+
+    const N = M.I(); N.set(G); this.Mneedle.set(N);
+  },
+  // input smoothing
+  update(dt){
+    const a = 0.35;
+    this.pos[0] = this.pos[0]*(1-a) + this.target[0]*a;
+    this.pos[2] = this.pos[2]*(1-a) + this.target[2]*a;
+    this.compose();
+  },
+  tipWorld(){
+    // local tip at arc start: (R*cos(-arc/2),0,R*sin(-arc/2))
+    const R=10, a = (-135/2)*Math.PI/180;
+    return mulPos(this.Mneedle, R*Math.cos(a), 0, R*Math.sin(a));
+  },
+  forwardVec(){
+    // approximate forward using needle -Z direction
+    const p0 = mulPos(this.Mneedle, 0,0,0);
+    const p1 = mulPos(this.Mneedle, 0,0,-1);
+    const f = [p1[0]-p0[0], p1[1]-p0[1], p1[2]-p0[2]];
+    const L = Math.hypot(f[0],f[1],f[2])||1; f[0]/=L; f[1]/=L; f[2]/=L; return f;
+  }
+};
+
+// Add instrument to Scene once; models are updated each frame
+Scene.addMesh({ mesh: tool.handle, model: tool.Mhandle, color:new Float32Array([0.22,0.28,0.31]) });
+Scene.addMesh({ mesh: tool.jawL,   model: tool.MjawL,   color:new Float32Array([0.56,0.74,0.84]) });
+Scene.addMesh({ mesh: tool.jawR,   model: tool.MjawR,   color:new Float32Array([0.56,0.74,0.84]) });
+Scene.addMesh({ mesh: tool.needle, model: tool.Mneedle, color:new Float32Array([0.69,0.75,0.77]) });
+
+/* ---------- Pointer mapping: left-move = move instrument (not camera) ---------- */
+// We keep camera orbit/pan bindings from Part 2. This adds instrument control.
+canvas.addEventListener('pointermove', (e) => {
+  if (ctrl.rotating || ctrl.panning) return;
+  if (e.buttons === 0 || e.buttons === 1) {
+    const p = screenToPlaneY0(e.clientX, e.clientY);
+    tool.target[0] = p[0]; tool.target[2] = p[2];
+  }
+});
+
+/* ---------- Keyboard mapping for instrument rotation ---------- */
+window.addEventListener('keydown', (e)=>{
+  // augment Space handler from Part 3: also sync tool clamp
+  if (e.code === 'Space') { tool.setClamp(!tool.clamped); }
+  if (e.code === 'KeyW') tool.rx -= 0.06;
+  if (e.code === 'KeyS') tool.rx += 0.06;
+  if (e.code === 'KeyA') tool.ry -= 0.08;
+  if (e.code === 'KeyD') tool.ry += 0.08;
+  if (e.code === 'KeyQ') tool.rz -= 0.06;
+  if (e.code === 'KeyE') tool.rz += 0.06;
+});
+
+/* ---------- Anchor now follows the needle tip (not the mouse) ---------- */
+// Replace the Part 3 updateAnchor() with this version:
+function updateAnchor(dt){
+  tool.update(dt);               // smooth tool to target & compose models
+  const tip = tool.tipWorld();   // compute world-space needle tip
+  anchor.cur[0] = tip[0];
+  anchor.cur[1] = tip[1];
+  anchor.cur[2] = tip[2];
+  // move the green cross to the tip (at y≈60)
+  const T = M.I(); M.translate(T, T, anchor.cur[0], anchor.cur[1], anchor.cur[2]);
+  anchorModel.set(T);
 }
-function needleForwardWorld(){
-  // forward vector ~ local +Z negative (down arc normal); we’ll use world up comparison for entry angle proxy
-  const M=tool.needleLocal;
-  const p0=mulPos(M, 0,0,0), p1=mulPos(M, 0,0,-1);
-  return v3.norm(v3.create(), v3.sub(v3.create(), p1, p0));
+
+/* ---------- Live metrics: bite depth & entry angle ---------- */
+function computeLiveMetrics(){
+  const tip = tool.tipWorld();
+  const edge = nearestEdgePointWorld(tip);
+  const dx = tip[0]-edge[0], dy = tip[1]-edge[1], dz = tip[2]-edge[2];
+  const depth = Math.hypot(dx,dy,dz);                 // mm-ish in scene units
+  const fwd = tool.forwardVec();
+  // angle to tissue normal (+Y): 0° (perpendicular) .. 180°; we want 60–90° band (as per spec)
+  const dot = Math.max(-1, Math.min(1, fwd[1]));      // fwd·+Y
+  const angle = Math.acos(dot) * 180/Math.PI;
+  return { depth, angle };
 }
-function nearestEdgePoint(p){
-  const x = Math.max(-leaflet.width/2, Math.min(leaflet.width/2, p[0]));
-  return [x, 0, -leaflet.depth/2];
+
+/* ---------- HUD feed: depth + angle + tension ---------- */
+// Replace updateHUDTension() with:
+function updateHUDLive(){
+  const m = computeLiveMetrics();
+  ui.setHUD(m.depth, m.angle, rope.tensionN);
 }
-function takeStitch(){
-  composeTool();
-  const tip = needleTipWorld();
-  const edgePt = nearestEdgePoint(tip);
-  const depth = Math.hypot(tip[0]-edgePt[0], tip[1]-edgePt[1], tip[2]-edgePt[2]);
-  const fwd = needleForwardWorld();
-  const entryAngle = deg(Math.acos(Math.max(-1, Math.min(1, fwd[1])))); // angle to +Y
-  const spacing = Math.abs(tip[0]-state.nextTargetX);
-  const distNoGo = Math.max(0, 6 - Math.abs(tip[2] + leaflet.depth/2)); // crude proxy
-  const tension = state.liveTension;
-  const stitch = {
-    biteDepthMM: depth, spacingMM: spacing,
-    entryAngleDeg: entryAngle, exitAngleDeg: entryAngle,
-    symmetryMM: 0, tensionMaxN: tension, distNoGoMM: distNoGo,
-    timeS: 10, regrips: 0, crossings: 0
+/* ==================== Part 5: Suturing Task + AI Co-Pilot + Scoring ==================== */
+
+/** Task configuration (targets, weights, tolerances, step spacing) */
+const TaskCFG = {
+  targets: {
+    biteDepthMM:   [2.0, 3.0],  // mm from free edge
+    spacingMM:     [2.0, 3.0],  // mm between stitches
+    entryAngleDeg: [60, 90],    // vs +Y normal
+    tensionMaxN:   1.0          // soft ceiling
+  },
+  weights: {                    // rubric weights (sum arbitrary, normalized in scorer)
+    biteDepth:       0.18,
+    spacing:         0.18,
+    entryAngle:      0.12,
+    exitAngle:       0.08,
+    symmetry:        0.08,
+    tensionSafety:   0.16,
+    chordaeAvoidance:0.10,
+    efficiency:      0.10
+  },
+  tol: { depth: 0.7, spacing: 0.7, angle: 12 },
+  stepMM: 2.5,                  // target step along posterior edge
+  examSafetyOnly: true          // Exam surfaces only danger-level advice
+};
+
+/** Live task state */
+const Task = {
+  stitches: /** @type {{metrics:any, score:number}[]} */([]),
+  nextX: -leafletData.width * 0.45,
+  lastStitchAt: performance.now(),
+  regripsSinceLast: 0,
+  targetModel: M.I(),
+  targetLine: null
+};
+
+/* ----- Visual target tick (green post) ----- */
+Task.targetLine = createLines(new Float32Array([ 0,0,0,  0,6,0 ]), false);
+Scene.addLine({ line: Task.targetLine, model: Task.targetModel, color: new Float32Array([0.40,1.00,0.70]), mode: 'strip' });
+
+function updateTargetVisual(){
+  const T = M.I();
+  M.translate(T, T, Task.nextX, 0.6, -leafletData.depth/2);
+  Task.targetModel.set(T);
+}
+function advanceTarget(){
+  Task.nextX += TaskCFG.stepMM;
+  if (Task.nextX > leafletData.width*0.45) Task.nextX = -leafletData.width*0.45;
+  updateTargetVisual();
+}
+
+/* ----- Scoring helpers ----- */
+function bandScore(x, [lo,hi], tol){
+  if (x >= lo && x <= hi) return 1;
+  const d = (x < lo) ? lo - x : x - hi;
+  return Math.max(0, 1 - d / (tol || 1));
+}
+function scoreStitch(m){
+  const w = TaskCFG.weights, t = TaskCFG.targets;
+  const s = {
+    biteDepth:       bandScore(m.biteDepthMM,   t.biteDepthMM,   TaskCFG.tol.depth),
+    spacing:         bandScore(m.spacingMM,     t.spacingMM,     TaskCFG.tol.spacing),
+    entryAngle:      bandScore(m.entryAngleDeg, t.entryAngleDeg, TaskCFG.tol.angle),
+    exitAngle:       bandScore(m.exitAngleDeg,  t.entryAngleDeg, TaskCFG.tol.angle),
+    symmetry:        Math.max(0, 1 - m.symmetryMM/1.0),
+    tensionSafety:   Math.max(0, 1 - Math.max(0, m.tensionMaxN - t.tensionMaxN)/0.5),
+    chordaeAvoidance:Math.min(1, m.distNoGoMM/3.0),
+    efficiency:      Math.max(0, 1 - Math.max(0, (m.timeS - 10))/10) // 10s/stitch sweet spot
   };
-  // advice + score
-  const adv = copilot(stitch); setAdvice(adv);
-  const score = scoreStitch(stitch);
-  state.stitches.push(stitch);
-  // move target
-  advanceTarget();
-  // summarize every 3 stitches
-  if(state.stitches.length % 3 === 0){
-    const last3 = state.stitches.slice(-3);
-    const avg = last3.reduce((s,m)=>s+scoreStitch(m),0)/3;
-    sumStitches.textContent = String(state.stitches.length);
-    sumScore.textContent = String(Math.round(avg));
-    drawRadar(stitch.biteDepthMM, stitch.spacingMM, stitch.entryAngleDeg, stitch.tensionMaxN, avg);
+  const W = Object.values(w).reduce((a,b)=>a+b,0);
+  return 100 * (
+    s.biteDepth*w.biteDepth + s.spacing*w.spacing + s.entryAngle*w.entryAngle + s.exitAngle*w.exitAngle +
+    s.symmetry*w.symmetry + s.tensionSafety*w.tensionSafety + s.chordaeAvoidance*w.chordaeAvoidance + s.efficiency*w.efficiency
+  ) / W;
+}
+
+/* ----- AI Co-Pilot (heuristic, exam-aware) ----- */
+function coPilotAdvice(m){
+  const t = TaskCFG.targets;
+  const adv = [];
+  // Depth
+  if (m.biteDepthMM < t.biteDepthMM[0]) adv.push({level:'warn',   text:`Bite too shallow (${m.biteDepthMM.toFixed(1)} mm). Aim ${t.biteDepthMM[0]}–${t.biteDepthMM[1]} mm.`});
+  if (m.biteDepthMM > t.biteDepthMM[1]) adv.push({level:'warn',   text:`Bite too deep (${m.biteDepthMM.toFixed(1)} mm). Keep ${t.biteDepthMM[0]}–${t.biteDepthMM[1]} mm from free edge.`});
+  // Spacing
+  if (m.spacingMM > TaskCFG.tol.spacing) adv.push({level:'warn',   text:`Spacing off by ${m.spacingMM.toFixed(1)} mm; target ${t.spacingMM[0]}–${t.spacingMM[1]} mm.`});
+  // Angle
+  if (m.entryAngleDeg < t.entryAngleDeg[0]) adv.push({level:'warn', text:`Entry angle shallow (${Math.round(m.entryAngleDeg)}°). Rotate toward perpendicular (${t.entryAngleDeg[0]}–${t.entryAngleDeg[1]}°).`});
+  // Tension
+  if (m.tensionMaxN > t.tensionMaxN) adv.push({level:'danger', text:`Tension high (${m.tensionMaxN.toFixed(2)} N). Ease traction to avoid leaflet tear.`});
+  // No-go heuristic (placeholder until chordae mask)
+  if (m.distNoGoMM < 1.5) adv.push({level:'danger', text:`Near chordae zone. Shift stitch laterally ≥ 1.5 mm.`});
+
+  if (!adv.length) adv.push({level:'info', text:'Good bite: depth, spacing, and angle within green bands.'});
+  if (state.mode === 'exam' && TaskCFG.examSafetyOnly) return adv.filter(a => a.level === 'danger');
+  if (state.mode === 'tutorial') {
+    adv.push({level:'info', text:`Hint: aim ${t.biteDepthMM[0]}–${t.biteDepthMM[1]} mm depth and ${t.entryAngleDeg[0]}–${t.entryAngleDeg[1]}° entry.`});
   }
+  return adv;
 }
 
-/* ===== Frame loop ===== */
-let tPrev=performance.now();
-function frame(){
-  resize();
-  const now=performance.now(), dt=Math.min(0.05, (now-tPrev)/1000); tPrev=now;
-  updateCamera();
-  setFrameUniforms();
+/* ----- Stitch action (Enter) ----- */
+function attemptStitch(){
+  const tip  = tool.tipWorld();
+  const edge = nearestEdgePointWorld(tip);
+  const depth   = Math.hypot(tip[0]-edge[0], tip[1]-edge[1], tip[2]-edge[2]);
+  const spacing = Math.abs(tip[0] - Task.nextX);
+  const fwd     = tool.forwardVec();
+  const entryAngle = Math.acos(Math.max(-1, Math.min(1, fwd[1]))) * 180/Math.PI;
+  const tension = rope.tensionN;
+  const now = performance.now(); const timeS = (now - Task.lastStitchAt)/1000; Task.lastStitchAt = now;
 
-  // update tool transform from input state
-  composeTool();
+  // Tutorial assist: gentle spacing forgiveness when close
+  let spacingAdj = spacing;
+  if (state.mode === 'tutorial' && spacingAdj > 0.5 && spacingAdj < 1.4) spacingAdj *= 0.5;
 
-  // Pin rope head to needle tip
-  const tip = needleTipWorld();
-  rope.p[0]=tip[0]; rope.p[1]=tip[1]; rope.p[2]=tip[2];
+  const m = {
+    biteDepthMM: depth,
+    spacingMM: spacingAdj,
+    entryAngleDeg: entryAngle,
+    exitAngleDeg: entryAngle,           // simplified proxy
+    symmetryMM: 0,                      // placeholder (needs true in-out measurement)
+    tensionMaxN: tension,
+    distNoGoMM: Math.max(0, 6 - Math.abs(tip[2] + leafletData.depth/2)), // heuristic
+    timeS, regrips: Task.regripsSinceLast, crossings: 0
+  };
 
-  // integrate/project rope
-  ropeIntegrate(dt); ropeProject(6); ropeLines.update();
+  const advice = coPilotAdvice(m);
+  ui.setCoach(advice);
 
-  // tension proxy
-  const headHome=[0,60,120];
-  state.liveTension = Math.hypot(rope.p[0]-headHome[0], rope.p[1]-headHome[1], rope.p[2]-headHome[2])*0.03;
+  const score = scoreStitch(m);
+  Task.stitches.push({ metrics: m, score });
 
-  // live HUD probes
-  const edgePt = nearestEdgePoint(tip);
-  state.liveDepth = Math.hypot(tip[0]-edgePt[0], tip[1]-edgePt[1], tip[2]-edgePt[2]);
-  const fwd = needleForwardWorld();
-  state.liveAngle = deg(Math.acos(Math.max(-1, Math.min(1, fwd[1]))));
-  updateHUD();
+  // Last-3 average + radar
+  const window = Task.stitches.slice(-3);
+  const avg = window.reduce((s, r)=> s + r.score, 0) / (window.length || 1);
+  ui.setScore(Task.stitches.length, avg);
+  ui.drawRadar({ depth:m.biteDepthMM, spacing:m.spacingMM, angle:m.entryAngleDeg, tension:m.tensionMaxN, score:avg });
 
-  // Clear & draw
-  gl.clearColor(0.05,0.07,0.09,1);
-  gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+  // UX cue
+  if (advice.find(a=>a.level==='danger')) toast('Safety alert', 'danger');
+  else if (advice.find(a=>a.level==='warn')) toast('Adjust technique', 'warn');
+  else toast('Good stitch', 'info');
 
-  // Ground grid (faint)
-  // (simple two lines as reference)
-  edge.draw(m4.create(), new Float32Array([0.3,0.4,0.5]));
-
-  // Leaflet
-  const Mleaf=m4.create(); meshLeaflet.draw(Mleaf, new Float32Array([1.0,0.95,0.95]));
-
-  // Annulus
-  annulus.draw(m4.create(), new Float32Array([0.54,0.76,1.0]));
-
-  // Target marker line
-  targetLine.draw(targetModel, new Float32Array([0.4,1.0,0.7]));
-
-  // Tool (handle + jaws + needle)
-  meshHandle.draw(tool.handle, new Float32Array([0.22,0.28,0.31]));
-  meshJawL.draw(tool.jawL, new Float32Array([0.56,0.74,0.84]));
-  meshJawR.draw(tool.jawR, new Float32Array([0.56,0.74,0.84]));
-  meshNeedle.draw(tool.needleLocal, new Float32Array([0.69,0.75,0.77]));
-
-  // Rope
-  ropeLines.draw(m4.create(), new Float32Array([1,1,1]));
-
-  requestAnimationFrame(frame);
+  // Progress & counters
+  advanceTarget();
+  Task.regripsSinceLast = 0;
 }
-requestAnimationFrame(frame);
 
-/* ===== Reset ===== */
-function resetAttempt(){
-  state.stitches.length=0;
-  sumStitches.textContent='0';
-  sumScore.textContent='—';
-  setAdvice([{level:'info', msg:'Session reset. Take a stitch to begin.'}]);
-  state.nextTargetX = -leaflet.width*0.45;
-  m4.translate(targetModel, m4.create(), state.nextTargetX, 0.6, -leaflet.depth/2);
-  tool.pos.set([0,40,120]); tool.rx=0; tool.ry=0; tool.clamped=false;
-  ropeInit();
-  drawRadar(NaN,NaN,NaN,NaN,NaN);
+/* ----- Bind keys (Enter = stitch; Space increments regrips counter) ----- */
+window.addEventListener('keydown', (e)=>{ if (e.code === 'Enter') attemptStitch(); });
+window.addEventListener('keydown', (e)=>{ if (e.code === 'Space') Task.regripsSinceLast++; });
+
+/* ----- Public task reset (used by Reset & on mode change) ----- */
+function resetTask(){
+  Task.stitches.length = 0;
+  Task.nextX = -leafletData.width * 0.45;
+  Task.lastStitchAt = performance.now();
+  Task.regripsSinceLast = 0;
+  updateTargetVisual();
+  ui.setCoach([{ level:'info', text:'Task reset. Stitch along the green tick marks.' }]);
+  ui.setScore(0, NaN);
+  ui.drawRadar({ depth:NaN, spacing:NaN, angle:NaN, tension:NaN, score:NaN });
 }
-resetAttempt();
-</script>
+
+// Prime the first target
+updateTargetVisual();
+/* ==================== Part 6: Telemetry, Replay & QA ==================== */
+
+/** ---------- Telemetry (session logger) ---------- */
+const Telemetry = {
+  enabled: true,
+  muted: false,          // set true while replaying, to avoid recursive logs
+  rows: /** @type {Array<{t:number,type:string,data:any}>} */ ([]),
+  t0: performance.now(),
+  reset() { this.rows.length = 0; this.t0 = performance.now(); },
+  ts() { return performance.now() - this.t0; },
+  record(type, data) { if (!this.enabled || this.muted) return; this.rows.push({ t: this.ts(), type, data }); },
+  sampleEveryMs: 50,
+  _lastPoseSample: 0,
+  samplePose(nowMs) {
+    if (!this.enabled || this.muted) return;
+    if (nowMs - this._lastPoseSample < this.sampleEveryMs) return;
+    this._lastPoseSample = nowMs;
+    Telemetry.record('pose', {
+      pos: [tool.pos[0], tool.pos[1], tool.pos[2]],
+      rot: [tool.rx, tool.ry, tool.rz],
+      clamp: tool.clamped,
+      tension: rope.tensionN,
+      targetX: Task.nextX
+    });
+  },
+  exportJSON() {
+    return {
+      version: 'mitral-sim-0.1',
+      startedAt: new Date(Date.now() - this.ts()).toISOString(),
+      cfg: TaskCFG,
+      rows: this.rows
+    };
+  },
+  download(filename = `mitral-session-${new Date().toISOString().replace(/[:.]/g,'-')}.json`) {
+    const blob = new Blob([JSON.stringify(this.exportJSON(), null, 2)], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2500);
+  }
+};
+
+// Log mode changes by wrapping ui.setMode (no need to edit earlier code)
+{
+  const _setMode = ui.setMode;
+  ui.setMode = (m) => { _setMode(m); Telemetry.record('mode', { mode: m }); };
+}
+
+// Log reset button (we’ll override handler to include telemetry)
+document.getElementById('btnReset').onclick = () => { Telemetry.record('reset', {}); resetSession(); };
+
+// Log clamp & stitch commands (capture before handlers)
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'Space') {
+    // defer a tick to log the new clamp state
+    setTimeout(() => Telemetry.record('clamp', { clamped: tool.clamped }), 0);
+  }
+  if (e.code === 'Enter') {
+    // snapshot metrics pre-advance (so spacing reflects current target)
+    const tip  = tool.tipWorld();
+    const edge = nearestEdgePointWorld(tip);
+    const depth   = Math.hypot(tip[0]-edge[0], tip[1]-edge[1], tip[2]-edge[2]);
+    const spacing = Math.abs(tip[0] - Task.nextX);
+    const fwd     = tool.forwardVec();
+    const entryAngle = Math.acos(Math.max(-1, Math.min(1, fwd[1]))) * 180/Math.PI;
+    const tension = rope.tensionN;
+    const m = { biteDepthMM: depth, spacingMM: spacing, entryAngleDeg: entryAngle, exitAngleDeg: entryAngle,
+                symmetryMM: 0, tensionMaxN: tension, distNoGoMM: Math.max(0, 6 - Math.abs(tip[2] + leafletData.depth/2)),
+                timeS: 0, regrips: Task.regripsSinceLast, crossings: 0 };
+    const score = scoreStitch(m);
+    Telemetry.record('cmd',   { name: 'stitch' });
+    Telemetry.record('stitch',{ metrics: m, score, phase: 'pre' }); // pre-advance log (informational)
+  }
+}, true);
+
+/** ---------- Replay (deterministic) ---------- */
+const Replay = {
+  playing: false,
+  data: null, idx: 0, t0: 0,
+  start(json) {
+    if (!json || !Array.isArray(json.rows)) { toast('Invalid replay file', 'danger'); return; }
+    this.data = json; this.idx = 0; this.t0 = performance.now(); this.playing = true;
+    Telemetry.muted = true;  // don’t double-log during replay
+    toast('Replay started'); log('Replaying…');
+    // block user input during replay by capturing events
+    blockInputs(true);
+    // reset task & UI to a clean state
+    resetTask();
+    // if the replay contains initial mode, adopt latest seen before t=0
+    const firstMode = json.rows.find(r => r.type === 'mode');
+    if (firstMode) ui.setMode(firstMode.data.mode);
+    showReplayBadge(true);
+  },
+  stop() {
+    if (!this.playing) return;
+    this.playing = false; this.data = null; this.idx = 0;
+    Telemetry.muted = false; toast('Replay finished'); log('Ready.');
+    blockInputs(false); showReplayBadge(false);
+  },
+  step(nowMs) {
+    if (!this.playing || !this.data) return;
+    const t = nowMs - this.t0;
+    const rows = this.data.rows;
+    while (this.idx < rows.length && rows[this.idx].t <= t) {
+      this.apply(rows[this.idx++]);
+    }
+    if (this.idx >= rows.length) this.stop();
+  },
+  apply(evt) {
+    const { type, data } = evt;
+    switch (type) {
+      case 'mode':
+        ui.setMode(data.mode); break;
+      case 'pose': {
+        // Drive tool directly (recorded pose overrides smoothing)
+        tool.pos[0] = data.pos[0]; tool.pos[1] = data.pos[1]; tool.pos[2] = data.pos[2];
+        tool.target[0] = data.pos[0]; tool.target[1] = data.pos[1]; tool.target[2] = data.pos[2];
+        tool.rx = data.rot[0]; tool.ry = data.rot[1]; tool.rz = data.rot[2];
+        tool.setClamp(!!data.clamp);
+        Task.nextX = data.targetX ?? Task.nextX;
+        break;
+      }
+      case 'clamp':
+        tool.setClamp(!!data.clamped); break;
+      case 'cmd':
+        if (data.name === 'stitch') attemptStitch(); // compute metrics fresh
+        break;
+      case 'reset':
+        resetTask(); break;
+      case 'stitch':
+        // informational in replay; scoring is recomputed by attemptStitch()
+        break;
+    }
+  }
+};
+
+// Input blocking while replaying
+function blockInputs(on) {
+  const stop = (e)=>{ e.stopImmediatePropagation(); e.preventDefault(); };
+  const opts = { capture: true };
+  const types = ['pointerdown','pointermove','pointerup','wheel','keydown'];
+  if (on) types.forEach(t => window.addEventListener(t, stop, opts));
+  else    types.forEach(t => window.removeEventListener(t, stop, opts));
+}
+
+// A simple REPLAY badge
+function showReplayBadge(show) {
+  let b = document.getElementById('replayBadge');
+  if (show) {
+    if (!b) {
+      b = document.createElement('div');
+      b.id = 'replayBadge';
+      b.textContent = 'REPLAY';
+      Object.assign(b.style, {
+        position:'absolute', top:'12px', left:'50%', transform:'translateX(-50%)',
+        padding:'6px 10px', border:'1px solid var(--panel-border)', borderRadius:'10px',
+        background:'var(--panel)', color:'var(--warn)', fontWeight:'700', letterSpacing:'2px',
+        zIndex: 5, boxShadow: 'var(--shadow)'
+      });
+      document.getElementById('simWrap').appendChild(b);
+    }
+    b.style.display = 'block';
+  } else if (b) b.style.display = 'none';
+}
+
+/** ---------- Export / Import UI (top bar) ---------- */
+(function attachExportReplayButtons(){
+  const toolbar = document.querySelector('#topbar .row');
+  const btnExport = document.createElement('button');
+  btnExport.className = 'btn ghost'; btnExport.id = 'btnExport'; btnExport.textContent = 'Export';
+  btnExport.title = 'Download telemetry (JSON)'; btnExport.onclick = () => Telemetry.download();
+  const btnReplay = document.createElement('button');
+  btnReplay.className = 'btn ghost'; btnReplay.id = 'btnReplay'; btnReplay.textContent = 'Replay…';
+  btnReplay.title = 'Load a previously exported JSON and replay';
+  const file = document.createElement('input'); file.type = 'file'; file.accept = 'application/json'; file.style.display = 'none';
+  btnReplay.onclick = () => file.click();
+  file.onchange = async () => {
+    const f = file.files?.[0]; if (!f) return;
+    try { const text = await f.text(); const json = JSON.parse(text); Replay.start(json); }
+    catch (e) { toast('Failed to load replay file', 'danger'); console.error(e); }
+    finally { file.value=''; }
+  };
+  // Insert Export and Replay before Reset
+  const resetBtn = document.getElementById('btnReset');
+  toolbar.insertBefore(btnExport, resetBtn);
+  toolbar.insertBefore(btnReplay, resetBtn);
+  toolbar.appendChild(file);
+})();
+
+/** ---------- QA Harness ---------- */
+async function runQATests(){
+  const results = [];
+  // 1) Non-blank render (sample center pixel)
+  try {
+    const x = (canvas.width/2)|0, y = (canvas.height/2)|0;
+    const px = new Uint8Array(4);
+    gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
+    const sum = px[0] + px[1] + px[2];
+    results.push({ name:'Non-blank render', pass: sum > 8, detail:`RGB sum=${sum}` });
+  } catch (e) {
+    results.push({ name:'Non-blank render', pass:false, detail: String(e) });
+  }
+
+  // 2) Rope constraint sanity (avg segment error)
+  // Step the world a few fixed steps to settle
+  for (let i=0;i<12;i++) world.step(1/120);
+  let err = 0; for (let i=0;i<rope.n-1;i++){
+    const a=i*3,b=(i+1)*3;
+    const L = Math.hypot(rope.p[b]-rope.p[a], rope.p[b+1]-rope.p[a+1], rope.p[b+2]-rope.p[a+2]);
+    err += Math.abs(L - rope.segLen);
+  }
+  const avgErr = err / (rope.n-1);
+  results.push({ name:'Rope segment error', pass: avgErr < 0.12, detail:`avg |ΔL|=${avgErr.toFixed(3)} (mm)` });
+
+  // 3) Scoring sanity (perfect vs poor)
+  const mPerfect = { biteDepthMM:2.5, spacingMM:2.5, entryAngleDeg:75, exitAngleDeg:75, symmetryMM:0, tensionMaxN:0.6, distNoGoMM:3, timeS:10, regrips:0, crossings:0 };
+  const mPoor    = { biteDepthMM:0.6, spacingMM:5.0, entryAngleDeg:25, exitAngleDeg:25, symmetryMM:2, tensionMaxN:2.0, distNoGoMM:0.2, timeS:25, regrips:5, crossings:2 };
+  const sPerfect = scoreStitch(mPerfect);
+  const sPoor    = scoreStitch(mPoor);
+  results.push({ name:'Scoring monotonicity', pass: sPerfect > 90 && sPoor < 50, detail:`perfect=${sPerfect.toFixed(1)}, poor=${sPoor.toFixed(1)}` });
+
+  // Report
+  let allPass = results.every(r => r.pass);
+  results.forEach(r => toast(`${r.pass?'✓':'✗'} ${r.name} — ${r.detail}`, r.pass?'':'danger'));
+  if (allPass) ui.setCoach([{ level:'info', text:'QA passed: renderer, rope constraints, scoring.' }]);
+  else ui.setCoach([{ level:'danger', text:'QA failed. Check console & toasts for details.' }]);
+}
+
+// Add QA button into Perf panel + hotkey
+(function attachQABtn(){
+  const perf = document.getElementById('perfPanel');
+  const btn = document.createElement('button'); btn.className='btn'; btn.textContent='Run QA';
+  btn.style.marginTop = '10px'; btn.onclick = runQATests;
+  perf.appendChild(document.createElement('div')).appendChild(btn);
+  window.addEventListener('keydown', (e)=>{
+    if (e.ctrlKey && e.shiftKey && (e.key==='T' || e.key==='t')) runQATests();
+  });
+})();
+
 </body>
 </html>
