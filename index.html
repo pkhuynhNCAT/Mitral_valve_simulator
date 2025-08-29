@@ -1,850 +1,1131 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta http-equiv="origin-trial" content="">
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Mitral Valve Suturing Trainer — Single-File, Offline, GitHub Pages Ready</title>
-  <meta name="description" content="Educational mitral valve suturing trainer with AI coaching, scoring, telemetry, and replay. Single-file, no CDNs, offline-capable." />
-  <style>
-    /* ============================================================
-       Tailwind-ish minimalist design system (no external CSS)
-       ============================================================ */
-    :root{
-      --bg: #0b1220;           /* deep navy */
-      --panel: #0f172a;        /* slate-900 */
-      --panel2: #111827;       /* gray-900 */
-      --ink: #e5e7eb;          /* gray-200 */
-      --muted: #9aa7be;        /* desaturated slate */
-      --accent: #22d3ee;       /* cyan-400 */
-      --ok: #34d399;           /* green-400 */
-      --warn: #f59e0b;         /* amber-500 */
-      --danger: #ef4444;       /* red-500 */
-      --shadow: 0 12px 30px rgba(0,0,0,.45);
-      --border: #283244;
-    }
-    html, body{
-      height:100%; margin:0; color:var(--ink); background:var(--bg);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji;
-      -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
-    }
-    #sim{ position:fixed; inset:0; width:100%; height:100%; display:block;
-      background: radial-gradient(1200px 1200px at 50% 50%, #0c1324, #0a0f1d 60%, #070b15);
-    }
-    canvas.overlay{ position:fixed; inset:0; pointer-events:none; }
-    .panel{
-      background: linear-gradient(180deg, rgba(31,41,55,.86), rgba(15,23,42,.86));
-      border:1px solid var(--border);
-      border-radius: 14px; box-shadow: var(--shadow);
-    }
-    .row{ display:flex; align-items:center; gap:.6rem }
-    .col{ display:flex; flex-direction:column; gap:.6rem }
-    .btn{
-      background:#182233; color:var(--ink); border:1px solid var(--border);
-      border-radius:12px; padding:.55rem .85rem; cursor:pointer; box-shadow:var(--shadow);
-      font-weight:600; letter-spacing:.2px;
-    }
-    .btn:hover{ filter:brightness(1.08) }
-    .btn[aria-pressed="true"]{ outline:2px solid var(--accent); }
-    .pill{ border:1px solid var(--border); color:#b5c1d9; border-radius:999px; padding:.2rem .5rem; font-size:.78rem }
-    .badge{ font-size:.78rem; padding:.15rem .45rem; border-radius:7px; border:1px solid var(--border) }
-    .ok{ background:rgba(52,211,153,.15); color:#bdf5dc }
-    .warn{ background:rgba(245,158,11,.16); color:#ffe8a3 }
-    .danger{ background:rgba(239,68,68,.16); color:#ffd1d1 }
-    .h2{ font-size:.95rem; color:var(--muted); margin:.2rem 0 .4rem 0; letter-spacing:.25px }
-    .sep{ height:1px; background:var(--border); margin:.5rem 0 }
-    .kv{ display:flex; justify-content:space-between; gap:.5rem; font-size:.92rem }
-    .kv .v{ color:#aeb7c9 }
-    .slider{ width:100% }
-    .sr-only{ position:absolute; left:-10000px; top:auto; width:1px; height:1px; overflow:hidden; }
-    .tag{ background:#0b1220; border:1px dashed var(--border); color:#9db2cc; border-radius:9px; padding:.25rem .55rem; font-size:.8rem }
-    .legend{ display:flex; flex-wrap:wrap; gap:.35rem }
-    .legend .item{ display:flex; align-items:center; gap:.35rem; font-size:.78rem; color:#c9d3e6 }
-    .dot{ width:.7rem; height:.7rem; border-radius:50% }
-    #topbar{ position:fixed; left:12px; right:12px; top:12px; padding:.65rem .75rem; z-index:10; }
-    #sidebar{ position:fixed; left:12px; top:90px; bottom:12px; width:330px; padding:12px; overflow:auto; z-index:10; }
-    #coach{ position:fixed; right:12px; top:12px; width:380px; padding:12px; z-index:10; }
-    #footer{ position:fixed; left:12px; right:12px; bottom:12px; padding:.5rem .75rem; display:flex; justify-content:space-between; align-items:center; z-index:10; }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MitraSim — Mitral Repair Suturing Trainer (Single‑File)</title>
+<meta name="description" content="Web-based mitral valve suturing simulation for surgical training and education, with AI co-pilot guidance and scoring." />
+<style>
+  :root{
+    --bg:#0f1115; --panel:#161a22; --mid:#1c2130; --ink:#e5ecff; --muted:#9fb0d6;
+    --accent:#5dd0ff; --good:#3bd671; --warn:#ffce3a; --bad:#ff6b6b; --drape:#0d3e2e;
+    --ghost:#3a86ff; --ring:#d9d9d9; --leaflet:#e6f2ee; --calc:#b8860b; --pledget:#ffffff;
+    --grid:#2b3242; --focus:#9af; --pill:#263149; --pillText:#cfe1ff;
+  }
+  html, body { height:100%; background:var(--bg); color:var(--ink); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji"; }
+  * { box-sizing:border-box; }
+  #app { display:grid; grid-template-rows:auto 1fr auto; height:100%; }
+
+  /* Header */
+  header {
+    display:grid; grid-template-columns: 1fr auto auto auto; gap:10px; align-items:center;
+    padding:10px 14px; background:linear-gradient(180deg, #151925, #0f131d);
+    border-bottom:1px solid #1f2533; position:sticky; top:0; z-index:5;
+  }
+  .brand { display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:0.5px; }
+  .brand .logo { width:28px; height:28px; border-radius:6px; background:linear-gradient(135deg, #2fa8ff, #00e59b); display:grid; place-items:center; font-weight:900; color:#04111a; }
+  .stats { display:flex; gap:10px; flex-wrap:wrap; }
+  .pill { background:var(--pill); color:var(--pillText); border:1px solid #34405a; padding:6px 10px; border-radius:999px; font-size:13px; }
+  .controls { display:flex; gap:8px; }
+  button, .btnlike {
+    background:var(--panel); color:var(--ink); border:1px solid #2d364a; padding:8px 12px; border-radius:8px; font-weight:600; cursor:pointer;
+  }
+  button:hover { border-color:#40517a; }
+  button.primary { background:linear-gradient(135deg, #2fa8ff33, #00e59b33); border-color:#2fa8ff77; }
+  button.danger { border-color:#6e2a2a; background:#311e1e; color:#ffdede; }
+  button.ghost { background:transparent; border-color:#3a4661; }
+
+  /* Main layout */
+  main { display:grid; grid-template-columns: 260px 1fr 320px; gap:12px; padding:12px; }
+  aside, .right { background:var(--panel); border:1px solid #20283a; border-radius:12px; padding:12px; }
+  .stageWrap { background:var(--mid); border:1px solid #222a3e; border-radius:12px; position:relative; display:grid; }
+  .stageTop { display:flex; gap:10px; align-items:center; padding:10px; border-bottom:1px solid #222a3e; }
+  .stage { position:relative; overflow:hidden; border-bottom-left-radius:12px; border-bottom-right-radius:12px; }
+  canvas { display:block; width:100%; height:100%; background: radial-gradient(1200px 700px at 50% 50%, #114a37, var(--drape) 60%, #093022); }
+  #hud { position:absolute; inset:0; pointer-events:none; }
+  .legend { display:flex; gap:8px; flex-wrap:wrap; }
+  .legend .key { display:flex; gap:8px; align-items:center; font-size:12px; color:var(--muted); }
+  .swatch { width:14px; height:14px; border-radius:3px; border:1px solid #0006; }
+  .swatch.leaflet{ background:var(--leaflet); }
+  .swatch.ring{ background:var(--ring); }
+  .swatch.calc{ background:var(--calc); }
+  .swatch.safe{ background:#a9ffcd; }
+  .swatch.ghost{ background:#3a86ff; }
+  .swatch.suture{ background:#c6e0ff; }
+  .swatch.pledget{ background:#fff; }
+
+  /* Left panel */
+  .tool { border:1px solid #2e3446; background:#151b28; border-radius:10px; margin-bottom:12px; }
+  .tool h3 { font-size:14px; letter-spacing:0.2px; font-weight:700; padding:10px; margin:0; border-bottom:1px solid #232a3b; color:#b8c6f0; }
+  .toolBody { padding:10px; display:grid; gap:10px; }
+  .row { display:grid; grid-template-columns: 1fr auto; gap:8px; align-items:center; }
+  .row label { font-size:13px; color:#c2d0fb; }
+  .row .kpi { font-weight:700; }
+  .option { display:flex; gap:8px; align-items:center; }
+  input[type="range"] { width:100%; }
+  .radioRow { display:flex; gap:8px; flex-wrap:wrap; }
+  .radioRow button { padding:8px 10px; border-radius:8px; border:1px solid #2c3650; background:#141a2a; }
+  .radioRow button.active { border-color:#3a86ff; outline:1px solid #3a86ff66; background:#0e1628; }
+
+  /* Right panel (Co-Pilot) */
+  .copilot { display:grid; gap:10px; }
+  .callout { background:#0d1629; border:1px solid #2a3754; border-radius:10px; padding:10px; }
+  .callout h4 { margin:0 0 8px 0; font-size:14px; color:#a7c6ff; }
+  .hint { background:#182239; border:1px dashed #39507c; padding:10px; border-radius:8px; color:#cfe1ff; }
+  .todo { display:grid; gap:8px; }
+  .step { background:#121827; border:1px solid #28324a; border-radius:8px; padding:10px; }
+  .step.active { border-color:#3a86ff; box-shadow:0 0 0 1px #3a86ff55 inset; }
+  .step.done { opacity:0.7; }
+  .badge { font-size:11px; background:#0b2636; border:1px solid #2a5670; padding:2px 6px; border-radius:999px; margin-left:6px; color:#8fd4ff; }
+
+  /* Footer */
+  footer { display:flex; gap:10px; justify-content:space-between; align-items:center; padding:10px 14px; border-top:1px solid #1f2533; color:#9fb0d6; background:#0e121b; }
+  .kbd { border:1px solid #2a3452; border-bottom-width:2px; padding:2px 6px; border-radius:6px; background:#151b2a; font-weight:700; font-size:12px; }
+
+  /* Microhelpers */
+  .flex { display:flex; gap:10px; align-items:center; }
+  .grow { flex:1; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace; }
+  .small { font-size:12px; color:#b6c5ef; }
+  .muted { color:#9fb0d6; }
+  .center { text-align:center; }
+
+  /* Tooltip */
+  .tooltip { position:relative; }
+  .tooltip:hover::after{
+    content:attr(data-tip);
+    position:absolute; left:0; top:calc(100% + 6px);
+    background:#0b1426; color:#cfe1ff; border:1px solid #29406b; padding:6px 8px; border-radius:6px; white-space:nowrap; z-index:10;
+  }
+
+  /* Responsive */
+  @media (max-width: 1100px){
+    main { grid-template-columns: 1fr; }
+    .right { order:3; }
+    aside { order:2; }
+    .stageWrap { order:1; min-height:60vh; }
+  }
+</style>
 </head>
 <body>
-  <!-- ===================== SAFETY BANNER ===================== -->
-  <div id="topbar" class="panel row" role="banner" aria-label="Safety notice and global controls">
-    <div class="col" style="flex:1;">
-      <div class="row" style="gap:.5rem; align-items:center">
-        <span class="badge warn">Training only</span>
-        <strong>Educational use only — not a medical device.</strong>
-      </div>
-      <div class="row legend" aria-hidden="true">
-        <div class="item"><span class="dot" style="background:#22d3ee"></span>Needle angle</div>
-        <div class="item"><span class="dot" style="background:#34d399"></span>Bite accuracy</div>
-        <div class="item"><span class="dot" style="background:#f59e0b"></span>Tension</div>
-        <div class="item"><span class="dot" style="background:#ef4444"></span>Violation</div>
-      </div>
-    </div>
-    <div class="row">
-      <button class="btn" id="mode1" aria-pressed="true" title="Mode 1: Ring suture placement">Mode 1: Ring</button>
-      <button class="btn" id="mode2" aria-pressed="false" title="Mode 2: Leaflet bite">Mode 2: Bite</button>
-      <button class="btn" id="mode3" aria-pressed="false" title="Mode 3: Knot & Tension">Mode 3: Knot</button>
-      <button class="btn" id="toggleExam" title="Exam vs Training">Exam Mode</button>
-      <button class="btn" id="resetBtn" title="Reset session">Reset</button>
-    </div>
-  </div>
-
-  <!-- ===================== LEFT SIDEBAR ====================== -->
-  <aside id="sidebar" class="panel" aria-label="Settings and Metrics">
-    <div class="h2">Session</div>
-    <div class="row">
-      <button class="btn" id="recordBtn" title="Record / Stop">Record</button>
-      <button class="btn" id="replayBtn" title="Instant replay">Replay</button>
-      <button class="btn" id="exportBtn" title="Export JSON">Export</button>
-      <button class="btn" id="importBtn" title="Import JSON">Import</button>
-    </div>
-
-    <div class="sep"></div>
-    <div class="h2">Settings</div>
-    <label class="kv">Difficulty
-      <input id="difficulty" class="slider" type="range" min="0" max="2" step="1" value="1" />
-    </label>
-    <label class="kv">Tissue stiffness
-      <input id="stiffness" class="slider" type="range" min="0.1" max="2.0" step="0.1" value="1.0" />
-    </label>
-    <label class="kv">Friction
-      <input id="friction" class="slider" type="range" min="0.0" max="1.0" step="0.05" value="0.3" />
-    </label>
-    <label class="kv">Ring size
-      <input id="ringSize" class="slider" type="range" min="26" max="38" step="1" value="32" />
-    </label>
-    <label class="kv">Target scallop
-      <select id="scallop">
-        <option value="P2" selected>P2</option>
-        <option value="P1">P1</option>
-        <option value="P3">P3</option>
-        <option value="A1">A1</option>
-        <option value="A2">A2</option>
-        <option value="A3">A3</option>
-      </select>
-    </label>
-    <label class="kv">Handedness
-      <select id="hand">
-        <option value="right" selected>Right</option>
-        <option value="left">Left</option>
-      </select>
-    </label>
-    <label class="kv">Invert axes
-      <input id="invert" type="checkbox" />
-    </label>
-
-    <div class="sep"></div>
-    <div class="h2">Real-time Metrics</div>
-    <div class="kv">Needle angle <span class="v" id="needleAngle">—</span></div>
-    <div class="kv">Bite error (mm) <span class="v" id="biteError">—</span></div>
-    <div class="kv">Spacing SD (mm) <span class="v" id="spacingSD">—</span></div>
-    <div class="kv">Tension <span class="v" id="tension">—</span></div>
-    <div class="kv">Coaptation (mm) <span class="v" id="coaptation">—</span></div>
-    <div class="kv">FPS <span class="v" id="fps">—</span></div>
-
-    <div class="sep"></div>
-    <div class="h2">Scoring (live)</div>
-    <div class="kv">Task score <span class="v" id="taskScore">—</span></div>
-    <div class="kv">GEARS proxy <span class="v" id="gearsScore">—</span></div>
-    <div class="kv">GOALS proxy <span class="v" id="goalsScore">—</span></div>
-    <div class="kv">OSATS proxy <span class="v" id="osatsScore">—</span></div>
-    <div class="kv"><strong>Final</strong> <span class="v" id="finalScore">—</span></div>
-
-    <div class="sep"></div>
-    <div class="h2">Controls</div>
-    <div style="color:#9fb3d4; font-size:.88rem; line-height:1.35">
-      Mouse = move tip, Wheel = in/out,
-      Right-drag = orbit, Middle-drag = pan<br/>
-      Q/E = roll, A/D = yaw, W/S = pitch, Z/X = open/close gripper, Space = clutch<br/>
-      1/2/3 = switch modes, H = toggle overlays, P = pause
-    </div>
-  </aside>
-
-  <!-- ===================== RIGHT: AI COACH =================== -->
-  <aside id="coach" class="panel" aria-live="polite" aria-atomic="true">
-    <div class="h2">AI Co-pilot</div>
-    <div id="coachMsg">Starting…</div>
-    <div class="sep"></div>
-    <div class="h2">Hints</div>
-    <ul id="hints" style="margin:0; padding-left:1rem"></ul>
-  </aside>
-
-  <!-- ===================== FOOTER: MINIMAP =================== -->
-  <footer id="footer" class="panel" role="contentinfo">
-    <div class="row" style="gap:1rem">
-      <canvas id="minimap" width="200" height="120" class="panel" style="background:#050a16; border-radius:12px"></canvas>
+<div id="app">
+  <header>
+    <div class="brand">
+      <div class="logo">M</div>
       <div>
-        <div><strong>Annulus orientation</strong> <span class="pill">A1–A3 / P1–P3</span></div>
-        <div class="tag">Use minimap to avoid orientation errors; scallop targets are marked.</div>
+        <div>MitraSim — Suturing Trainer</div>
+        <div class="small muted">Posterior annuloplasty sutures (P1–P3) — single-file, no libs</div>
       </div>
     </div>
-    <div id="status" class="tag">Ready</div>
+
+    <div class="stats">
+      <div class="pill" id="kpiTimer">⏱ Time: 00:00</div>
+      <div class="pill" id="kpiSutures">🧵 Sutures: 0</div>
+      <div class="pill" id="kpiSpacing">↔ Avg Spacing: —</div>
+      <div class="pill" id="kpiDepth">⬇ Avg Bite Depth: —</div>
+      <div class="pill" id="kpiTrauma">🩸 Tissue Trauma: 0</div>
+      <div class="pill" id="kpiGap">➖ Coaptation Gap: —</div>
+      <div class="pill" id="kpiScore">⭐ Score: —/100</div>
+    </div>
+
+    <div class="controls">
+      <button class="ghost tooltip" id="btnScreenshot" data-tip="Capture the operative field as PNG">📸 Screenshot</button>
+      <button class="ghost tooltip" id="btnSave" data-tip="Save current case to your browser">💾 Save</button>
+      <button class="ghost tooltip" id="btnLoad" data-tip="Load saved case">📂 Load</button>
+    </div>
+
+    <div class="controls">
+      <button class="primary" id="btnStart">▶ Start Skill Drill</button>
+      <button id="btnEnd">✅ End & Score</button>
+      <button class="danger" id="btnReset">♻ Reset Tissue</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Left: Instruments & Settings -->
+    <aside>
+      <div class="tool">
+        <h3>Instruments</h3>
+        <div class="toolBody">
+          <div class="radioRow" id="instrumentRow">
+            <button data-tool="needle" class="active">🪡 Needle Driver <span class="badge">N</span></button>
+            <button data-tool="forceps">🔗 Forceps <span class="badge">F</span></button>
+            <button data-tool="scissors">✂ Scissors</button>
+          </div>
+          <div class="row">
+            <label>Needle Curvature</label>
+            <div class="kpi" id="kpiCurv">3/8</div>
+          </div>
+          <input type="range" id="needleCurvature" min="0.30" max="0.50" step="0.01" value="0.375" />
+          <div class="row">
+            <label>Needle Angle vs Normal</label>
+            <div class="kpi" id="kpiAngle">70°</div>
+          </div>
+          <input type="range" id="needleAngle" min="40" max="100" step="1" value="70" />
+          <div class="row">
+            <label>Suture Tension</label>
+            <div class="kpi" id="kpiTension">0.00 N</div>
+          </div>
+          <input type="range" id="tension" min="0" max="12" step="0.1" value="0" />
+          <div class="option">
+            <input type="checkbox" id="pledget" />
+            <label for="pledget">Use pledget</label>
+          </div>
+          <div class="option">
+            <input type="checkbox" id="ghostTargets" checked />
+            <label for="ghostTargets">Show ideal targets</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="tool">
+        <h3>Scenario</h3>
+        <div class="toolBody">
+          <div class="row"><label>Difficulty</label>
+            <div class="radioRow" id="difficultyRow">
+              <button data-diff="resident" class="active">Resident</button>
+              <button data-diff="fellow">Fellow</button>
+              <button data-diff="attending">Attending</button>
+            </div>
+          </div>
+          <div class="row"><label>Calcification</label>
+            <div class="radioRow" id="calcRow">
+              <button data-calc="none" class="active">None</button>
+              <button data-calc="posterior">Posterior</button>
+              <button data-calc="anterior">Anterior</button>
+            </div>
+          </div>
+          <div class="row">
+            <label>Annulus size</label>
+            <div class="kpi" id="kpiAnnulus">32 mm</div>
+          </div>
+          <input type="range" id="annulusSize" min="26" max="38" step="1" value="32" />
+          <div class="row">
+            <label>Target spacing</label>
+            <div class="kpi" id="kpiTargetSpacing">4.0 mm</div>
+          </div>
+          <input type="range" id="targetSpacing" min="3" max="6" step="0.1" value="4.0" />
+          <div class="row">
+            <label>Target bite depth</label>
+            <div class="kpi" id="kpiTargetDepth">3.5 mm</div>
+          </div>
+          <input type="range" id="targetDepth" min="2.5" max="5.0" step="0.1" value="3.5" />
+        </div>
+      </div>
+
+      <div class="tool">
+        <h3>Legend</h3>
+        <div class="toolBody legend">
+          <div class="key"><div class="swatch leaflet"></div> Leaflet</div>
+          <div class="key"><div class="swatch ring"></div> Annulus</div>
+          <div class="key"><div class="swatch calc"></div> Calcified zone</div>
+          <div class="key"><div class="swatch safe"></div> Safe bite zone</div>
+          <div class="key"><div class="swatch suture"></div> Suture</div>
+          <div class="key"><div class="swatch pledget"></div> Pledget</div>
+          <div class="key"><div class="swatch ghost"></div> AI suggestion</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Center: Stage -->
+    <div class="stageWrap">
+      <div class="stageTop">
+        <div class="flex grow">
+          <div class="small">Task: Place interrupted posterior annuloplasty sutures (P1–P3). Click to set <b>entry</b>, drag arc, click to set <b>exit</b>. Adjust <b>tension</b> to approximate coaptation without tearing.</div>
+        </div>
+        <div class="flex">
+          <span class="small">Hotkeys: <span class="kbd">N</span> Needle <span class="kbd">F</span> Forceps <span class="kbd">R</span> Reset <span class="kbd">Space</span> Co‑Pilot</span>
+        </div>
+      </div>
+      <div class="stage">
+        <canvas id="sim" width="1600" height="1000"></canvas>
+        <svg id="hud" viewBox="0 0 1600 1000" aria-hidden="true"></svg>
+      </div>
+    </div>
+
+    <!-- Right: AI Co-Pilot -->
+    <div class="right">
+      <div class="copilot">
+        <div class="callout">
+          <h4>AI Co‑Pilot</h4>
+          <div class="hint" id="hintBox">Welcome. Select <b>Needle Driver</b>. Set curvature ~ <b>3/8</b>, angle ~ <b>70°</b>. Place your first bite in <b>P2</b> within <b>3–5 mm</b> of the annulus, perpendicular to the annular tangent.</div>
+          <div class="flex">
+            <button id="btnCoach">💡 Ask Co‑Pilot</button>
+            <button id="btnSpeak" class="ghost">🔊 Voice</button>
+            <button id="btnGhost" class="ghost">👻 Tog. Hints</button>
+          </div>
+        </div>
+
+        <div class="callout">
+          <h4>Checklist</h4>
+          <div class="todo" id="todo">
+            <div class="step active" data-step="1">1) Select needle driver and set needle curvature</div>
+            <div class="step" data-step="2">2) Place posterior entry bite (3–5 mm from annulus)</div>
+            <div class="step" data-step="3">3) Exit on corresponding anterior/posterior leaflet point</div>
+            <div class="step" data-step="4">4) Optional: place pledget and tension gradually</div>
+            <div class="step" data-step="5">5) Repeat along P1–P3 with ~4 mm spacing</div>
+            <div class="step" data-step="6">6) Assess coaptation gap and trauma; finalize</div>
+          </div>
+        </div>
+
+        <div class="callout">
+          <h4>Case Log</h4>
+          <div id="log" class="small mono" style="max-height:220px; overflow:auto; background:#0b1222; border:1px solid #1e2945; border-radius:8px; padding:8px;"></div>
+          <div class="flex">
+            <button id="btnDownload">⬇ Download Report</button>
+            <button class="ghost" id="btnClearLog">🧹 Clear Log</button>
+          </div>
+        </div>
+
+        <div class="callout small">
+          <h4>Notes</h4>
+          <div>• This trainer simulates annular bites for ring annuloplasty (education only).<br>
+               • The elastic leaflet mesh deforms with tension; excessive force causes tearing.<br>
+               • Metrics follow OSATS-style domains + task metrics (spacing, bite depth, angle, trauma, time, coaptation gap).</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="small">© MitraSim (educational use only — not a medical device). Expandable to chordal replacement / ring seating / valve replacement modules.</div>
+    <div class="small">Build: single-file, no libs. Viewport: 1600×1000 canvas, mm scale shown in KPIs.</div>
   </footer>
+</div>
 
-  <!-- ===================== SURFACES ========================== -->
-  <canvas id="sim" aria-label="3D simulation canvas"></canvas>
-  <canvas id="hud" class="overlay" aria-hidden="true"></canvas>
-  <canvas id="compute" width="64" height="64" style="display:none"></canvas>
-  <div id="coach-aria" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+<script>
+/** ===============================
+ *  MitraSim — Single-file trainer
+ *  (c) Educational use only
+ *  ===============================
+ *  High-level architecture
+ *  - Stage (Canvas+SVG HUD)
+ *  - Valve/Tissue model (ellipse annulus + leaflet mass-spring mesh)
+ *  - Suture model (entry/exit, thread, pledget, spring link)
+ *  - Physics (Hooke + damping + tear)
+ *  - Copilot (heuristics + speech)
+ *  - Scoring (OSATS + task metrics)
+ *  - Persistence (localStorage), Report export, Screenshot
+ */
 
-  <!-- =========================================================
-       THREE.JS INLINE — Minimal compat renderer for single-file
-       NOTE: This is a lean, inline renderer with a THREE-compatible
-       surface for this app (no external CDNs). If you later want
-       official three.js, replace this block with the minified build
-       and keep window.THREE mapping intact.
-       ========================================================= -->
-  <script id="threejs-min">
-  (function(global){
-    const T = {};
-    /* -------- Math -------- */
-    T.Vec3 = class{ constructor(x=0,y=0,z=0){this.x=x;this.y=y;this.z=z} set(x,y,z){this.x=x;this.y=y;this.z=z;return this} clone(){return new T.Vec3(this.x,this.y,this.z)} add(v){this.x+=v.x;this.y+=v.y;this.z+=v.z;return this} sub(v){this.x-=v.x;this.y-=v.y;this.z-=v.z;return this} mul(s){this.x*=s;this.y*=s;this.z*=s;return this} dot(v){return this.x*v.x+this.y*v.y+this.z*v.z} len(){return Math.hypot(this.x,this.y,this.z)} norm(){const l=this.len()||1; this.x/=l; this.y/=l; this.z/=l; return this} };
-    T.Mat4 = class{ constructor(){this.m=new Float32Array(16); this.identity()} identity(){const m=this.m; m[0]=1;m[1]=0;m[2]=0;m[3]=0;m[4]=0;m[5]=1;m[6]=0;m[7]=0;m[8]=0;m[9]=0;m[10]=1;m[11]=0;m[12]=0;m[13]=0;m[14]=0;m[15]=1; return this} mul(b){const a=this.m, c=new Float32Array(16), d=b.m; for(let i=0;i<4;i++){for(let j=0;j<4;j++){c[i*4+j]=a[i*4+0]*d[0*4+j]+a[i*4+1]*d[1*4+j]+a[i*4+2]*d[2*4+j]+a[i*4+3]*d[3*4+j];}} this.m=c; return this} translate(x,y,z){const t=new T.Mat4().identity(); t.m[12]=x; t.m[13]=y; t.m[14]=z; return this.mul(t)} scale(x,y,z){const s=new T.Mat4().identity(); s.m[0]=x; s.m[5]=y; s.m[10]=z; return this.mul(s)} rotateY(a){const c=Math.cos(a), s=Math.sin(a), r=new T.Mat4().identity(); r.m[0]=c; r.m[2]=s; r.m[8]=-s; r.m[10]=c; return this.mul(r)} perspective(fovy,aspect,near,far){const f=1/Math.tan(fovy/2), nf=1/(near-far), p=new T.Mat4(); p.m[0]=f/aspect; p.m[5]=f; p.m[10]=(far+near)*nf; p.m[11]=-1; p.m[14]=(2*far*near)*nf; p.m[15]=0; this.m=p.m; return this} lookAt(eye,center,up){const z=eye.clone().sub(center).norm(); const x=new T.Vec3(up.y*z.z-up.z*z.y, up.z*z.x-up.x*z.z, up.x*z.y-up.y*z.x).norm(); const y=new T.Vec3(z.y*x.z-z.z*x.y, z.z*x.x-z.x*x.z, z.x*x.y-z.y*x.x).norm(); const m=new Float32Array(16); m[0]=x.x; m[1]=y.x; m[2]=z.x; m[3]=0; m[4]=x.y; m[5]=y.y; m[6]=z.y; m[7]=0; m[8]=x.z; m[9]=y.z; m[10]=z.z; m[11]=0; m[12]=- (x.x*eye.x + x.y*eye.y + x.z*eye.z); m[13]=- (y.x*eye.x + y.y*eye.y + y.z*eye.z); m[14]=- (z.x*eye.x + z.y*eye.y + z.z*eye.z); m[15]=1; this.m=m; return this} };
-    /* -------- Renderer -------- */
-    T.Renderer = class{
-      constructor(canvas){
-        this.gl = canvas.getContext('webgl',{antialias:true,alpha:false,stencil:false,depth:true,preserveDrawingBuffer:false});
-        const gl=this.gl; if(!gl) throw new Error('WebGL not supported');
-        this.prog = this._mkProg(
-          "attribute vec3 p; attribute vec3 n; uniform mat4 mvp; uniform mat4 nm; uniform vec3 col; varying float l; void main(){ vec3 nn = normalize((nm*vec4(n,0.0)).xyz); float d = clamp(dot(nn, normalize(vec3(0.3,0.8,0.6))), 0.12, 1.0); l=d; gl_Position=mvp*vec4(p,1.0); }",
-          "precision mediump float; varying float l; uniform vec3 col; void main(){ vec3 c = mix(vec3(0.05,0.08,0.14), col, l); gl_FragColor=vec4(c,1.0); }"
-        );
-        gl.enable(gl.DEPTH_TEST); this.resize(canvas.width, canvas.height);
-      }
-      _mkProg(vsSrc, fsSrc){ const gl=this.gl; function sh(t,src){ const s=gl.createShader(t); gl.shaderSource(s,src); gl.compileShader(s); if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)||'shader'); return s; } const p=gl.createProgram(); gl.attachShader(p,sh(gl.VERTEX_SHADER,vsSrc)); gl.attachShader(p,sh(gl.FRAGMENT_SHADER,fsSrc)); gl.linkProgram(p); if(!gl.getProgramParameter(p,gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p)||'link'); return p; }
-      resize(w,h){ const gl=this.gl; gl.viewport(0,0,w,h); this.w=w; this.h=h; }
-      draw(meshes, viewProj){ const gl=this.gl; gl.clearColor(8/255,12/255,24/255,1); gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT); gl.useProgram(this.prog);
-        const locP=gl.getAttribLocation(this.prog,'p'), locN=gl.getAttribLocation(this.prog,'n'), locMVP=gl.getUniformLocation(this.prog,'mvp'), locNM=gl.getUniformLocation(this.prog,'nm'), locCol=gl.getUniformLocation(this.prog,'col');
-        for(const m of meshes){ if(!m.visible) continue;
-          // MVP (proj*view*model): we only use translation + per-mesh rotation Y for ring if provided
-          const M=new Float32Array([1,0,0,0, 0,1,0,0, 0,0,1,0, m.pos.x,m.pos.y,m.pos.z,1]);
-          const a=viewProj.m, b=M, res=new Float32Array(16); for(let i=0;i<4;i++){ for(let j=0;j<4;j++){ res[i*4+j]=a[i*4+0]*b[0*4+j]+a[i*4+1]*b[1*4+j]+a[i*4+2]*b[2*4+j]+a[i*4+3]*b[3*4+j]; } }
-          gl.uniformMatrix4fv(locMVP,false,res); gl.uniformMatrix4fv(locNM,false,new Float32Array([1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]));
-          gl.uniform3f(locCol, m.color.x, m.color.y, m.color.z);
-          if(!m.buffers){ m.buffers={ vbo:gl.createBuffer(), nbo:gl.createBuffer(), ibo:gl.createBuffer() };
-            gl.bindBuffer(gl.ARRAY_BUFFER,m.buffers.vbo); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(m.vertices),gl.DYNAMIC_DRAW);
-            gl.bindBuffer(gl.ARRAY_BUFFER,m.buffers.nbo); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(m.normals),gl.DYNAMIC_DRAW);
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,m.buffers.ibo); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(m.indices),gl.DYNAMIC_DRAW);
-          }else{
-            gl.bindBuffer(gl.ARRAY_BUFFER,m.buffers.vbo); gl.bufferSubData(gl.ARRAY_BUFFER,0,new Float32Array(m.vertices));
-            gl.bindBuffer(gl.ARRAY_BUFFER,m.buffers.nbo); gl.bufferSubData(gl.ARRAY_BUFFER,0,new Float32Array(m.normals));
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,m.buffers.ibo); gl.bufferSubData(gl.ELEMENT_ARRAY_BUFFER,0,new Uint16Array(m.indices));
-          }
-          gl.bindBuffer(gl.ARRAY_BUFFER,m.buffers.vbo); gl.enableVertexAttribArray(locP); gl.vertexAttribPointer(locP,3,gl.FLOAT,false,0,0);
-          gl.bindBuffer(gl.ARRAY_BUFFER,m.buffers.nbo); gl.enableVertexAttribArray(locN); gl.vertexAttribPointer(locN,3,gl.FLOAT,false,0,0);
-          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,m.buffers.ibo); gl.drawElements(gl.TRIANGLES,m.indices.length,gl.UNSIGNED_SHORT,0);
-        }
-      }
-    };
-    T.Mesh = class{ constructor(vertices, normals, indices, color=[.7,.8,1]){ this.vertices=vertices; this.normals=normals; this.indices=indices; this.pos=new T.Vec3(0,0,0); this.color=new T.Vec3(color[0],color[1],color[2]); this.visible=true; } };
-    T.Camera = class{ constructor(){ this.eye=new T.Vec3(0,0,2.5); this.center=new T.Vec3(0,0,0); this.up=new T.Vec3(0,1,0); this.proj=new T.Mat4(); this.view=new T.Mat4(); this.vp=new T.Mat4(); this.fov=50*Math.PI/180; this.aspect=1; this.near=.01; this.far=100; } update(w,h){ this.aspect=w/h; this.proj=new T.Mat4().perspective(this.fov,this.aspect,this.near,this.far); this.view=new T.Mat4().lookAt(this.eye,this.center,this.up); const a=this.proj.m, b=this.view.m, c=new Float32Array(16); for(let i=0;i<4;i++){ for(let j=0;j<4;j++){ c[i*4+j]=a[i*4+0]*b[0*4+j]+a[i*4+1]*b[1*4+j]+a[i*4+2]*b[2*4+j]+a[i*4+3]*b[3*4+j]; } } this.vp.m=c; } };
-    T.Utils={
-      makeTorus:(R=0.7,r=0.06,seg=96,ring=16)=>{ const v=[], n=[], idx=[]; for(let i=0;i<=seg;i++){ const a=i/seg*2*Math.PI; const ca=Math.cos(a), sa=Math.sin(a); for(let j=0;j<=ring;j++){ const b=j/ring*2*Math.PI; const cb=Math.cos(b), sb=Math.sin(b); const x=(R+r*cb)*ca, y=r*sb, z=(R+r*cb)*sa; const nx=cb*ca, ny=sb, nz=cb*sa; v.push(x,y,z); n.push(nx,ny,nz); } } for(let i=0;i<seg;i++){ for(let j=0;j<ring;j++){ const a=i*(ring+1)+j, b=a+ring+1; idx.push(a,b,a+1, b,a+1,b+1); } } return {v,n,idx}; },
-      makeCloth:(w=28,h=20,dx=0.03,dy=0.03,offset=[0,0,0])=>{ const v=[], n=[], idx=[]; for(let y=0;y<=h;y++){ for(let x=0;x<=w;x++){ v.push((x-w/2)*dx+offset[0], (h/2-y)*dy+offset[1], offset[2]); n.push(0,1,0);} } for(let y=0;y<h;y++){ for(let x=0;x<w;x++){ const a=y*(w+1)+x, b=a+w+1; idx.push(a,b,a+1, b,a+1,b+1); } } return {v,n,idx,w,h}; }
-    };
-    global.THREEL=T; global.THREE=T; // expose as THREE-compatible for this app
-  })(window);
-  </script>
+// ---------- Globals & Utilities ----------
+const App = {
+  // View / scale
+  W: 1600, H: 1000,
+  pxPerMm: 5, // 1 mm = 5 px
+  ctx: null, hud: null, canvas: null,
+  running: true, last: performance.now(),
+  // Instruments
+  instrument: 'needle',
+  // Scenario & Settings
+  sizeMm: 32, // annulus mid diameter
+  targetSpacingMm: 4.0,
+  targetDepthMm: 3.5,
+  calcPattern: 'none',
+  difficulty: 'resident',
+  // Needle params
+  needleAngle: 70, // deg vs annulus normal
+  needleCurvature: 0.375, // fraction of full circle
+  tensionN: 0.0,
+  pledget: false,
+  showGhost: true,
 
-  <!-- =========================================================
-       ONNX RUNTIME (stub) + tiny model placeholder
-       NOTE: For strict offline single-file, we include an ORT stub
-       and a rules engine fallback. You can later paste minified
-       onnxruntime-web here; the Coach class auto-detects it.
-       ========================================================= -->
-  <script id="ort-min">
-    window.ort = {
-      InferenceSession: class{
-        constructor() { this.loaded=false; }
-        async loadModel(){ this.loaded=false; throw new Error('ORT stub'); }
-        async run(){ throw new Error('ORT stub'); }
-      },
-      env:{ wasm:{numThreads:1}, webgl:{} }
-    };
-  </script>
-  <script id="model-onnx">
-    /* Base64 of a tiny logistic-regression ONNX could be inlined here.
-       Placeholder is harmless; rules engine will be used instead. */
-    window.__ONNX_BASE64__ = "T09PLU1vZGVsLVBsYWNlaG9sZGVy";
-  </script>
+  // Models
+  valve: null, tissue: null, sutures: [], logs: [], ghosts: [],
+  startTime: null, timerId: null,
+  coaptationGapMm: null, score: null,
+  metrics: {
+    spacingMmArr: [], depthMmArr: [], angleArr: [], trauma: 0,
+  },
+  placing: { state:'idle', entry:null, exit:null, arc:null },
+  speechOn:false,
+};
 
-  <!-- =================== MATH =================== -->
-  <script type="module" id="math">
-    export const TAU = Math.PI*2;
-    export const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
-    export const lerp=(a,b,t)=>a+(b-a)*t;
-    export function v3(x=0,y=0,z=0){ return {x,y,z}; }
-    export function add(a,b){ return {x:a.x+b.x,y:a.y+b.y,z:a.z+b.z}; }
-    export function sub(a,b){ return {x:a.x-b.x,y:a.y-b.y,z:a.z-b.z}; }
-    export function mul(a,s){ return {x:a.x*s,y:a.y*s,z:a.z*s}; }
-    export function dot(a,b){ return a.x*b.x+a.y*b.y+a.z*b.z; }
-    export function cross(a,b){ return {x:a.y*b.z-a.z*b.y, y:a.z*b.x-a.x*b.z, z:a.x*b.y-a.y*b.x}; }
-    export function len(a){ return Math.hypot(a.x,a.y,a.z); }
-    export function norm(a){ const L=len(a)||1; return {x:a.x/L,y:a.y/L,z:a.z/L}; }
-    export function angleBetween(a,b){ const la=len(a), lb=len(b); if(!la||!lb) return 0; return Math.acos(clamp(dot(a,b)/(la*lb),-1,1)); }
-    export function curvature(p0,p1,p2){ const v=sub(p1,p0), w=sub(p2,p1); const lv=len(v)||1, lw=len(w)||1; const th=angleBetween(v,w); return th/((lv+lw)/2); }
-    export function jerk(v0,v1,v2,dt){ const a0=mul(sub(v1,v0),1/dt), a1=mul(sub(v2,v1),1/dt); return len(mul(sub(a1,a0),1/dt)); }
-    export function corrXY(xs,ys){ const n=Math.min(xs.length,ys.length); if(n<2) return 0; let mx=0,my=0; for(let i=0;i<n;i++){mx+=xs[i];my+=ys[i];} mx/=n; my/=n; let num=0,dx=0,dy=0; for(let i=0;i<n;i++){ const ax=xs[i]-mx, ay=ys[i]-my; num+=ax*ay; dx+=ax*ax; dy+=ay*ay;} return num/Math.sqrt((dx||1)*(dy||1)); }
-  </script>
+function mmToPx(mm){ return mm * App.pxPerMm; }
+function pxToMm(px){ return px / App.pxPerMm; }
+function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+function lerp(a,b,t){ return a + (b-a)*t; }
+function dist(a,b){ const dx=a.x-b.x, dy=a.y-b.y; return Math.hypot(dx,dy); }
+function atan2n(y,x){ return Math.atan2(y,x); }
 
-  <!-- ================= PBD PHYSICS (main thread interfaces) ================= -->
-  <script type="module" id="physics">
-    import {v3, add, sub, mul, len, norm, clamp} from '#math';
+// Logging
+function log(msg){ const t = App.startTime? ((Date.now()-App.startTime)/1000).toFixed(1)+'s' : '0.0s'; const line = `[${t}] ${msg}`; App.logs.push(line); renderLog(); }
+function renderLog(){
+  const el = document.getElementById('log');
+  el.innerHTML = App.logs.slice(-200).map(l => l.replace(/</g,'&lt;')).join('<br/>');
+  el.scrollTop = el.scrollHeight;
+}
 
-    /* -------- Cloth (leaflet) -------- */
-    export class PBDCloth{
-      constructor(opts){
-        this.w=opts.w; this.h=opts.h; this.dx=opts.dx; this.dy=opts.dy;
-        this.pos=[]; this.prev=[]; this.invMass=[]; this.pins=new Set();
-        for(let y=0;y<=this.h;y++){
-          for(let x=0;x<=this.w;x++){
-            const p=v3((x-this.w/2)*this.dx, (this.h/2-y)*this.dy, 0);
-            this.pos.push(p); this.prev.push({...p}); this.invMass.push(1);
-          }
-        }
-        this.constraints=[];
-        const idx=(x,y)=>y*(this.w+1)+x;
-        for(let y=0;y<=this.h;y++){
-          for(let x=0;x<=this.w;x++){
-            if(x<this.w) this.addDist(idx(x,y), idx(x+1,y), this.dx);
-            if(y<this.h) this.addDist(idx(x,y), idx(x,y+1), this.dy);
-            if(x<this.w && y<this.h) this.addDist(idx(x,y), idx(x+1,y+1), Math.hypot(this.dx,this.dy));
-            if(x>0 && y<this.h) this.addDist(idx(x,y), idx(x-1,y+1), Math.hypot(this.dx,this.dy));
-          }
-        }
-      }
-      addDist(i,j,L){ this.constraints.push({i,j,L}); }
-      pin(x,y){ this.pins.add(y*(this.w+1)+x); this.invMass[y*(this.w+1)+x]=0; }
-      step(dt, iters, gravity, damping){
-        for(let i=0;i<this.pos.length;i++){
-          const p=this.pos[i], q=this.prev[i];
-          const vx=(p.x-q.x)*damping, vy=(p.y-q.y)*damping, vz=(p.z-q.z)*damping;
-          q.x=p.x; q.y=p.y; q.z=p.z;
-          if(this.invMass[i]>0){ p.x+=vx + gravity.x*dt*dt; p.y+=vy + gravity.y*dt*dt; p.z+=vz + gravity.z*dt*dt; }
-        }
-        for(let k=0;k<iters;k++){
-          for(const c of this.constraints){
-            const a=c.i, b=c.j; const pa=this.pos[a], pb=this.pos[b];
-            const d=sub(pb,pa); const L=len(d)||1; const diff=(L-c.L)/L;
-            const w1=this.invMass[a], w2=this.invMass[b], w=w1+w2||1;
-            const corr=mul(d, .5*diff);
-            if(w1>0){ pa.x+=corr.x; pa.y+=corr.y; pa.z+=corr.z; }
-            if(w2>0){ pb.x-=corr.x; pb.y-=corr.y; pb.z-=corr.z; }
-          }
-        }
+// ---------- Valve & Tissue Model (Ellipse + Mesh) ----------
+function buildValve(){
+  // Center in canvas
+  const cx = App.W * 0.5, cy = App.H * 0.52;
+  // Map annulus mm -> ellipse rx, ry (approx 32 mm AP x ~40 mm ML relationship)
+  // We set ML ~ sizeMm + 6, AP ~ sizeMm - 6 to get mitral-like ellipse
+  const ML = App.sizeMm + 6; // mediolateral (x)
+  const AP = App.sizeMm - 6; // anteroposterior (y)
+  const rx = mmToPx(ML*0.5), ry = mmToPx(AP*0.5);
+
+  // Segmentation markers A1–A3 / P1–P3 along ellipse param t (0 at 3 o'clock)
+  // We'll define standard: A segment anterior (upper), P posterior (lower)
+  const segs = [
+    { id:'A1', t: -Math.PI*0.15 }, { id:'A2', t: 0 }, { id:'A3', t: Math.PI*0.15 },
+    { id:'P1', t: Math.PI - Math.PI*0.15 }, { id:'P2', t: Math.PI }, { id:'P3', t: Math.PI + Math.PI*0.15 },
+  ];
+
+  // Calcified zones (optional)
+  let calcZones = [];
+  if(App.calcPattern === 'posterior'){
+    calcZones.push({ t0: Math.PI*0.88, t1: Math.PI*1.12 }); // near P2
+  }else if(App.calcPattern === 'anterior'){
+    calcZones.push({ t0: -Math.PI*0.22, t1: Math.PI*0.22 });
+  }
+
+  return { cx, cy, rx, ry, segs, calcZones };
+}
+
+function ellipsePoint(v, t){
+  return { x: v.cx + v.rx*Math.cos(t), y: v.cy + v.ry*Math.sin(t) };
+}
+function ellipseTangent(v, t){
+  // derivative ( -rx sin t, ry cos t )
+  const tx = -v.rx*Math.sin(t), ty =  v.ry*Math.cos(t);
+  const m = Math.hypot(tx,ty) || 1;
+  return { x: tx/m, y: ty/m };
+}
+function ellipseNormal(v, t){
+  // normal direction for ellipse (not unit-length)
+  const nx = Math.cos(t)/v.rx, ny = Math.sin(t)/v.ry;
+  const l = Math.hypot(nx,ny) || 1;
+  return { x: nx/l, y: ny/l };
+}
+function ellipseParamForPoint(v, p){
+  // approximate param angle using normalized coordinates
+  const dx = (p.x - v.cx)/v.rx, dy = (p.y - v.cy)/v.ry;
+  return Math.atan2(dy, dx);
+}
+function ellipseNormalizedRadius(v, p){
+  const dx = (p.x - v.cx), dy = (p.y - v.cy);
+  return Math.sqrt( (dx*dx)/(v.rx*v.rx) + (dy*dy)/(v.ry*v.ry) ); // 1 at boundary
+}
+
+// Build leaflet mesh (mass-spring) within the ellipse
+function buildTissueMesh(v){
+  const nodes = [], springs = [];
+  const nx = 42, ny = 28; // grid resolution; tuned for perf/quality
+  const xmin = v.cx - v.rx, xmax = v.cx + v.rx;
+  const ymin = v.cy - v.ry, ymax = v.cy + v.ry;
+  const dx = (xmax-xmin)/(nx-1), dy = (ymax-ymin)/(ny-1);
+
+  const index = (ix,iy)=> iy*nx + ix;
+  for(let iy=0; iy<ny; iy++){
+    for(let ix=0; ix<nx; ix++){
+      const x = xmin + ix*dx, y = ymin + iy*dy;
+      const r = ellipseNormalizedRadius(v, {x,y});
+      if(r<=1.01){ // inside ellipse
+        // Type: boundary near annulus (pin), interior leaflet
+        const pinned = (Math.abs(r-1) < 0.025); // pins on annulus line
+        nodes.push({ x, y, vx:0, vy:0, mass: pinned? 1 : 1, pinned, dmg:0, type: pinned? 'annulus':'leaflet' });
+      }else{
+        nodes.push(null);
       }
     }
-
-    /* -------- Suture rope (discrete rod via distance constraints) -------- */
-    export class PBDSuture{
-      constructor(num=70, segLen=0.01){ this.segLen=segLen; this.pos=[]; this.prev=[]; this.invMass=[]; for(let i=0;i<num;i++){ const p=v3(0,0,-i*segLen); this.pos.push(p); this.prev.push({...p}); this.invMass.push(i===0?0:1);} this.tension=0; this.locked=false; }
-      step(dt,iters,gravity,damping,anchors=[]){
-        for(let i=0;i<this.pos.length;i++){
-          const p=this.pos[i], q=this.prev[i];
-          const vx=(p.x-q.x)*damping, vy=(p.y-q.y)*damping, vz=(p.z-q.z)*damping;
-          q.x=p.x; q.y=p.y; q.z=p.z;
-          if(this.invMass[i]>0){ p.x+=vx+gravity.x*dt*dt; p.y+=vy+gravity.y*dt*dt; p.z+=vz+gravity.z*dt*dt; }
-        }
-        for(const a of anchors){ const i=a.i; if(i!=null){ this.pos[i].x=a.p.x; this.pos[i].y=a.p.y; this.pos[i].z=a.p.z; this.prev[i].x=a.p.x; this.prev[i].y=a.p.y; this.prev[i].z=a.p.z; }}
-        let peak=0;
-        for(let k=0;k<iters;k++){
-          for(let i=0;i<this.pos.length-1;i++){
-            const a=this.pos[i], b=this.pos[i+1]; const dx=b.x-a.x, dy=b.y-a.y, dz=b.z-a.z; const L=Math.hypot(dx,dy,dz)||1;
-            const diff=(L-this.segLen)/L; peak=Math.max(peak, Math.abs(diff));
-            const w1=this.invMass[i], w2=this.invMass[i+1]; const cx=.5*diff*dx, cy=.5*diff*dy, cz=.5*diff*dz;
-            if(w1>0){ a.x+=cx; a.y+=cy; a.z+=cz; } if(w2>0){ b.x-=cx; b.y-=cy; b.z-=cz; }
-          }
-        }
-        this.tension = clamp(peak*100, 0, 100);
-      }
-      length(){ return (this.pos.length-1)*this.segLen; }
-    }
-
-    export function projectPointOnCurve(p, curve){
-      let best=Infinity, at=0; for(let i=0;i<curve.length;i++){ const c=curve[i]; const d=(p.x-c.x)**2+(p.y-c.y)**2+(p.z-c.z)**2; if(d<best){best=d; at=i;} } return {index:at, dist:Math.sqrt(best)};
-    }
-  </script>
-
-  <!-- =================== PHYSICS WORKER (OffscreenCanvas) =================== -->
-  <script id="physics-worker">
-    /* A dedicated worker running PBD steps and (optionally) drawing to an OffscreenCanvas.
-       This satisfies the requirement to run physics and mesh skinning off-thread. */
-    let cloth, suture, gravity={x:0,y:-9.8*0.02,z:0}, dampingCloth=0.99, dampingRope=0.995, itersCloth=10, itersRope=8;
-    let ctx = null;
-
-    function v3(x=0,y=0,z=0){ return {x,y,z}; }
-    function sub(a,b){ return {x:a.x-b.x,y:a.y-b.y,z:a.z-b.z}; }
-    function len(a){ return Math.hypot(a.x,a.y,a.z); }
-    function clamp(x,a,b){ return Math.max(a,Math.min(b,x)); }
-
-    class PBDCloth{
-      constructor(w,h,dx,dy){
-        this.w=w; this.h=h; this.dx=dx; this.dy=dy;
-        this.pos=[]; this.prev=[]; this.invMass=[]; this.pins=new Set();
-        for(let y=0;y<=h;y++){
-          for(let x=0;x<=w;x++){
-            const p=v3((x-w/2)*dx, (h/2-y)*dy, 0);
-            this.pos.push(p); this.prev.push({...p}); this.invMass.push(1);
-          }
-        }
-        this.constraints=[]; const idx=(x,y)=>y*(this.w+1)+x;
-        for(let y=0;y<=h;y++){
-          for(let x=0;x<=w;x++){
-            if(x<w) this.addDist(idx(x,y), idx(x+1,y), dx);
-            if(y<h) this.addDist(idx(x,y), idx(x,y+1), dy);
-            if(x<w && y<h) this.addDist(idx(x,y), idx(x+1,y+1), Math.hypot(dx,dy));
-            if(x>0 && y<h) this.addDist(idx(x,y), idx(x-1,y+1), Math.hypot(dx,dy));
-          }
-        }
-      }
-      addDist(i,j,L){ this.constraints.push({i,j,L}); }
-      pin(x,y){ this.pins.add(y*(this.w+1)+x); this.invMass[y*(this.w+1)+x]=0; }
-      step(dt,iters){
-        for(let i=0;i<this.pos.length;i++){
-          const p=this.pos[i], q=this.prev[i];
-          const vx=(p.x-q.x)*0.99, vy=(p.y-q.y)*0.99, vz=(p.z-q.z)*0.99;
-          q.x=p.x; q.y=p.y; q.z=p.z;
-          if(this.invMass[i]>0){ p.x+=vx + gravity.x*dt*dt; p.y+=vy + gravity.y*dt*dt; p.z+=vz + gravity.z*dt*dt; }
-        }
-        for(let k=0;k<iters;k++){
-          for(const c of this.constraints){
-            const a=c.i, b=c.j; const pa=this.pos[a], pb=this.pos[b];
-            const d=sub(pb,pa); const L=len(d)||1; const diff=(L-c.L)/L; const cx=.5*diff*d.x, cy=.5*diff*d.y, cz=.5*diff*d.z;
-            if(this.invMass[a]>0){ pa.x+=cx; pa.y+=cy; pa.z+=cz; } if(this.invMass[b]>0){ pb.x-=cx; pb.y-=cy; pb.z-=cz; }
-          }
-        }
+  }
+  // Springs (4-neighborhood + diagonals for stability)
+  const kLeaf = 24; // stiffness arbitrary tuned
+  for(let iy=0; iy<ny; iy++){
+    for(let ix=0; ix<nx; ix++){
+      const i = index(ix,iy); if(!nodes[i]) continue;
+      const here = nodes[i];
+      const neigh = [[1,0],[0,1],[1,1],[1,-1]];
+      for(const [dxi,dyi] of neigh){
+        const jx = ix+dxi, jy = iy+dyi;
+        if(jx<0||jx>=nx||jy<0||jy>=ny) continue;
+        const j = index(jx,jy); if(!nodes[j]) continue;
+        const other = nodes[j];
+        const L = Math.hypot(other.x - here.x, other.y - here.y);
+        springs.push({ i, j, L0: L, k: kLeaf, d: 1.2, broken:false }); // damping d
       }
     }
-    class PBDSuture{
-      constructor(num=70, segLen=0.01){ this.segLen=segLen; this.pos=[]; this.prev=[]; this.invMass=[]; for(let i=0;i<num;i++){ const p=v3(0,0,-i*segLen); this.pos.push(p); this.prev.push({...p}); this.invMass.push(i===0?0:1);} this.tension=0; }
-      step(dt,iters,anchors=[]){
-        for(let i=0;i<this.pos.length;i++){
-          const p=this.pos[i], q=this.prev[i];
-          const vx=(p.x-q.x)*0.995, vy=(p.y-q.y)*0.995, vz=(p.z-q.z)*0.995;
-          q.x=p.x; q.y=p.y; q.z=p.z;
-          if(this.invMass[i]>0){ p.x+=vx + gravity.x*dt*dt; p.y+=vy + gravity.y*dt*dt; p.z+=vz + gravity.z*dt*dt; }
-        }
-        for(const a of anchors){ const i=a.i; if(i!=null){ this.pos[i].x=a.p.x; this.pos[i].y=a.p.y; this.pos[i].z=a.p.z; this.prev[i].x=a.p.x; this.prev[i].y=a.p.y; this.prev[i].z=a.p.z; }}
-        let peak=0;
-        for(let k=0;k<iters;k++){
-          for(let i=0;i<this.pos.length-1;i++){
-            const a=this.pos[i], b=this.pos[i+1]; const dx=b.x-a.x, dy=b.y-a.y, dz=b.z-a.z; const L=Math.hypot(dx,dy,dz)||1;
-            const diff=(L-this.segLen)/L; peak=Math.max(peak, Math.abs(diff));
-            const cx=.5*diff*dx, cy=.5*diff*dy, cz=.5*diff*dz;
-            if(this.invMass[i]>0){ a.x+=cx; a.y+=cy; a.z+=cz; } if(this.invMass[i+1]>0){ b.x-=cx; b.y-=cy; b.z-=cz; }
-          }
-        }
-        this.tension = clamp(peak*100,0,100);
-      }
+  }
+  return { nodes, springs, nx, ny };
+}
+
+// ---------- Sutures ----------
+function makeSuture(entry, exit, needle){
+  // entry/exit: {x,y, nodeIdx}
+  const id = 'S' + (App.sutures.length+1);
+  const pledget = App.pledget;
+  const tensionN = App.tensionN;
+  const curvature = App.needleCurvature, angle = App.needleAngle;
+  const arc = computeNeedleArc(entry, exit, curvature, angle);
+  // Suture spring (connect node indices) adds deforming constraint
+  const sSpring = { i: entry.nodeIdx, j: exit.nodeIdx, L0: dist(entry, exit)*0.8, k: 40, d: 1.6, broken:false };
+  const stitch = { id, entry, exit, arc, pledget, tensionN, curvature, angle, spring: sSpring, tied:false,
+                   metrics: assessSingleSutureMetrics(entry, exit, angle) };
+  App.sutures.push(stitch);
+  App.tissue.springs.push(sSpring);
+  log(`Placed ${id}: depth=${stitch.metrics.depthMm.toFixed(1)}mm spacing≈${stitch.metrics.spacingMm?.toFixed(1)??'—'}mm angleΔ=${stitch.metrics.angleDeltaDeg.toFixed(0)}°`);
+  updateKPI();
+  return stitch;
+}
+
+function computeNeedleArc(p1, p2, curvatureFrac, needleAngleDeg){
+  // Visual-only curve approximating a curved needle pass.
+  // We'll build a cubic Bezier: control points offset from the chord by angle-normal.
+  const mid = { x:(p1.x+p2.x)/2, y:(p1.y+p2.y)/2 };
+  const chord = { x: p2.x - p1.x, y: p2.y - p1.y };
+  const len = Math.hypot(chord.x, chord.y) || 1;
+  const nx = -chord.y/len, ny = chord.x/len; // normal to chord
+  const bulge = len * (0.35 + 0.45*(curvatureFrac-0.3)); // curvature-based
+  const angleRad = (needleAngleDeg-90) * Math.PI/180;
+  const rot = Math.cos(angleRad)*1.0;
+  const c1 = { x: p1.x + chord.x*0.25 + nx*bulge*rot, y: p1.y + chord.y*0.25 + ny*bulge*rot };
+  const c2 = { x: p2.x - chord.x*0.25 + nx*bulge*rot, y: p2.y - chord.y*0.25 + ny*bulge*rot };
+  return { p1, c1, c2, p2 };
+}
+
+// ---------- Physics ----------
+function stepPhysics(dt){
+  const t = App.tissue;
+  const g = 0.0; // microgravity none
+  // Integrate springs
+  for(const s of t.springs){
+    if(s.broken) continue;
+    const a = t.nodes[s.i], b = t.nodes[s.j]; if(!a||!b) continue;
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const L = Math.hypot(dx,dy) || 1;
+    const ex = dx/L, ey = dy/L;
+    const vrel = ( (b.vx - a.vx)*ex + (b.vy - a.vy)*ey );
+    const F = s.k*(L - s.L0) + s.d*vrel;
+    const fx = F*ex, fy = F*ey;
+
+    if(!a.pinned){ a.vx += fx/a.mass*dt; a.vy += fy/a.mass*dt; }
+    if(!b.pinned){ b.vx -= fx/b.mass*dt; b.vy -= fy/b.mass*dt; }
+
+    // Tear check (only for leaflet springs)
+    if( (a.type==='leaflet' || b.type==='leaflet') && L > s.L0*1.6 ){ // threshold
+      s.broken = true;
+      if(a.type==='leaflet') a.dmg++;
+      if(b.type==='leaflet') b.dmg++;
+      App.metrics.trauma++;
+      log(`⚠ Tissue tear near suture (spring broken)`);
+      updateKPI();
     }
-
-    function drawHeat(px){ if(!ctx) return; const w=64,h=64; const img=ctx.createImageData(w,h); for(let i=0;i<w*h;i++){ const t = Math.min(255, Math.floor(px*2.55)); img.data[i*4+0]=t; img.data[i*4+1]=40; img.data[i*4+2]=120; img.data[i*4+3]=200; } ctx.putImageData(img,0,0); }
-
-    onmessage = (e)=>{
-      const {type} = e.data||{};
-      if(type==='init'){
-        const {w,h,dx,dy, ropeN, segLen, pinTop, offscreen} = e.data;
-        cloth = new PBDCloth(w,h,dx,dy);
-        if(pinTop){ for(let x=0;x<=cloth.w;x++) cloth.pin(x,0); }
-        suture = new PBDSuture(ropeN, segLen);
-        if(offscreen){ ctx = offscreen.getContext('2d'); }
-        postMessage({type:'ready'});
-      }else if(type==='step'){
-        const {dt, anchor} = e.data;
-        cloth.step(dt, itersCloth);
-        suture.step(dt, itersRope, anchor?[{i:0,p:anchor}]:[]);
-        // Offscreen heat debug ~ tension
-        drawHeat(suture.tension);
-        // Pack positions
-        const cPos = new Float32Array(cloth.pos.length*3);
-        for(let i=0;i<cloth.pos.length;i++){ const p=cloth.pos[i]; cPos[i*3+0]=p.x; cPos[i*3+1]=p.y; cPos[i*3+2]=p.z; }
-        const rPos = new Float32Array(suture.pos.length*3);
-        for(let i=0;i<suture.pos.length;i++){ const p=suture.pos[i]; rPos[i*3+0]=p.x; rPos[i*3+1]=p.y; rPos[i*3+2]=p.z; }
-        postMessage({type:'state', cloth:cPos, rope:rPos, tension:suture.tension}, [cPos.buffer, rPos.buffer]);
-      }else if(type==='settings'){
-        const {gravY, itsCloth, itsRope} = e.data;
-        gravity.y = gravY;
-        if(itsCloth) itersCloth=itsCloth;
-        if(itsRope) itersRope=itsRope;
-      }
-    };
-  </script>
-
-  <!-- ================= SCENE (annulus + leaflet + labels) ================= -->
-  <script type="module" id="scene">
-    import {v3} from '#math';
-    const T = window.THREE;
-
-    export function buildValve(ringSizeMM){
-      const ringScale = ringSizeMM/32;
-      const torus = T.Utils.makeTorus(0.7*ringScale, 0.05*ringScale, 120, 18);
-      const ring = new T.Mesh(torus.v, torus.n, torus.idx, [0.32,0.9,0.86]); ring.pos.set(0,0,0);
-
-      const cloth = T.Utils.makeCloth(28, 20, 0.03*ringScale, 0.03*ringScale, [0,0.08*ringScale,0]);
-      const leaflet = new T.Mesh(cloth.v, cloth.n, cloth.idx, [0.95,0.83,0.86]);
-
-      const curve=[]; const seg=180; const R=0.7*ringScale;
-      for(let i=0;i<seg;i++){ const a=i/seg*Math.PI*2; const x=Math.cos(a)*R, z=Math.sin(a)*R; curve.push(v3(x,0,z)); }
-
-      const labels=[
-        {id:'A1', p:v3(-0.45*ringScale,0, 0.45*ringScale)},
-        {id:'A2', p:v3( 0.00*ringScale,0, 0.65*ringScale)},
-        {id:'A3', p:v3( 0.45*ringScale,0, 0.45*ringScale)},
-        {id:'P1', p:v3(-0.45*ringScale,0,-0.45*ringScale)},
-        {id:'P2', p:v3( 0.00*ringScale,0,-0.65*ringScale)},
-        {id:'P3', p:v3( 0.45*ringScale,0,-0.45*ringScale)}
-      ];
-      return { ring, leaflet, cloth, labels, curve, ringScale };
+  }
+  // Apply tension from sutures (reduce spring rest length with tension)
+  for(const st of App.sutures){
+    const s = st.spring;
+    if(s.broken) continue;
+    const tension = clamp(App.tensionN, 0, 12);
+    s.L0 = Math.max(1, s.L0 * (1 - 0.0005 * tension)); // slowly tighten
+    // Over-tension check: break suture or local tissue
+    if(tension>8){
+      // High tension raises tear chance — handled by spring elongation already
     }
+  }
+  // Integrate motion
+  for(const n of t.nodes){
+    if(!n) continue;
+    if(n.pinned) { n.vx=0; n.vy=0; continue; }
+    // damping
+    n.vx *= 0.985; n.vy *= 0.985;
+    n.vy += g*dt;
+    n.x += n.vx*dt; n.y += n.vy*dt;
+  }
+}
 
-    export function updateLeafletMesh(leafletMesh, clothPositions){
-      const v = leafletMesh.vertices;
-      for(let i=0;i<clothPositions.length; i++) v[i] = clothPositions[i];
-      const n = leafletMesh.normals; for(let i=0;i<n.length;i+=3){ n[i]=0; n[i+1]=1; n[i+2]=0; }
+// ---------- Drawing ----------
+function draw(){
+  const ctx = App.ctx, v = App.valve, t = App.tissue;
+  ctx.clearRect(0,0,App.W,App.H);
+  // Drape vignette drawn by canvas bg
+
+  // Annulus (ring)
+  ctx.save();
+  ctx.strokeStyle = '#d9d9d9'; ctx.lineWidth = 3;
+  ctx.beginPath();
+  for(let i=0;i<=240;i++){
+    const th = i/240 * Math.PI*2;
+    const p = ellipsePoint(v, th);
+    if(i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y);
+  }
+  ctx.stroke();
+
+  // Safe zone band (3–5 mm inside annulus)
+  for(const band of [3,5]){
+    ctx.beginPath();
+    const rxf = (v.rx - mmToPx(band)), ryf = (v.ry - mmToPx(band));
+    for(let i=0;i<=200;i++){
+      const th = i/200 * Math.PI*2;
+      const x = v.cx + rxf*Math.cos(th), y = v.cy + ryf*Math.sin(th);
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
     }
-  </script>
+    ctx.strokeStyle = band===3? 'rgba(169,255,205,0.45)' : 'rgba(169,255,205,0.15)';
+    ctx.lineWidth = band===3? 2:1; ctx.setLineDash(band===3?[5,5]:[2,6]);
+    ctx.stroke(); ctx.setLineDash([]);
+  }
 
-  <!-- ================= IO (mouse/keys/gamepad) ================= -->
-  <script type="module" id="io">
-    import {clamp} from '#math';
-    export class Input{
-      constructor(canvas){ this.canvas=canvas; this.keys=new Set(); this.orbit={theta:0.9, phi:0.85, dist:2.1}; this.pan={x:0,y:0}; this.mouse={x:0,y:0, down:false}; this.clutch=false; this._bind(); }
-      _bind(){ const c=this.canvas; c.tabIndex=0;
-        c.addEventListener('keydown',e=>{this.keys.add(e.key.toLowerCase()); if(e.key===' ') this.clutch=!this.clutch;});
-        c.addEventListener('keyup',e=>{this.keys.delete(e.key.toLowerCase());});
-        c.addEventListener('mousedown',e=>{ if(e.button===0) this.mouse.down=true; this._store(e); });
-        c.addEventListener('mouseup',()=>{ this.mouse.down=false;});
-        c.addEventListener('mousemove',e=>{ this._store(e);
-          if(e.buttons===2){ this.orbit.theta+=e.movementX*0.005; this.orbit.phi=clamp(this.orbit.phi+e.movementY*0.005, 0.1, 1.55);}
-          else if(e.buttons===4){ this.pan.x+=e.movementX*0.002; this.pan.y-=e.movementY*0.002; }
-        });
-        c.addEventListener('wheel',e=>{ this.orbit.dist=clamp(this.orbit.dist+e.deltaY*0.001, 1.2, 4.0); });
-        c.addEventListener('contextmenu',e=>e.preventDefault());
-        window.addEventListener('blur',()=>{this.keys.clear(); this.mouse.down=false;});
-      }
-      _store(e){ const r=this.canvas.getBoundingClientRect(); this.mouse.x=(e.clientX-r.left)/r.width*2-1; this.mouse.y=-( (e.clientY-r.top)/r.height*2-1 ); }
+  // Calcified patches
+  for(const cz of v.calcZones){
+    ctx.beginPath();
+    for(let i=0;i<=64;i++){
+      const th = cz.t0 + (cz.t1-cz.t0)*i/64;
+      const p = ellipsePoint(v, th);
+      if(i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y);
     }
-  </script>
+    ctx.strokeStyle = 'rgba(184,134,11,0.9)'; ctx.lineWidth=6; ctx.stroke();
+  }
 
-  <!-- ================= AI COACH ================= -->
-  <script type="module" id="ai">
-    import {jerk} from '#math';
-    export class Coach{
-      constructor(){ this.enabled=true; this.lastMsg=''; this.hints=['Drive needle at ~90° to surface','Aim symmetric entry/exit bites','Keep steady tension while tying']; this.buffer=[]; this.out={intent:'',severity:0}; this.usesORT=false; this._initHints(); }
-      _initHints(){ const ul=document.getElementById('hints'); ul.innerHTML=''; for(const h of this.hints){ const li=document.createElement('li'); li.textContent='• '+h; ul.appendChild(li);} }
-      async tryORT(){ try{ const s=new window.ort.InferenceSession(); await s.loadModel(window.__ONNX_BASE64__); this.sess=s; this.usesORT=true; }catch(e){ this.usesORT=false; } }
-      update(feat){ // feat: {dt, speed, angleErr, spacingSD, peakTension, collisions}
-        this.buffer.push(feat); if(this.buffer.length>120) this.buffer.shift();
-        let intent='', severity=0;
-        if(feat.angleErr>15){ intent='Increase needle entry angle (closer to 90°)'; severity=Math.min(100,(feat.angleErr-10)*2); }
-        else if(feat.peakTension>85){ intent='Over-tensioning — ease and equalize pull'; severity=85; }
-        else{
-          const speeds=this.buffer.map(b=>b.speed||0), sJerks=[];
-          for(let i=2;i<this.buffer.length;i++){ sJerks.push(jerk({x:speeds[i-2],y:0,z:0},{x:speeds[i-1],y:0,z:0},{x:speeds[i],y:0,z:0}, feat.dt)); }
-          const meanJ = sJerks.reduce((a,b)=>a+b,0)/(sJerks.length||1);
-          if(meanJ>50){ intent='Smooth your motion before puncture'; severity=60; }
-        }
-        if(!intent && feat.spacingSD>2){ intent='Improve bite spacing consistency'; severity=50; }
-        if(!intent) intent='Good — continue';
-        this.out={intent, severity};
-        return this.out;
-      }
+  // Leaflet mesh (filled light)
+  ctx.beginPath();
+  // Clip to ellipse
+  const path = new Path2D();
+  for(let i=0;i<=220;i++){
+    const th = i/220 * Math.PI*2;
+    const p = ellipsePoint(v, th);
+    if(i===0) path.moveTo(p.x,p.y); else path.lineTo(p.x,p.y);
+  }
+  path.closePath();
+  ctx.save(); ctx.clip(path);
+  // draw nodes as subtle shading
+  ctx.fillStyle = '#e6f2ee';
+  ctx.globalAlpha = 0.7;
+  ctx.fillRect(v.cx - v.rx, v.cy - v.ry, v.rx*2, v.ry*2);
+  ctx.globalAlpha = 1;
+
+  // Mesh lines
+  ctx.strokeStyle = 'rgba(40,52,70,0.7)'; ctx.lineWidth=1;
+  for(const s of t.springs){
+    if(s.broken) continue;
+    const a = t.nodes[s.i], b = t.nodes[s.j]; if(!a||!b) continue;
+    // only draw leaflet springs
+    if(a.type==='annulus' && b.type==='annulus') continue;
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+  }
+  ctx.restore();
+
+  // Chordae (for realism; static anchors)
+  drawChordae(ctx, v);
+
+  // Segments labels
+  drawSegments(ctx, v);
+
+  // Sutures
+  for(const st of App.sutures){
+    drawSuture(ctx, st);
+  }
+
+  // Placing preview
+  if(App.placing.state==='entry-set' && App.placing.arc){
+    drawBezier(ctx, App.placing.arc, '#cfe3ff', 2, [6,4]);
+  }
+
+  // HUD overlay (SVG) for ghost targets and highlights
+  renderHUD();
+}
+
+function drawSegments(ctx, v){
+  ctx.save();
+  ctx.font = '700 16px ui-sans-serif, system-ui';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  for(const s of v.segs){
+    const p = ellipsePoint(v, s.t);
+    // label outside ring
+    const r = 28;
+    const dir = ellipseNormal(v, s.t);
+    const lx = p.x + dir.x*mmToPx(8), ly = p.y + dir.y*mmToPx(8);
+    ctx.fillStyle = '#b8c6f0';
+    ctx.fillText(s.id, lx, ly);
+  }
+  ctx.restore();
+}
+
+function drawChordae(ctx, v){
+  ctx.save();
+  ctx.strokeStyle = 'rgba(120,120,120,0.8)'; ctx.lineWidth = 2;
+  const pap1 = { x: v.cx - mmToPx(10), y: v.cy + mmToPx(18) };
+  const pap2 = { x: v.cx + mmToPx(10), y: v.cy + mmToPx(18) };
+  const attach = [
+    ellipsePoint(v, Math.PI*0.85),
+    ellipsePoint(v, Math.PI*1.0),
+    ellipsePoint(v, Math.PI*1.15),
+  ];
+  for(const a of attach){
+    ctx.beginPath(); ctx.moveTo(pap1.x, pap1.y); ctx.lineTo(a.x, a.y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(pap2.x, pap2.y); ctx.lineTo(a.x, a.y); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawBezier(ctx, bez, color, w=3, dash=null){
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(bez.p1.x, bez.p1.y);
+  ctx.bezierCurveTo(bez.c1.x, bez.c1.y, bez.c2.x, bez.c2.y, bez.p2.x, bez.p2.y);
+  ctx.strokeStyle = color; ctx.lineWidth = w;
+  if(dash){ ctx.setLineDash(dash); }
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawSuture(ctx, st){
+  // Thread
+  drawBezier(ctx, st.arc, '#c6e0ff', 3);
+  // Entry/Exit points
+  ctx.save();
+  ctx.fillStyle = '#c6e0ff';
+  for(const p of [st.entry, st.exit]){
+    ctx.beginPath(); ctx.arc(p.x,p.y, 5, 0, Math.PI*2); ctx.fill();
+  }
+  // Pledget
+  if(st.pledget){
+    ctx.fillStyle = '#ffffff'; ctx.strokeStyle='#284a7a'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.roundRect( (st.entry.x+st.exit.x)/2 - 8, (st.entry.y+st.exit.y)/2 - 5, 16, 10, 2 ); ctx.fill(); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// ---------- HUD (ghost targets, highlights) ----------
+function renderHUD(){
+  const svg = App.hud; svg.innerHTML = '';
+  if(!App.showGhost) return;
+  const v = App.valve;
+  // Generate ideal posterior targets every targetSpacing along P1–P3 arc
+  const tStart = Math.PI*0.82, tEnd = Math.PI*1.18;
+  const spacingPx = mmToPx(App.targetSpacingMm);
+  let prev = null;
+  for(let th=tStart; th<=tEnd; th+=0.008){
+    const p = ellipsePoint(v, th);
+    if(!prev){ prev = p; continue; }
+    if(Math.hypot(p.x-prev.x, p.y-prev.y) >= spacingPx){
+      // Ghost target at 3.5 mm inside annulus
+      const inx = p.x - ellipseNormal(v, th).x*mmToPx(App.targetDepthMm);
+      const iny = p.y - ellipseNormal(v, th).y*mmToPx(App.targetDepthMm);
+      const d = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      d.setAttribute('cx', inx); d.setAttribute('cy', iny);
+      d.setAttribute('r', 5); d.setAttribute('fill', '#3a86ff'); d.setAttribute('fill-opacity','0.8');
+      svg.appendChild(d);
+      prev = p;
     }
-  </script>
+  }
+}
 
-  <!-- ================= SCORE ENGINE ================= -->
-  <script type="module" id="score">
-    import {clamp} from '#math';
-    export class ScoreEngine{
-      constructor(){ this.sub={task:0,gears:0,goals:0,osats:0}; this.final=0; this.errors=[]; }
-      compute(m){
-        const angle=clamp(100-Math.abs(m.angleErr)*3,0,100);
-        const spacing=clamp(100-Math.max(0,m.spacingSD-0.5)*20,0,100);
-        const tension=clamp(100-Math.max(0,m.peakTension-70)*1.5,0,100);
-        const coapt=clamp((m.coaptationMM/10)*100,0,100);
-        const task = Math.round(0.3*angle + 0.3*spacing + 0.25*tension + 0.15*coapt);
+// ---------- Metrics & Scoring ----------
+function assessSingleSutureMetrics(entry, exit, angleDeg){
+  // Bite depth: distance from annulus along normal
+  const v = App.valve;
+  const tEntry = ellipseParamForPoint(v, entry);
+  const annPt = ellipsePoint(v, tEntry);
+  const depthPx = Math.hypot(entry.x - annPt.x, entry.y - annPt.y);
+  const depthMm = pxToMm(depthPx);
 
-        const gears = Math.round(0.25*spacing + 0.25*(100-m.pathLengthPenalty) + 0.25*(100-m.tensionOvershoot) + 0.25*(100-m.hintUsage*20));
-        const goals = Math.round(0.34*(100-m.depthErrors) + 0.33*(100-m.collisions*10) + 0.33*(100-m.timePenalty));
-        const osats = Math.round(0.4*(100-m.collisions*10) + 0.3*(100-m.timePenalty) + 0.3*(100-m.flowBreaks*15));
+  // Angle vs normal at entry
+  const n = ellipseNormal(v, tEntry);
+  // We don't know true needle vector; approximate using angle slider vs ideal 90
+  const angleDelta = Math.abs(angleDeg - 90);
 
-        this.sub={task,gears,goals,osats};
-        this.final = Math.round(0.4*task + 0.25*gears + 0.2*goals + 0.15*osats);
-        this.errors=[];
-        if(m.angleErr>20) this.errors.push('Shallow needle angle');
-        if(m.spacingSD>3) this.errors.push('Uneven bite spacing');
-        if(m.peakTension>90) this.errors.push('Over-tensioning risk');
-        if(m.collisions>2) this.errors.push('Excess tissue collisions');
-        return {sub:this.sub, final:this.final, errors:this.errors};
-      }
-    }
-  </script>
+  // Spacing to previous suture along annulus arc (posterior)
+  let spacingMm = null;
+  if(App.sutures.length>0){
+    const last = App.sutures[App.sutures.length-1];
+    const tPrev = ellipseParamForPoint(v, last.entry);
+    // approximate arc length by parameter difference scaled by ellipse
+    const arc = approxArcLen(v, tPrev, tEntry);
+    spacingMm = pxToMm(arc);
+  }
 
-  <!-- ================= HUD (gauges + bars) ================= -->
-  <script type="module" id="hud">
-    export class HUD{
-      constructor(canvas){ this.c=canvas; this.ctx=canvas.getContext('2d'); this.on=true; }
-      resize(w,h){ this.c.width=w; this.c.height=h; }
-      draw(o){ if(!this.on) return; const ctx=this.ctx; const w=this.c.width, h=this.c.height; ctx.clearRect(0,0,w,h);
-        ctx.save(); ctx.translate(110, h-120); this._gauge('Angle', o.angleErr, -30, 30); ctx.restore();
-        ctx.save(); ctx.translate(240, h-100); this._bar('Tension', o.peakTension, 0, 100); ctx.restore();
-        ctx.save(); ctx.translate(380, h-100); this._bar('Spacing SD', o.spacingSD, 0, 6); ctx.restore();
-        ctx.save(); ctx.translate(540, h-100); this._bar('Coaptation mm', o.coaptationMM, 0, 12); ctx.restore();
-      }
-      _gauge(name,val,lo,hi){ const ctx=this.ctx; ctx.fillStyle='#a6e3ff'; ctx.font='12px system-ui'; ctx.fillText(name, -30, -50); ctx.beginPath(); ctx.strokeStyle='#1b2a45'; ctx.lineWidth=10; ctx.arc(0,0,42,Math.PI,0); ctx.stroke(); const t=(val-lo)/(hi-lo); const ang=Math.PI*(1-t); ctx.beginPath(); ctx.strokeStyle=t>0.7?'#ef4444':(t>0.4?'#f59e0b':'#34d399'); ctx.lineWidth=10; ctx.arc(0,0,42,Math.PI,ang,true); ctx.stroke(); ctx.fillStyle='#94a3b8'; ctx.fillText((val).toFixed(1)+'°', -14, 8); }
-      _bar(name,val,lo,hi){ const ctx=this.ctx; const w=140,h=12; const t=(val-lo)/(hi-lo); ctx.fillStyle='#a6e3ff'; ctx.font='12px system-ui'; ctx.fillText(name, 0,-8); ctx.fillStyle='#152033'; ctx.fillRect(0,0,w,h); ctx.fillStyle= t>0.75?'#ef4444':(t>0.5?'#f59e0b':'#34d399'); ctx.fillRect(0,0,Math.max(0,Math.min(w,t*w)),h); ctx.fillStyle='#94a3b8'; ctx.fillText((val).toFixed(2), w+8, 10); }
-    }
-  </script>
+  return { depthMm, spacingMm, angleDeltaDeg: angleDelta };
+}
 
-  <!-- ================= REPLAY ================= -->
-  <script type="module" id="replay">
-    export class Replay{
-      constructor(){ this.frames=[]; this.isRecording=false; this.ptr=0; this.mode='idle'; }
-      recordFrame(f){ if(this.isRecording) this.frames.push(structuredClone(f)); }
-      start(){ this.frames=[]; this.isRecording=true; }
-      stop(){ this.isRecording=false; }
-      play(){ this.mode='play'; this.ptr=0; }
-      step(){ if(this.mode!=='play') return null; if(this.ptr>=this.frames.length){ this.mode='idle'; return null;} return this.frames[this.ptr++]; }
-      export(){ return JSON.stringify(this.frames); }
-      import(json){ this.frames=JSON.parse(json||'[]'); }
-    }
-  </script>
+function approxArcLen(v, t0, t1){
+  // numeric integration of small segments
+  const steps = 24;
+  let L = 0;
+  for(let i=0;i<steps;i++){
+    const tA = lerp(t0,t1,i/steps), tB = lerp(t0,t1,(i+1)/steps);
+    const pA = ellipsePoint(v, tA), pB = ellipsePoint(v, tB);
+    L += Math.hypot(pB.x-pA.x, pB.y-pA.y);
+  }
+  return Math.abs(L);
+}
 
-  <!-- ================= MAIN ================= -->
-  <script type="module" id="main">
-    /* Module aliasing: allow inline modules to import via #id */
-    const moduleMap = new Map();
-    function alias(id){ const s=document.getElementById(id); const url = URL.createObjectURL(new Blob([s.textContent],{type:'application/javascript'})); return url; }
-    moduleMap.set('#math', alias('math'));
-    moduleMap.set('#physics', alias('physics'));
-    moduleMap.set('#scene', alias('scene'));
-    moduleMap.set('#io', alias('io'));
-    moduleMap.set('#ai', alias('ai'));
-    moduleMap.set('#score', alias('score'));
-    moduleMap.set('#hud', alias('hud'));
-    moduleMap.set('#replay', alias('replay'));
-    const imp = (id)=>import(moduleMap.get(id));
+function computeCoaptationGap(){
+  // Simple proxy: distance between A2 and P2 inner edges after deformation
+  const v = App.valve;
+  const pA = ellipsePoint(v, 0); // A2
+  const pP = ellipsePoint(v, Math.PI); // P2
+  // Pull 4 mm inward for leaflet free edge approximation
+  function inward(p, t){ const n = ellipseNormal(v, t); return { x: p.x - n.x*mmToPx(4), y: p.y - n.y*mmToPx(4) }; }
+  const a = inward(pA, 0), b = inward(pP, Math.PI);
+  const gapPx = dist(a,b);
+  return pxToMm(gapPx);
+}
 
-    /* ---- Short-hands ---- */
-    const $ = (sel)=>document.querySelector(sel);
-    const byId=(id)=>document.getElementById(id);
+function computeScore(final=false){
+  const M = App.metrics;
+  const w = { spacing:0.22, depth:0.18, angle:0.15, trauma:0.20, time:0.10, coaptation:0.15 };
+  // Spacing: closeness to targetSpacing
+  const sSpacing = avgScore(M.spacingMmArr.map(x => penaltyAbs(x, App.targetSpacingMm, 1.0)));
+  // Depth: closeness to target depth
+  const sDepth = avgScore(M.depthMmArr.map(x => penaltyAbs(x, App.targetDepthMm, 0.8)));
+  // Angle: closeness to 90 deg (perpendicular)
+  const sAngle = avgScore(M.angleArr.map(x => penaltyAbs(90-x, 0, 0.6)));
+  // Trauma: fewer tears better (0 tears => 1.0)
+  const sTrauma = Math.max(0, 1.0 - (M.trauma * 0.07));
+  // Time: under 300s is good
+  const tElapsed = App.startTime ? (Date.now()-App.startTime)/1000 : 0;
+  const sTime = clamp(1.0 - Math.max(0, (tElapsed-300)/300), 0, 1);
+  // Coaptation: smaller gap better; <=2mm ideal, >=6mm poor
+  const gap = App.coaptationGapMm ?? computeCoaptationGap();
+  const sCoap = clamp( (6 - clamp(gap,2,6)) / 4, 0, 1);
 
-    /* ---- Imports ---- */
-    const T = window.THREE;
-    const { v3, clamp } = await imp('#math');
-    const { PBDCloth, PBDSuture, projectPointOnCurve } = await imp('#physics');
-    const { buildValve, updateLeafletMesh } = await imp('#scene');
-    const { Input } = await imp('#io');
-    const { Coach } = await imp('#ai');
-    const { ScoreEngine } = await imp('#score');
-    const { HUD } = await imp('#hud');
-    const { Replay } = await imp('#replay');
+  const score = Math.round(100*( w.spacing*sSpacing + w.depth*sDepth + w.angle*sAngle + w.trauma*sTrauma + w.time*sTime + w.coaptation*sCoap ));
+  return { score, breakdown:{sSpacing, sDepth, sAngle, sTrauma, sTime, sCoap}, elapsed:tElapsed };
+}
+function penaltyAbs(val, target, tolerance){
+  // Return 1 at target, linear drop with abs error; reach 0 at ~ (target±tolerance*2)
+  const err = Math.abs(val - target);
+  const s = clamp(1 - err/(tolerance*2), 0, 1);
+  return s;
+}
+function avgScore(arr){
+  if(!arr || arr.length===0) return 0.5;
+  const s = arr.reduce((a,b)=>a+b,0)/arr.length;
+  return clamp(s,0,1);
+}
 
-    /* ---- DOM elements ---- */
-    const sim = byId('sim'), hud = byId('hud'), minimap = byId('minimap'), computeCanvas = byId('compute');
-    const ui = {
-      angle:byId('needleAngle'), biteErr:byId('biteError'), spacingSD:byId('spacingSD'),
-      tension:byId('tension'), coapt:byId('coaptation'), fps:byId('fps'),
-      task:byId('taskScore'), gears:byId('gearsScore'), goals:byId('goalsScore'), osats:byId('osatsScore'), final:byId('finalScore'),
-      coachMsg:byId('coachMsg'), coachAria:byId('coach-aria'), hints:byId('hints'), status:byId('status')
-    };
+// ---------- Input & Interaction ----------
+function onCanvasDown(e){
+  if(App.instrument!=='needle') return;
+  const p = getMousePos(e);
+  if(App.placing.state==='idle'){
+    const entryNode = findNearestLeafletNode(p);
+    if(!entryNode) return;
+    App.placing.entry = { x: entryNode.x, y: entryNode.y, nodeIdx: entryNode.idx };
+    App.placing.state='entry-set';
+    advanceChecklist(2);
+    log(`Entry set @ (${pxToMm(p.x).toFixed(1)}mm, ${pxToMm(p.y).toFixed(1)}mm)`);
+  }else if(App.placing.state==='entry-set'){
+    const exitNode = findNearestLeafletNode(p);
+    if(!exitNode) return;
+    App.placing.exit = { x: exitNode.x, y: exitNode.y, nodeIdx: exitNode.idx };
+    // create suture
+    const st = makeSuture(App.placing.entry, App.placing.exit, { angle:App.needleAngle, curv:App.needleCurvature });
+    App.placing = { state:'idle', entry:null, exit:null, arc:null };
+    // record metrics arrays
+    App.metrics.depthMmArr.push(st.metrics.depthMm);
+    if(st.metrics.spacingMm!=null) App.metrics.spacingMmArr.push(st.metrics.spacingMm);
+    App.metrics.angleArr.push(90 - st.metrics.angleDeltaDeg);
+    updateKPI();
+    advanceChecklist(3);
+    coachIfNeeded();
+  }
+}
+function onCanvasMove(e){
+  if(App.placing.state==='entry-set'){
+    const p = getMousePos(e);
+    const fakeExit = { x:p.x, y:p.y, nodeIdx: findNearestLeafletNode(p)?.idx ?? null };
+    App.placing.arc = computeNeedleArc(App.placing.entry, fakeExit, App.needleCurvature, App.needleAngle);
+  }
+}
+function findNearestLeafletNode(p){
+  const t = App.tissue;
+  let best=null, bi=-1, bd=1e9;
+  for(let i=0;i<t.nodes.length;i++){
+    const n = t.nodes[i]; if(!n||n.type!=='leaflet') continue;
+    const d = Math.hypot(n.x - p.x, n.y - p.y);
+    if(d<bd){ bd=d; best=n; bi=i; }
+  }
+  if(bd>18) return null; // require proximity
+  best.idx = bi;
+  return best;
+}
+function getMousePos(e){
+  const rect = App.canvas.getBoundingClientRect();
+  const x = (e.clientX - rect.left)* (App.canvas.width/rect.width);
+  const y = (e.clientY - rect.top) * (App.canvas.height/rect.height);
+  return {x,y};
+}
 
-    /* ---- Renderer & Camera ---- */
-    const renderer = new T.Renderer(sim);
-    const cam = new T.Camera();
+// ---------- UI Wiring ----------
+function updateKPI(){
+  document.getElementById('kpiSutures').textContent = `🧵 Sutures: ${App.sutures.length}`;
+  const avgSpacing = App.metrics.spacingMmArr.length? (App.metrics.spacingMmArr.reduce((a,b)=>a+b,0)/App.metrics.spacingMmArr.length).toFixed(1)+' mm' : '—';
+  const avgDepth = App.metrics.depthMmArr.length? (App.metrics.depthMmArr.reduce((a,b)=>a+b,0)/App.metrics.depthMmArr.length).toFixed(1)+' mm' : '—';
+  document.getElementById('kpiSpacing').textContent = `↔ Avg Spacing: ${avgSpacing}`;
+  document.getElementById('kpiDepth').textContent = `⬇ Avg Bite Depth: ${avgDepth}`;
+  document.getElementById('kpiTrauma').textContent = `🩸 Tissue Trauma: ${App.metrics.trauma}`;
+  App.coaptationGapMm = computeCoaptationGap();
+  document.getElementById('kpiGap').textContent = `➖ Coaptation Gap: ${App.coaptationGapMm.toFixed(1)} mm`;
+  const {score} = computeScore();
+  App.score = score;
+  document.getElementById('kpiScore').textContent = `⭐ Score: ${score}/100`;
+}
 
-    /* ---- Input ---- */
-    const input = new Input(sim);
+function startTimer(){
+  App.startTime = Date.now();
+  const f = ()=>{
+    const s = Math.floor((Date.now()-App.startTime)/1000);
+    const mm = String(Math.floor(s/60)).padStart(2,'0');
+    const ss = String(s%60).padStart(2,'0');
+    document.getElementById('kpiTimer').textContent = `⏱ Time: ${mm}:${ss}`;
+  };
+  clearInterval(App.timerId);
+  App.timerId = setInterval(f, 500);
+}
 
-    /* ---- Scene / Valve ---- */
-    let valve = buildValve(32);
-    const meshes = [ valve.ring, valve.leaflet ];
+function setInstrument(name){
+  App.instrument = name;
+  document.querySelectorAll('#instrumentRow button').forEach(b=> b.classList.toggle('active', b.dataset.tool===name));
+  log(`Instrument: ${name}`);
+}
+function setDifficulty(level){
+  App.difficulty = level;
+  document.querySelectorAll('#difficultyRow button').forEach(b=> b.classList.toggle('active', b.dataset.diff===level));
+  // Adjust stiffness/tear thresholds subtly (not exhaustive)
+  for(const s of App.tissue.springs){ if(s.k && !s.userSet){ s.k = level==='resident'? 22 : level==='fellow'? 26 : 30; } }
+  log(`Difficulty set: ${level}`);
+}
+function setCalc(pattern){
+  App.calcPattern = pattern;
+  document.querySelectorAll('#calcRow button').forEach(b=> b.classList.toggle('active', b.dataset.calc===pattern));
+  App.valve = buildValve(); // rebuild to update calc zones
+  log(`Calcification: ${pattern}`);
+}
 
-    /* ---- HUD ---- */
-    const hudUI = new HUD(hud);
+function coachSpeak(text){
+  if(!App.speechOn) return;
+  try{
+    const u = new SpeechSynthesisUtterance(text.replace(/<[^>]+>/g,' '));
+    u.rate = 1; u.pitch=1; speechSynthesis.speak(u);
+  }catch(_){}
+}
 
-    /* ---- Physics in Worker ---- */
-    const workerSrc = document.getElementById('physics-worker').textContent;
-    const worker = new Worker(URL.createObjectURL(new Blob([workerSrc],{type:'application/javascript'})));
-    const offscreen = computeCanvas.transferControlToOffscreen ? computeCanvas.transferControlToOffscreen() : null;
-    worker.postMessage({
-      type:'init',
-      w:valve.cloth.w, h:valve.cloth.h, dx:0.03, dy:0.03,
-      ropeN:70, segLen:0.01, pinTop:true, offscreen
-    }, offscreen? [offscreen] : []);
+function setHint(html){ const el = document.getElementById('hintBox'); el.innerHTML = html; coachSpeak(html); }
+function advanceChecklist(step){
+  const items = Array.from(document.querySelectorAll('.step'));
+  items.forEach(it=>{
+    const idx = Number(it.dataset.step);
+    it.classList.toggle('active', idx===step);
+    if(idx<step) it.classList.add('done');
+  });
+}
 
-    let clothPositions = new Float32Array(valve.leaflet.vertices.length);
-    let ropePositions  = new Float32Array(70*3);
-    let ropeTension = 0;
+function coachIfNeeded(){
+  const last = App.sutures.at(-1); if(!last) return;
+  const d = last.metrics.depthMm, s = last.metrics.spacingMm, a = 90 - last.metrics.angleDeltaDeg;
+  let hint = [];
+  if(d < App.targetDepthMm-0.6) hint.push(`Increase <b>bite depth</b> toward ${App.targetDepthMm.toFixed(1)} mm.`);
+  if(d > App.targetDepthMm+0.8) hint.push(`Reduce <b>bite depth</b> to avoid leaflet <b>blanching</b>.`);
+  if(s != null && Math.abs(s-App.targetSpacingMm)>0.8) hint.push(`Aim for <b>${App.targetSpacingMm.toFixed(1)} mm</b> spacing; consider clocking positions.`);
+  if(Math.abs(a-90)>15) hint.push(`Enter more <b>perpendicular</b> to annulus (angle≈90°).`);
+  if(App.tensionN>8) hint.push(`Ease <b>tension</b>; risk of tearing.`);
+  if(hint.length===0) hint = [`Good! Maintain technique across <b>P1–P3</b>.`];
+  setHint(hint.join(' '));
+}
 
-    worker.onmessage = (e)=>{
-      const {type} = e.data||{};
-      if(type==='state'){
-        clothPositions = e.data.cloth;
-        ropePositions  = e.data.rope;
-        ropeTension    = e.data.tension;
-      }
-    };
+// ---------- Buttons & Hotkeys ----------
+function bindUI(){
+  // Instruments
+  document.getElementById('instrumentRow').addEventListener('click', (e)=>{
+    if(e.target.tagName!=='BUTTON') return;
+    setInstrument(e.target.dataset.tool);
+  });
+  document.getElementById('difficultyRow').addEventListener('click', (e)=>{
+    if(e.target.tagName!=='BUTTON') return;
+    setDifficulty(e.target.dataset.diff);
+  });
+  document.getElementById('calcRow').addEventListener('click', (e)=>{
+    if(e.target.tagName!=='BUTTON') return;
+    setCalc(e.target.dataset.calc);
+  });
 
-    /* ---- Task state ---- */
-    let mode=1; const setMode=(m)=>{ mode=m; ['mode1','mode2','mode3'].forEach((id,i)=>{ byId(id).setAttribute('aria-pressed', String(i+1===mode)); }); ui.status.textContent = m===1?'Ring placement': m===2?'Leaflet bite':'Knot & tension'; };
-    setMode(1);
-    byId('mode1').onclick=()=>setMode(1); byId('mode2').onclick=()=>setMode(2); byId('mode3').onclick=()=>setMode(3);
-    let overlays=true, paused=false; byId('toggleExam').onclick=()=>{ overlays=!overlays; hudUI.on=overlays; ui.status.textContent=overlays?'Training Overlays On':'Exam Mode'; };
-    byId('resetBtn').onclick=()=>{ placeInitialTargets(); ui.status.textContent='Reset'; };
+  // Sliders
+  const curv = document.getElementById('needleCurvature');
+  curv.addEventListener('input', e=>{
+    App.needleCurvature = Number(e.target.value);
+    document.getElementById('kpiCurv').textContent = (Math.round(App.needleCurvature*8)/8).toFixed(3).replace(/\.000$/,'') ;
+  });
+  const ang = document.getElementById('needleAngle');
+  ang.addEventListener('input', e=>{
+    App.needleAngle = Number(e.target.value);
+    document.getElementById('kpiAngle').textContent = `${App.needleAngle}°`;
+  });
+  const ten = document.getElementById('tension');
+  ten.addEventListener('input', e=>{
+    App.tensionN = Number(e.target.value);
+    document.getElementById('kpiTension').textContent = `${App.tensionN.toFixed(2)} N`;
+  });
+  const ann = document.getElementById('annulusSize');
+  ann.addEventListener('input', e=>{
+    App.sizeMm = Number(e.target.value);
+    document.getElementById('kpiAnnulus').textContent = `${App.sizeMm} mm`;
+    App.valve = buildValve();
+  });
+  const tsp = document.getElementById('targetSpacing');
+  tsp.addEventListener('input', e=>{
+    App.targetSpacingMm = Number(e.target.value);
+    document.getElementById('kpiTargetSpacing').textContent = `${App.targetSpacingMm.toFixed(1)} mm`;
+  });
+  const tdp = document.getElementById('targetDepth');
+  tdp.addEventListener('input', e=>{
+    App.targetDepthMm = Number(e.target.value);
+    document.getElementById('kpiTargetDepth').textContent = `${App.targetDepthMm.toFixed(1)} mm`;
+  });
+  document.getElementById('pledget').addEventListener('change', e=> App.pledget = e.target.checked);
+  document.getElementById('ghostTargets').addEventListener('change', e=> App.showGhost = e.target.checked);
 
-    /* ---- Bite targets ---- */
-    const bites=[]; const posteriorIndices=[]; for(let i=0;i<valve.curve.length;i++){ if(valve.curve[i].z<0) posteriorIndices.push(i); }
-    function placeInitialTargets(){ bites.length=0; const step=Math.floor(posteriorIndices.length/4); const mid=posteriorIndices[Math.floor(posteriorIndices.length/2)];
-      bites.push({p:valve.curve[mid-step]}); bites.push({p:valve.curve[mid]}); bites.push({p:valve.curve[mid+step]}); }
-    placeInitialTargets();
+  // Stage mouse
+  App.canvas.addEventListener('mousedown', onCanvasDown);
+  App.canvas.addEventListener('mousemove', onCanvasMove);
 
-    /* ---- Instrument tip ---- */
-    const tip = { x:0, y:0.05, z:0.6, vx:0, vy:0, vz:0 };
+  // Core buttons
+  document.getElementById('btnStart').addEventListener('click', ()=>{
+    if(!App.startTime){ startTimer(); log('Skill drill started.'); setHint('Proceed with <b>P2</b> bite. Avoid calcified patches, maintain spacing.'); }
+  });
+  document.getElementById('btnEnd').addEventListener('click', ()=>{
+    const {score, breakdown, elapsed} = computeScore(true);
+    App.score = score;
+    const msg = `Final Score: ${score}/100 • Spacing ${(breakdown.sSpacing*100|0)}% • Depth ${(breakdown.sDepth*100|0)}% • Angle ${(breakdown.sAngle*100|0)}% • Trauma ${(breakdown.sTrauma*100|0)}% • Time ${(breakdown.sTime*100|0)}% • Coaptation ${(breakdown.sCoap*100|0)}% • Time ${elapsed.toFixed(1)}s`;
+    log(msg);
+    setHint(msg);
+  });
+  document.getElementById('btnReset').addEventListener('click', resetAll);
 
-    /* ---- AI Coach & Score ---- */
-    const coach = new Coach(); coach.tryORT();
-    const scorer = new ScoreEngine();
+  // Copilot
+  document.getElementById('btnCoach').addEventListener('click', coachIfNeeded);
+  document.getElementById('btnSpeak').addEventListener('click', ()=>{
+    App.speechOn = !App.speechOn;
+    document.getElementById('btnSpeak').textContent = App.speechOn? '🔇 Voice' : '🔊 Voice';
+    if(App.speechOn) coachSpeak(document.getElementById('hintBox').innerText);
+  });
+  document.getElementById('btnGhost').addEventListener('click', ()=>{
+    App.showGhost = !App.showGhost;
+    renderHUD();
+  });
 
-    /* ---- Metrics ---- */
-    const metrics = { angleErr:0, spacingSD:0, peakTension:0, coaptationMM:0, collisions:0, pathLengthPenalty:0, tensionOvershoot:0, hintUsage:0, depthErrors:0, timePenalty:0, flowBreaks:0 };
+  // Save/Load/Report/Screenshot
+  document.getElementById('btnSave').addEventListener('click', saveState);
+  document.getElementById('btnLoad').addEventListener('click', loadState);
+  document.getElementById('btnDownload').addEventListener('click', downloadReport);
+  document.getElementById('btnClearLog').addEventListener('click', ()=>{ App.logs = []; renderLog(); });
+  document.getElementById('btnScreenshot').addEventListener('click', screenshot);
 
-    /* ---- Replay ---- */
-    const replay = new Replay();
-    byId('recordBtn').onclick=()=>{ if(replay.isRecording){ replay.stop(); ui.status.textContent='Recording stopped'; } else { replay.start(); ui.status.textContent='Recording…'; } };
-    byId('replayBtn').onclick=()=>{ replay.stop(); replay.play(); ui.status.textContent='Replaying'; };
-    byId('exportBtn').onclick=()=>{ const blob=new Blob([replay.export()],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='attempt.json'; a.click(); };
-    byId('importBtn').onclick=()=>{ const inp=document.createElement('input'); inp.type='file'; inp.accept='application/json'; inp.onchange=()=>{ const f=inp.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ replay.import(r.result); ui.status.textContent='Imported replay'; }; r.readAsText(f); }; inp.click(); };
+  // Hotkeys
+  window.addEventListener('keydown', (e)=>{
+    if(e.code==='KeyN'){ setInstrument('needle'); }
+    else if(e.code==='KeyF'){ setInstrument('forceps'); }
+    else if(e.code==='KeyR'){ resetAll(); }
+    else if(e.code==='Space'){ App.showGhost = !App.showGhost; renderHUD(); }
+  });
+}
 
-    /* ---- Resize / Camera ---- */
-    function resize(){ sim.width=innerWidth*devicePixelRatio; sim.height=innerHeight*devicePixelRatio; hudUI.resize(sim.width, sim.height); renderer.resize(sim.width, sim.height); cam.update(sim.width, sim.height); }
-    addEventListener('resize', resize); resize();
-    function updateCamera(){ const o=input.orbit; const cx=Math.sin(o.phi)*Math.cos(o.theta)*o.dist; const cy=Math.cos(o.phi)*o.dist; const cz=Math.sin(o.phi)*Math.sin(o.theta)*o.dist; cam.eye.set(cx+input.pan.x, cy+input.pan.y, cz); cam.center.set(0,0,0); cam.update(renderer.w, renderer.h); }
+// ---------- Persistence & Report ----------
+function saveState(){
+  const data = {
+    sizeMm:App.sizeMm, targetSpacingMm:App.targetSpacingMm, targetDepthMm:App.targetDepthMm,
+    calcPattern:App.calcPattern, difficulty:App.difficulty,
+    sutures: App.sutures.map(s=>({entry:s.entry, exit:s.exit, angle:s.angle, curvature:s.curvature, pledget:s.pledget})),
+    metrics: App.metrics, logs: App.logs, startOffset: App.startTime? Date.now()-App.startTime : null
+  };
+  localStorage.setItem('mitrasim_save', JSON.stringify(data));
+  log('💾 Case saved to browser storage.');
+}
+function loadState(){
+  const j = localStorage.getItem('mitrasim_save');
+  if(!j){ log('No saved case found.'); return; }
+  resetAll(true);
+  const data = JSON.parse(j);
+  App.sizeMm = data.sizeMm; App.targetSpacingMm=data.targetSpacingMm; App.targetDepthMm=data.targetDepthMm;
+  App.calcPattern = data.calcPattern; App.difficulty=data.difficulty;
+  document.getElementById('annulusSize').value=App.sizeMm; document.getElementById('kpiAnnulus').textContent = `${App.sizeMm} mm`;
+  document.getElementById('targetSpacing').value=App.targetSpacingMm; document.getElementById('kpiTargetSpacing').textContent = `${App.targetSpacingMm.toFixed(1)} mm`;
+  document.getElementById('targetDepth').value=App.targetDepthMm; document.getElementById('kpiTargetDepth').textContent = `${App.targetDepthMm.toFixed(1)} mm`;
+  setCalc(App.calcPattern); setDifficulty(App.difficulty);
+  // Recreate sutures
+  for(const s of data.sutures){
+    App.placing.entry = s.entry; App.placing.exit = s.exit;
+    const st = makeSuture(s.entry, s.exit, { angle:s.angle, curv:s.curvature });
+    st.pledget = s.pledget;
+    App.placing = {state:'idle', entry:null, exit:null, arc:null};
+  }
+  App.metrics = data.metrics || App.metrics;
+  App.logs = data.logs || [];
+  renderLog();
+  if(data.startOffset){ App.startTime = Date.now()-data.startOffset; startTimer(); }
+  updateKPI();
+  log('📂 Case loaded.');
+}
+function reportJSON(){
+  const {score, breakdown, elapsed} = computeScore(true);
+  const report = {
+    timestamp: new Date().toISOString(),
+    scenario: { difficulty:App.difficulty, calcification:App.calcPattern, annulusSizeMm:App.sizeMm },
+    performance: { score, breakdown, elapsedSec:elapsed, coaptationGapMm: App.coaptationGapMm },
+    sutures: App.sutures.map(s=>({
+      entryPx:s.entry, exitPx:s.exit, entryDepthMm: assessSingleSutureMetrics(s.entry,s.exit,s.angle).depthMm,
+      angleDeg:s.angle, spacingMm: assessSingleSutureMetrics(s.entry,s.exit,s.angle).spacingMm, pledget:s.pledget
+    })),
+    logs: App.logs
+  };
+  return report;
+}
+function downloadReport(){
+  const data = reportJSON();
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download = `MitraSim_report_${Date.now()}.json`; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+  log('⬇ Report downloaded.');
+}
+function screenshot(){
+  // draw canvas onto temp canvas to get PNG; (HUD overlay ignored; could rasterize if needed)
+  App.canvas.toBlob(blob=>{
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download = `MitraSim_${Date.now()}.png`; a.click();
+    setTimeout(()=>URL.revokeObjectURL(url), 2000);
+  });
+}
 
-    /* ---- Screen to world ---- */
-    function screenToWorld(x,y){ const rx=x*cam.aspect*Math.tan(cam.fov/2), ry=y*Math.tan(cam.fov/2); const dir=new T.Vec3(rx,ry,-1).norm(); const t = (0.05 - cam.eye.y) / dir.y; const wx = cam.eye.x + dir.x*t; const wy = cam.eye.y + dir.y*t; const wz = cam.eye.z + dir.z*t; return {x:wx,y:wy,z:wz}; }
+// ---------- Reset ----------
+function resetAll(silent=false){
+  // preserve settings; rebuild valve & tissue
+  App.valve = buildValve();
+  App.tissue = buildTissueMesh(App.valve);
+  App.sutures = []; App.metrics = { spacingMmArr:[], depthMmArr:[], angleArr:[], trauma:0 };
+  App.logs = silent? App.logs : [];
+  App.placing = { state:'idle', entry:null, exit:null, arc:null };
+  App.coaptationGapMm = null; App.score=null;
+  if(!silent) log('Tissue reset.');
+  updateKPI();
+}
 
-    /* ---- Mouse interactions ---- */
-    sim.addEventListener('mousedown', (e)=>{
-      if(e.button!==0) return;
-      const p=screenToWorld(input.mouse.x, input.mouse.y);
-      if(mode===1){
-        const proj = projectPointOnCurve(p, valve.curve);
-        if(valve.curve[proj.index].z<0 && proj.dist<0.08){
-          bites.push({p:valve.curve[proj.index]}); if(bites.length>3) bites.shift();
-        }
-      }else if(mode===2){
-        // anchor suture to nearest ring point
-        const proj = projectPointOnCurve(p, valve.curve);
-        const at = valve.curve[proj.index];
-        worker.postMessage({type:'step', dt:1/60, anchor:{x:at.x,y:at.y,z:at.z}});
-      }
-    });
+// ---------- Animation Loop ----------
+function loop(now){
+  const dt = Math.min(0.033, (now - App.last)/1000); App.last = now;
+  if(App.running){
+    stepPhysics(dt);
+    draw();
+  }
+  requestAnimationFrame(loop);
+}
 
-    /* ---- Keyboard toggles ---- */
-    addEventListener('keydown', (e)=>{ const k=e.key.toLowerCase(); if(k==='h'){ hudUI.on=!hudUI.on; } if(k==='p'){ paused=!paused; } if(k==='1'){setMode(1)} if(k==='2'){setMode(2)} if(k==='3'){setMode(3)} });
+// ---------- Init ----------
+function init(){
+  App.canvas = document.getElementById('sim');
+  App.ctx = App.canvas.getContext('2d');
+  App.hud = document.getElementById('hud');
 
-    /* ---- Minimap ---- */
-    function drawMinimap(){
-      const ctx=minimap.getContext('2d'); const W=minimap.width, H=minimap.height;
-      ctx.clearRect(0,0,W,H); ctx.save(); ctx.translate(W/2,H/2); ctx.scale(100,-100);
-      ctx.strokeStyle='#334155'; ctx.lineWidth=0.01;
-      ctx.beginPath(); valve.curve.forEach((p,i)=>{ (i?ctx.lineTo:ctx.moveTo).call(ctx,p.x,p.z); }); ctx.closePath(); ctx.stroke();
-      ctx.scale(1,-1); ctx.fillStyle='#a5b4fc'; ctx.font='10px system-ui';
-      for(const L of valve.labels){ ctx.save(); ctx.scale(1,-1); ctx.fillText(L.id, L.p.x*100-6, -L.p.z*100+4); ctx.restore(); }
-      ctx.scale(1,-1);
-      for(const b of bites){ ctx.fillStyle='#22d3ee'; ctx.beginPath(); ctx.arc(b.p.x, b.p.z, 0.015, 0, Math.PI*2); ctx.fill(); }
-      ctx.restore();
-    }
+  resetAll(true);
+  bindUI();
+  startTimer(); // auto-start timer for demo
+  updateKPI();
+  renderHUD();
+  requestAnimationFrame(loop);
+}
 
-    /* ---- Main Loop ---- */
-    let last=performance.now(), acc=0, fpsS=0, fpsC=0;
-    function frame(){
-      const now=performance.now(); const dt=(now-last)/1000; last=now; acc+=dt; fpsS+=dt*1000; fpsC++;
-      if(!paused){
-        while(acc>1/60){ step(1/60); acc-=1/60; }
-        render();
-        if(fpsS>1000){ ui.fps.textContent=(fpsC).toFixed(0); fpsS=0; fpsC=0; }
-      }
-      requestAnimationFrame(frame);
-    }
-
-    function step(dt){
-      updateCamera();
-
-      // Instrument tip follows mouse unless clutch engaged
-      if(!input.clutch){
-        const p=screenToWorld(input.mouse.x, input.mouse.y);
-        const s=8*dt; tip.vx=(p.x-tip.x)*s; tip.vy=(p.y-tip.y)*s; tip.vz=(p.z-tip.z)*s;
-        tip.x+=tip.vx*dt; tip.y+=tip.vy*dt; tip.z+=tip.vz*dt;
-      }
-
-      // Ask worker to step physics; anchor suture to center posterior point in modes 2/3
-      let anchor = null;
-      if(mode!==1){
-        const midIdx = posteriorIndices[Math.floor(posteriorIndices.length/2)];
-        anchor = valve.curve[midIdx];
-      }
-      worker.postMessage({type:'step', dt, anchor});
-
-      // Metrics
-      metrics.peakTension = Math.max(metrics.peakTension*0.95, ropeTension);
-
-      // Needle angle proxy (camera ray vs tissue normal +Y)
-      const ndir = {x:Math.sin(input.orbit.phi)*Math.cos(input.orbit.theta), y:-Math.cos(input.orbit.phi), z:Math.sin(input.orbit.phi)*Math.sin(input.orbit.theta)};
-      const nrm = {x:0,y:1,z:0}; const d = (ndir.x*nrm.x + ndir.y*nrm.y + ndir.z*nrm.z);
-      const ang = Math.acos(Math.max(-1,Math.min(1,d)))*180/Math.PI; metrics.angleErr = Math.abs(90-ang);
-
-      if(bites.length===3){
-        const ds=[]; for(let i=0;i<3;i++){ const a=bites[i].p, b=bites[(i+1)%3].p; const dist=Math.hypot(a.x-b.x,a.z-b.z)*1000/10; ds.push(dist); }
-        const m=ds.reduce((a,b)=>a+b,0)/ds.length; const v=ds.reduce((a,b)=>a+(b-m)*(b-m),0)/ds.length; metrics.spacingSD=Math.sqrt(v);
-      }
-
-      // Coaptation estimate from cloth centerline height
-      metrics.coaptationMM = Math.max(0, (0.12 - Math.abs(averageLeafletY()))*1000);
-
-      // UI values
-      ui.angle.textContent = metrics.angleErr.toFixed(1);
-      ui.biteErr.textContent = '—';
-      ui.spacingSD.textContent = metrics.spacingSD.toFixed(2);
-      ui.tension.textContent = ropeTension.toFixed(1);
-      ui.coapt.textContent = metrics.coaptationMM.toFixed(1);
-
-      // AI coach
-      const feat={ dt, speed:Math.hypot(tip.vx,tip.vy,tip.vz)*100, angleErr:metrics.angleErr, spacingSD:metrics.spacingSD, peakTension:metrics.peakTension, collisions:metrics.collisions };
-      const out = coach.update(feat); ui.coachMsg.textContent = out.intent; ui.coachAria.textContent = out.intent;
-
-      // Scoring
-      const s=scorer.compute(metrics); ui.task.textContent=s.sub.task; ui.gears.textContent=s.sub.gears; ui.goals.textContent=s.sub.goals; ui.osats.textContent=s.sub.osats; ui.final.textContent=s.final;
-
-      // Replay
-      replay.recordFrame({tip:{...tip}, metrics:{...metrics}});
-    }
-
-    function averageLeafletY(){
-      // clothPositions is Float32Array [x,y,z,...]
-      let sum=0, c=0; for(let i=1;i<clothPositions.length;i+=3){ sum+=clothPositions[i]; c++; } return sum/(c||1);
-    }
-
-    function render(){
-      // Update leaflet mesh from worker positions
-      updateLeafletMesh(valve.leaflet, clothPositions);
-      renderer.draw(meshes, cam.vp);
-      hudUI.draw({ angleErr:metrics.angleErr, peakTension:metrics.peakTension, spacingSD:metrics.spacingSD, coaptationMM:metrics.coaptationMM });
-      drawMinimap();
-    }
-
-    /* ---- Self-test mode (?test=1) ---- */
-    if(new URL(location).searchParams.get('test')==='1'){
-      console.group('Self-tests');
-      console.assert(Math.abs((new (window.THREEL.Vec3)(1,0,0)).dot(new (window.THREEL.Vec3)(0,1,0)) - 0) < 1e-6, 'Vec3 dot');
-      const rope = new PBDSuture(10, 1); rope.step(1/60, 10, [{i:0,p:{x:0,y:0,z:0}}]); console.assert(Math.abs(rope.length()-9) < 1e-3, 'Rope length preserved');
-      console.groupEnd();
-    }
-
-    requestAnimationFrame(frame);
-  </script>
+window.addEventListener('load', init);
+</script>
 </body>
 </html>
