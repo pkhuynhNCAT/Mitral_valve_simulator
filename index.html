@@ -2,24 +2,25 @@
 <html lang="en">
 <head>
   <!-- =========================================================
-       MITRAL VALVE REPAIR TRAINER — SINGLE-FILE APP (PART 1/✱)
-       SECTION: <head> meta + full STYLE system + global SVG defs
-       GOAL:
-         • Production-grade head metadata (SEO, social, PWA-friendly).
-         • Commercial UI design system (tokens, layout grid, component shells).
-         • Accessibility, theming, print, motion safety.
-         • Visual primitives for: highlights, legends, guides, marked spots.
-       NOTE:
-         This block is self-contained and does not include <body> or <script>.
+       MITRAL VALVE REPAIR TRAINER — SINGLE-FILE APP (FULL)
+       GOAL
+         • Super realistic, professional web-based simulator for mitral valve repair
+           (v1 focus: annuloplasty suturing) with AI Co‑Pilot, annotations, and scoring.
+         • Single-file design (host directly on GitHub Pages).
+         • Training mode (strict, highlighted, step-by-step).
+         • Practice mode (guided, rich feedback, detailed scoring).
+         • Commercial polish, accessibility, offline-ready.
+       SAFETY
+         • Educational use only. Not a medical device. HIPAA-free synthetic data.
   ============================================================ -->
 
-  <!-- ===== META (production-ready) ===== -->
+  <!-- ===== META (production) ===== -->
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Mitral Valve Repair Trainer — Annuloplasty Suturing (Training & Practice)</title>
-  <meta name="description" content="Professional, high-fidelity web simulation for mitral valve repair training. Step-by-step suturing guidance with AI Co‑Pilot, annotations, and detailed scoring — single-file app, GitHub Pages-ready." />
-  <meta name="keywords" content="mitral valve, surgery training, cardiac surgery, annuloplasty, suturing, simulation, web simulator, education, scoring, AI copilot" />
+  <meta name="description" content="Professional, high-fidelity web simulation for mitral valve repair training. Step-by-step suturing with AI Co‑Pilot, precise highlights/marks, and rigorous scoring — single-file app, GitHub Pages-ready." />
+  <meta name="keywords" content="mitral valve, surgery training, cardiac surgery, annuloplasty, suturing, simulation, web simulator, education, scoring, AI copilot, practice" />
   <meta name="theme-color" content="#0d1321" />
   <meta name="color-scheme" content="dark light">
   <meta name="format-detection" content="telephone=no">
@@ -30,33 +31,21 @@
   <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAFElEQVR4Ae3BAQ0AAADCIPunNscCFQAAUzsT2QAAI1iSAAAAAElFTkSuQmCC">
   <link rel="canonical" href="." />
 
-  <!-- OpenGraph / Twitter (social share) -->
+  <!-- OpenGraph / Twitter -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="Mitral Valve Repair Trainer — Annuloplasty Suturing">
-  <meta property="og:description" content="Super realistic, professional web simulation for cardiac surgeons. AI-guided steps, clear legends, highlighted targets, marked spots, and a rigorous scoring system.">
+  <meta property="og:description" content="Super realistic, commercial-grade web simulation. AI-guided steps, clear legends, highlighted targets, marked spots, and a rigorous scoring system.">
   <meta property="og:image" content="data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%221200%22 height=%22630%22%3E%3Crect width=%27100%25%27 height=%27100%25%27 fill=%27%230d1321%27/%3E%3Ctext x=%2750%25%27 y=%2748%25%27 fill=%27%235de4c7%27 font-size=%2750%27 font-family=%27Arial,Helvetica,sans-serif%27 text-anchor=%27middle%27%3EMitral Valve Trainer%3C/text%3E%3Ctext x=%2750%25%27 y=%2766%25%27 fill=%27%238bd3ff%27 font-size=%2728%27 text-anchor=%27middle%27%3EAnnuloplasty Suturing%3C/text%3E%3C/svg%3E">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Mitral Valve Repair Trainer — Annuloplasty Suturing">
-  <meta name="twitter:description" content="AI co‑pilot guidance, stepwise suturing, clear highlights/marks, and detailed scoring — in a single-file app.">
+  <meta name="twitter:description" content="AI co‑pilot guidance, stepwise suturing, clear highlights/marks, and detailed scoring — single-file app.">
   <meta name="twitter:image" content="data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%221200%22 height=%22630%22%3E%3Crect width=%27100%25%27 height=%27100%25%27 fill=%27%230d1321%27/%3E%3Ctext x=%2750%25%27 y=%2748%25%27 fill=%27%235de4c7%27 font-size=%2750%27 font-family=%27Arial,Helvetica,sans-serif%27 text-anchor=%27middle%27%3EMitral Valve Trainer%3C/text%3E%3Ctext x=%2750%25%27 y=%2766%25%27 fill=%27%238bd3ff%27 font-size=%2728%27 text-anchor=%27middle%27%3EAnnuloplasty Suturing%3C/text%3E%3C/svg%3E">
 
-  <!-- ===== Optional CSP (single-file requires 'unsafe-inline'; document first) =====
-  <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self' data: blob:; img-src 'self' data: blob:; media-src 'self' data: blob:;
-                 style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; font-src 'self' data:;">
-  -->
-
   <!-- =========================================================
-       STYLE ARCHITECTURE — PRODUCTION-GRADE DESIGN SYSTEM
-       • Dark-first theme, light fallback via [data-theme="light"].
-       • Grid shell: topbar / sidebar / viewport / copilot / bottombar.
-       • Components for training/practice: legend, guidance, highlights, marks.
-       • Motion primitives: halos, ghost dashes, attention pulses.
+       STYLE SYSTEM — Commercial, accessible, responsive
   ============================================================ -->
   <style>
-    /* =========================
-       0) CSS RESET & BASELINE
-       ========================= */
+    /* ===== Reset & Baseline ===== */
     *,*::before,*::after{box-sizing:border-box}
     html,body{height:100%}
     html{color-scheme:dark light}
@@ -73,48 +62,39 @@
     ::selection{background: #234b7d; color:#fff}
     [hidden]{display:none !important}
 
-    /* =========================
-       1) DESIGN TOKENS
-       ========================= */
+    /* ===== Tokens ===== */
     :root{
-      /* Color tokens (dark) */
-      --bg-0:#0d1321;    /* page */
-      --bg-1:#101a34;    /* panels */
-      --bg-2:#0f1730;    /* elevated panels */
-      --ink-0:#e7ecfb;   /* primary text */
-      --ink-1:#a7b5dc;   /* secondary text */
+      --bg-0:#0d1321;
+      --bg-1:#101a34;
+      --bg-2:#0f1730;
+      --ink-0:#e7ecfb;
+      --ink-1:#a7b5dc;
       --ink-dim:#7c89b4;
 
-      --brand:#5de4c7;   /* teal accent: targets, success focus */
-      --brand-2:#8bd3ff; /* blue accent: guides, sutures */
-      --warn:#ffc857;    /* guidance warnings */
-      --danger:#ff5661;  /* errors / tissue violation */
-      --ok:#5dd39e;      /* check/ok */
-      --muted:#0a1327;   /* deep background */
+      --brand:#5de4c7;
+      --brand-2:#8bd3ff;
+      --warn:#ffc857;
+      --danger:#ff5661;
+      --ok:#5dd39e;
+      --muted:#0a1327;
       --ink-invert:#09222f;
 
-      /* Elevation & radii */
       --shadow-1:0 4px 16px rgba(0,0,0,.35);
       --shadow-2:0 10px 28px rgba(0,0,0,.45);
       --radius-lg:14px; --radius:10px; --radius-sm:8px;
 
-      /* Grid max width */
       --app-mxw:1600px;
 
-      /* Typography */
       --sans: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
       --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
       --fs-xxs:10px; --fs-xs:12px; --fs-sm:13px; --fs-md:14px; --fs-lg:16px; --fs-xl:18px; --fs-2xl:22px; --fs-3xl:28px;
 
-      /* Motion */
       --dur-1:120ms; --dur-2:220ms; --dur-3:420ms; --dur-4:800ms;
       --eio:cubic-bezier(.22,.61,.36,1);
       --focus:#8bd3ff;
 
-      /* Z-layers */
       --z-topbar:20; --z-overlay:10; --z-hud:15; --z-toast:30; --z-modal:50;
     }
-    /* Light theme */
     [data-theme="light"]{
       --bg-0:#f6f8fc; --bg-1:#ffffff; --bg-2:#f1f4fb;
       --ink-0:#0f1730; --ink-1:#3a4a77; --ink-dim:#5b6a96;
@@ -124,20 +104,16 @@
       color:var(--ink-0);
     }
 
-    /* =========================
-       2) TYPOGRAPHY SYSTEM
-       ========================= */
+    /* ===== Typography ===== */
     h1,h2,h3,h4,h5,h6{margin:.25rem 0; font-weight:800}
     h1{font-size:var(--fs-xl)}
     h2{font-size:var(--fs-lg)}
     h3{font-size:var(--fs-md)}
     p{margin:.5rem 0}
     small,.meta{color:var(--ink-1); font-size:var(--fs-xs)}
-    code,kbd,samp{font-family:var(--mono); font-size: .95em}
+    code,kbd,samp{font-family:var(--mono); font-size:.95em}
 
-    /* =========================
-       3) LAYOUT GRID
-       ========================= */
+    /* ===== Grid Layout ===== */
     .app{
       display:grid;
       grid-template-rows: 64px 1fr 44px;
@@ -155,53 +131,37 @@
     aside.copilot{grid-area:copilot}
     footer.bottombar{grid-area:bottombar}
 
-    /* Responsive breakpoints */
-    @media (max-width: 1440px){
-      .app{ grid-template-columns: 260px 1fr 380px; }
-    }
+    @media (max-width: 1440px){ .app{ grid-template-columns: 260px 1fr 380px; } }
     @media (max-width: 1200px){
       .app{ grid-template-columns: 1fr; grid-template-rows: 64px auto auto 44px;
-            grid-template-areas:
-              "topbar" "viewport" "copilot" "bottombar"; }
+            grid-template-areas: "topbar" "viewport" "copilot" "bottombar"; }
       aside.sidebar{display:none}
     }
-    @media (max-width: 640px){
-      .app{ grid-template-rows: 56px auto auto 40px; }
-    }
+    @media (max-width: 640px){ .app{ grid-template-rows: 56px auto auto 40px; } }
 
-    /* =========================
-       4) COMPONENT SHELLS
-       (Visuals tuned for commercial polish but logic added later)
-       ========================= */
-
-    /* Top bar */
+    /* ===== Components ===== */
     header.topbar{
-      display:flex; align-items:center; gap:16px;
-      padding:10px 14px;
+      display:flex; align-items:center; gap:16px; padding:10px 14px;
       background:linear-gradient(180deg, rgba(17,24,43,.85), rgba(17,24,43,.6));
       border-bottom:1px solid #223055; box-shadow:var(--shadow-1);
-      position:relative; z-index:var(--z-topbar);
-      backdrop-filter: blur(8px) saturate(1.1);
+      position:relative; z-index:var(--z-topbar); backdrop-filter: blur(8px) saturate(1.1);
     }
     .title{display:flex; align-items:center; gap:12px; min-width:240px}
     .title .mark{
       width:38px; height:38px; border-radius:10px;
       background:conic-gradient(from 90deg, var(--brand-2), var(--brand), var(--brand-2));
-      box-shadow: inset 0 0 18px #0008, 0 2px 8px #000a;
-      position:relative;
+      box-shadow: inset 0 0 18px #0008, 0 2px 8px #000a; position:relative;
     }
     .title .mark::after{
       content:"MV"; position:absolute; inset:0; display:grid; place-items:center;
-      font-weight:900; color:var(--ink-invert); letter-spacing:.3px;
-      text-shadow:0 1px 0 #ffffff22;
+      font-weight:900; color:var(--ink-invert); letter-spacing:.3px; text-shadow:0 1px 0 #ffffff22;
     }
     .title h1{font-size:var(--fs-xl); margin:0}
     .title .subtitle{font-size:var(--fs-xs); color:var(--ink-1); margin-top:-2px}
 
-    /* Segmented control (Training | Practice) */
     .segmented{
       display:inline-flex; padding:2px; border-radius:12px;
-      background: #0e1a33; border:1px solid #223055; box-shadow:var(--shadow-1);
+      background:#0e1a33; border:1px solid #223055; box-shadow:var(--shadow-1);
     }
     .segmented input{display:none}
     .segmented label{
@@ -215,8 +175,6 @@
     }
 
     .topbar-actions{margin-left:auto; display:flex; align-items:center; gap:8px}
-
-    /* Buttons */
     .btn{
       appearance:none; border:1px solid #27406a; background:linear-gradient(180deg,#1a2646,#131c34);
       color:var(--ink-0); padding:8px 12px; border-radius:10px; font-weight:700; letter-spacing:.2px; cursor:pointer;
@@ -229,7 +187,6 @@
     .btn.brand{border-color:#197e6e; background:linear-gradient(180deg,#0f423b,#0c302b)}
     .btn.warn{border-color:#8a5a11; background:linear-gradient(180deg,#4d3612,#3a2a10)}
 
-    /* Sidebar cards */
     aside.sidebar{
       padding:10px; overflow:auto; background:linear-gradient(180deg,#0f1730,#0d1426);
       border-right:1px solid #223055;
@@ -243,7 +200,6 @@
     .kv div:nth-child(odd){color:var(--ink-1)}
     .badge{display:inline-block; padding:3px 8px; border-radius:999px; background:#132145; border:1px solid #2a3d67; font-size:var(--fs-xxs); color:#9ec2ff}
 
-    /* Legend (explicit color+shape coding for step shadowing) */
     .legend{display:grid; gap:6px; font-size:var(--fs-xs)}
     .legend .item{display:flex; align-items:center; gap:8px}
     .legend .swatch{width:12px; height:12px; border-radius:50%; box-shadow:0 0 0 3px #0006}
@@ -252,7 +208,6 @@
     .swatch.gold{background:var(--warn)}
     .swatch.red{background:var(--danger)}
 
-    /* Viewport shell */
     main.viewport{
       position:relative; overflow:hidden;
       background:
@@ -267,97 +222,55 @@
     }
     #overlay{
       position:absolute; inset:0; width:100%; height:100%;
-      pointer-events:none; /* interaction via controller in script */
-      z-index:var(--z-overlay);
+      pointer-events:none; z-index:var(--z-overlay);
     }
 
-    /* Overlay visual primitives — Matches training/practice requirements */
-    /* Targets (“mark the spots”) */
-    #overlay .target { /* <g class="target"> */
-      --halo-r:16px;
-      animation: halo-breathe var(--dur-4) ease-in-out infinite;
-    }
+    /* Overlay primitives = highlights, guides, marks, sutures, warnings */
+    #overlay .target { animation: halo-breathe var(--dur-4) ease-in-out infinite; }
     #overlay .target circle.core{ fill:var(--brand); stroke:#022; stroke-width:1.2; }
     #overlay .target circle.halo{ fill:url(#halo-brand); }
-    #overlay .target text.label{
-      fill:var(--brand-2); font-weight:900; font-size:10px; text-shadow:0 1px 0 #000;
-    }
-
-    /* Guides (arcs/arrows) */
+    #overlay .target text.label{ fill:var(--brand-2); font-weight:900; font-size:10px; text-shadow:0 1px 0 #000; }
     #overlay .guide{ stroke:var(--brand-2); stroke-width:3; fill:none; marker-end:url(#arrow); filter:url(#soft-glow); }
     #overlay .guide--ghost{ stroke:var(--warn); stroke-dasharray:5 5; animation: dashflow 1.8s linear infinite; }
-
-    /* Sutures */
     #overlay .suture-ok{ stroke:var(--brand-2); stroke-width:3; fill:none; filter:url(#soft-glow) }
     #overlay .suture-bad{ stroke:var(--danger); stroke-width:3.5; fill:none; filter:url(#soft-glow) }
-
-    /* Warnings (leaflet/chordae violations) */
     #overlay .warn circle{ fill:url(#halo-warn) }
     #overlay .warn text{ fill:#2b1f00; font-weight:900; font-size:11px; text-anchor:middle }
 
-    /* HUD tiles */
-    .hud{
-      position:absolute; left:12px; bottom:12px; right:12px;
-      display:flex; gap:12px; justify-content:space-between; pointer-events:none; z-index:var(--z-hud);
-    }
+    .hud{ position:absolute; left:12px; bottom:12px; right:12px; display:flex; gap:12px; justify-content:space-between; pointer-events:none; z-index:var(--z-hud); }
     .hud .cluster{ display:flex; gap:10px; align-items:flex-end; }
-    .tile{
-      pointer-events:auto; padding:8px 12px; border-radius:12px;
-      background:linear-gradient(180deg,#111c38,#0e172e);
-      border:1px solid #20345f; box-shadow:var(--shadow-1); font-size:var(--fs-xs);
-      min-width:90px;
-    }
+    .tile{ pointer-events:auto; padding:8px 12px; border-radius:12px; background:linear-gradient(180deg,#111c38,#0e172e); border:1px solid #20345f; box-shadow:var(--shadow-1); font-size:var(--fs-xs); min-width:90px; }
     .tile strong{display:block; font-size:var(--fs-2xl); line-height:1.1}
 
-    /* Right panel: tabs/panels, chat, checklist, metrics, logs */
-    aside.copilot{
-      display:flex; flex-direction:column; background:linear-gradient(180deg,#121a33,#0f1526);
-      border-left:1px solid #223055;
-    }
+    aside.copilot{ display:flex; flex-direction:column; background:linear-gradient(180deg,#121a33,#0f1526); border-left:1px solid #223055; }
     .tabs{display:flex; gap:6px; padding:10px; border-bottom:1px solid #223055}
-    .tab{
-      padding:8px 10px; font-size:var(--fs-xs); border-radius:10px; cursor:pointer; border:1px solid transparent; color:var(--ink-1);
-      user-select:none; transition:filter var(--dur-1) var(--eio);
-    }
+    .tab{ padding:8px 10px; font-size:var(--fs-xs); border-radius:10px; cursor:pointer; border:1px solid transparent; color:var(--ink-1); user-select:none; transition:filter var(--dur-1) var(--eio); }
     .tab:hover{filter:brightness(1.08)}
     .tab.active{color:#041a15; font-weight:800; background:linear-gradient(180deg,#3bd2b6,#3bc3c2); box-shadow:var(--shadow-1)}
     .panel{flex:1; overflow:auto; padding:12px; display:none}
     .panel.active{display:block}
-
     .chat{display:flex; flex-direction:column; gap:10px}
-    .msg{
-      display:grid; grid-template-columns:auto 1fr; gap:10px; align-items:flex-start;
-      background:linear-gradient(180deg,#0f1a32,#0c1529); border:1px solid #223055; border-radius:14px; padding:10px;
-    }
+    .msg{ display:grid; grid-template-columns:auto 1fr; gap:10px; align-items:flex-start; background:linear-gradient(180deg,#0f1a32,#0c1529); border:1px solid #223055; border-radius:14px; padding:10px; }
     .msg .role{font-size:var(--fs-xxs); text-transform:uppercase; letter-spacing:.5px; color:var(--ink-1)}
     .msg .text{font-size:var(--fs-sm)}
     .msg.coach{border-color:#226e62; box-shadow:0 0 0 2px #1a3f3a inset}
     .msg.user{border-color:#334a7a; box-shadow:0 0 0 2px #263553 inset}
     .checkpoint{padding:8px 10px; border-left:3px solid var(--brand); background:#0c1a2b; border-radius:10px; font-size:var(--fs-xs)}
-
     .checklist{display:grid; gap:8px}
     .check{display:flex; gap:8px; align-items:flex-start; background:#0f1830; border:1px solid #223055; border-radius:10px; padding:8px}
     .check input{accent-color:var(--brand)}
-
     .scorebox{display:grid; grid-template-columns:repeat(2,1fr); gap:10px}
     @media (min-width: 1440px){ .scorebox{grid-template-columns:repeat(4,1fr)} }
     .metric{background:#0f1830; border:1px solid #223055; border-radius:12px; padding:8px}
     .metric .label{font-size:var(--fs-xxs); color:var(--ink-1)}
     .metric .val{font-size:var(--fs-2xl); font-weight:900}
-
     .log{font-family:var(--mono); font-size:var(--fs-xs); background:#0b1224; border:1px solid #1e2a4d; border-radius:10px; padding:8px; white-space:pre-wrap}
 
-    /* Bottom bar */
-    footer.bottombar{
-      display:flex; align-items:center; gap:10px; padding:6px 10px;
-      background:linear-gradient(180deg, rgba(16,25,44,.9), rgba(12,19,34,.9)); border-top:1px solid #223055;
-    }
+    footer.bottombar{ display:flex; align-items:center; gap:10px; padding:6px 10px; background:linear-gradient(180deg, rgba(16,25,44,.9), rgba(12,19,34,.9)); border-top:1px solid #223055; }
     .kbd{font-family:var(--mono); font-size:var(--fs-xxs); background:#0a162b; border:1px solid #20345f; padding:3px 6px; border-radius:6px}
     .hint{color:var(--ink-1); font-size:var(--fs-xs)}
 
-    /* =========================
-       5) ACCESSIBILITY & FOCUS
-       ========================= */
+    /* ===== Accessibility & Motion ===== */
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
     @media (prefers-reduced-motion: reduce){
       *{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; scroll-behavior:auto !important}
@@ -370,9 +283,7 @@
       .tab.active{background:Highlight; color:HighlightText}
     }
 
-    /* =========================
-       6) THEMING HOOKS & PRINT
-       ========================= */
+    /* ===== Print ===== */
     @media print{
       body{background:#fff; color:#000}
       .app{max-width:100%; grid-template-columns:1fr; grid-template-areas:"topbar" "viewport" "scores"; grid-template-rows:auto auto auto}
@@ -380,25 +291,26 @@
       main.viewport{border:none}
     }
 
-    /* =========================
-       7) MOTION PRIMITIVES (highlights/ghost)
-       ========================= */
-    @keyframes halo-breathe{
-      0%,100%{ opacity:.85; transform:scale(1) }
-      50%{ opacity:.55; transform:scale(1.06) }
+    /* ===== Motion primitives ===== */
+    @keyframes halo-breathe{ 0%,100%{opacity:.85;transform:scale(1)} 50%{opacity:.55;transform:scale(1.06)} }
+    @keyframes dashflow{ to{ stroke-dashoffset:-1000 } }
+
+    /* ===== Modal (Help) ===== */
+    .modal{
+      position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:var(--z-modal);
+      background:rgba(0,0,0,.6);
     }
-    @keyframes dashflow{
-      to{ stroke-dashoffset:-1000 }
+    .modal.open{display:flex}
+    .modal .sheet{
+      width:min(860px, 96vw); max-height:86vh; overflow:auto; padding:16px;
+      background:linear-gradient(180deg,#131b33,#0f1529); border:1px solid #23365f; border-radius:14px; box-shadow:var(--shadow-2);
     }
+    .modal h2{margin-top:0}
   </style>
 
-  <!-- =========================================================
-       GLOBAL SVG DEFINITIONS (for highlights, arrows, glows, clips)
-       These defs power “highlight area”, “mark the spots”, guides, etc.
-  ============================================================ -->
+  <!-- ===== Global SVG defs for highlights/arrows/glows ===== -->
   <svg width="0" height="0" class="sr-only" aria-hidden="true" focusable="false">
     <defs>
-      <!-- Highlight halos -->
       <radialGradient id="halo-brand" cx="50%" cy="50%" r="50%">
         <stop offset="0%" stop-color="#5de4c7" stop-opacity="0.95"/>
         <stop offset="55%" stop-color="#5de4c7" stop-opacity="0.42"/>
@@ -409,26 +321,1050 @@
         <stop offset="55%" stop-color="#ffc857" stop-opacity="0.42"/>
         <stop offset="100%" stop-color="#ffc857" stop-opacity="0"/>
       </radialGradient>
-
-      <!-- Guidance arrowheads -->
       <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="6" markerHeight="6" orient="auto">
         <path d="M 0 0 L 10 5 L 0 10 z" fill="#8bd3ff"/>
       </marker>
-
-      <!-- Soft glow for sutures/guides (subtle realism) -->
       <filter id="soft-glow" x="-50%" y="-50%" width="200%" height="200%">
         <feGaussianBlur stdDeviation="2" result="blur"/>
-        <feMerge>
-          <feMergeNode in="blur"/>
-          <feMergeNode in="SourceGraphic"/>
-        </feMerge>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
       </filter>
-
-      <!-- Optional viewport clip (ellipse) to contain overlays -->
       <clipPath id="viewport-clip">
-        <!-- Path supplied later when geometry is known -->
         <rect x="0" y="0" width="100%" height="100%"></rect>
       </clipPath>
     </defs>
   </svg>
 </head>
+
+<body>
+  <!-- ===== No JS Notice ===== -->
+  <noscript class="sr-only">This simulator requires JavaScript. Please enable it to use the training and scoring features.</noscript>
+
+  <!-- ===== App ===== -->
+  <div class="app" id="app" role="application" aria-label="Mitral Valve Repair Training Simulator">
+    <!-- Top bar -->
+    <header class="topbar" role="banner">
+      <div class="title" aria-label="Application title">
+        <div class="mark" aria-hidden="true"></div>
+        <div>
+          <h1>Mitral Valve Repair Trainer</h1>
+          <p class="subtitle">Annuloplasty Suturing — Training &amp; Practice</p>
+        </div>
+      </div>
+
+      <div class="segmented" role="radiogroup" aria-label="Mode selection">
+        <input type="radio" id="mode-training" name="mode" value="training" checked />
+        <label for="mode-training" title="Guided step-by-step with strict gating and highlights">Training</label>
+        <input type="radio" id="mode-practice" name="mode" value="practice" />
+        <label for="mode-practice" title="Assisted practice with feedback, scoring, and gentle warnings">Practice</label>
+      </div>
+
+      <div class="topbar-actions" role="group" aria-label="Global actions">
+        <button class="btn brand" id="btn-start" title="Begin guided session">Start Session</button>
+        <button class="btn" id="btn-ghost" title="Toggle ghost trajectory to shadow each step" aria-pressed="false">Show Ghost</button>
+        <button class="btn" id="btn-reset" title="Reset session and clear placements">Reset</button>
+        <button class="btn ghost" id="btn-export" title="Export scoring report (JSON)">Export Report</button>
+      </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" role="complementary" aria-label="Patient and procedure context">
+      <section class="card" aria-labelledby="card-patient-h">
+        <h3 id="card-patient-h">Patient Context</h3>
+        <div class="kv" aria-describedby="patient-meta">
+          <div>Case ID</div><div><span class="badge" id="case-id">MV-2201</span></div>
+          <div>Age</div><div id="patient-age">64</div>
+          <div>Sex</div><div id="patient-sex">F</div>
+          <div>Pathology</div><div id="patient-path">Degenerative MR (P2)</div>
+          <div>Plan</div><div id="patient-plan">Annuloplasty ring + test coaptation</div>
+        </div>
+        <p class="meta" id="patient-meta">Synthetic case. Heparinized, left atriotomy complete, atrial retractor in place.</p>
+      </section>
+
+      <section class="card" aria-labelledby="card-instr-h">
+        <h3 id="card-instr-h">Instruments</h3>
+        <div class="kv" aria-live="polite">
+          <div><span class="kbd">1</span></div><div>Needle Driver <strong>(active)</strong></div>
+          <div><span class="kbd">2</span></div><div>Forceps (assist)</div>
+          <div><span class="kbd">3</span></div><div>Scissors (cut)</div>
+        </div>
+        <p class="meta">Press <span class="kbd">1</span>/<span class="kbd">2</span>/<span class="kbd">3</span> to switch. Active tool: <strong id="hud-tool">Needle Driver</strong>.</p>
+      </section>
+
+      <section class="card" aria-labelledby="card-legend-h">
+        <h3 id="card-legend-h">Legend (What You’ll See)</h3>
+        <div class="legend" id="legend">
+          <div class="item"><span class="swatch teal" aria-hidden="true"></span><span>Target annulus bite zone (highlighted area)</span></div>
+          <div class="item"><span class="swatch blue" aria-hidden="true"></span><span>Placed suture (entry → exit)</span></div>
+          <div class="item"><span class="swatch gold" aria-hidden="true"></span><span>Ghost trajectory (shadow this path step-by-step)</span></div>
+          <div class="item"><span class="swatch red" aria-hidden="true"></span><span>Restricted tissue (leaflet / chordae) — avoid</span></div>
+        </div>
+        <p class="meta">Training highlights the exact spot to click (Entry), then where to traverse (Exit). Practice keeps the same guidance with lighter gating.</p>
+      </section>
+
+      <section class="card" aria-labelledby="card-settings-h">
+        <h3 id="card-settings-h">Session Settings</h3>
+        <div class="kv">
+          <div>Difficulty</div><div><span id="difficulty" class="badge">Standard</span></div>
+          <div>Assist Level</div><div><span id="assist-level" class="badge">High</span></div>
+          <div>Voice</div><div><span id="voice" class="badge">On</span></div>
+          <div>Haptics</div><div><span id="haptics" class="badge">Auto</span></div>
+        </div>
+        <p class="meta">Change mode in the top bar. Voice guidance mirrors on-screen instructions.</p>
+      </section>
+
+      <section class="card" aria-labelledby="card-rubric-h">
+        <h3 id="card-rubric-h">Rubric — What We Score</h3>
+        <ul class="meta" style="margin:0 0 .25rem 1rem">
+          <li>Accuracy of Entry/Exit (±2 mm near annulus)</li>
+          <li>Needle Angle (75–95° to annulus)</li>
+          <li>Depth Across Annulus (adequate traverse)</li>
+          <li>Sequence &amp; Spacing (uniform annular coverage)</li>
+          <li>Tissue Handling (no leaflet/chordae trauma)</li>
+          <li>Time Efficiency (steady, safe pace)</li>
+        </ul>
+        <p class="meta">Weights: 40% accuracy • 15% angle • 15% depth • 10% sequence • 10% handling • 10% time.</p>
+      </section>
+    </aside>
+
+    <!-- Viewport -->
+    <main class="viewport" role="main" aria-label="Simulation viewport">
+      <canvas id="render3d" aria-label="Anatomy rendering surface">Your browser does not support the HTML5 Canvas element.</canvas>
+      <svg id="overlay" aria-hidden="false">
+        <g id="hotspots" aria-label="Target hotspots (marked spots)"></g>
+        <g id="ghost" aria-label="Ghost trajectories (shadow path)"></g>
+        <g id="guides" aria-label="Guidance arrows and arcs"></g>
+        <g id="suturing" aria-label="Placed sutures"></g>
+        <g id="warnings" aria-label="Warnings and restricted zones"></g>
+      </svg>
+
+      <!-- HUD -->
+      <div class="hud" aria-live="polite" role="status">
+        <div class="cluster">
+          <div class="tile" aria-label="Total score"><div class="meta">Score</div><strong id="hud-score">0</strong></div>
+          <div class="tile" aria-label="Placement accuracy"><div class="meta">Accuracy</div><strong id="hud-acc">–</strong></div>
+          <div class="tile" aria-label="Elapsed time"><div class="meta">Time</div><strong id="hud-time">00:00</strong></div>
+          <div class="tile" aria-label="Errors"><div class="meta">Errors</div><strong id="hud-err">0</strong></div>
+        </div>
+        <div class="cluster">
+          <div class="tile" aria-label="Current step"><div class="meta">Step</div><strong id="hud-step">0/0</strong></div>
+          <div class="tile" aria-label="Active instrument"><div class="meta">Instrument</div><strong id="hud-tool">Needle Driver</strong></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Co‑Pilot / Steps / Scores / Logs -->
+    <aside class="copilot" aria-label="AI Co‑Pilot and panels">
+      <div class="tabs" role="tablist" aria-label="Panels">
+        <div class="tab active" id="tab-coach" data-tab="coach" role="tab" aria-selected="true" aria-controls="panel-coach" tabindex="0">AI Co‑Pilot</div>
+        <div class="tab" id="tab-steps" data-tab="steps" role="tab" aria-controls="panel-steps" tabindex="-1">Steps</div>
+        <div class="tab" id="tab-scores" data-tab="scores" role="tab" aria-controls="panel-scores" tabindex="-1">Scoring</div>
+        <div class="tab" id="tab-logs" data-tab="logs" role="tab" aria-controls="panel-logs" tabindex="-1">Logs</div>
+      </div>
+
+      <section class="panel active" id="panel-coach" role="tabpanel" aria-labelledby="tab-coach">
+        <div class="chat" id="chat" aria-live="polite">
+          <div class="msg coach">
+            <div class="role">Co‑Pilot</div>
+            <div class="text">
+              Welcome. In <strong>Training</strong>, I’ll highlight the exact annular target (marked spot),
+              show a <em>ghost trajectory</em> to shadow, and guide you step-by-step.<br>
+              In <strong>Practice</strong>, you’ll still receive guidance and clear legends, and I’ll explain
+              precisely what went wrong (angle, depth, accuracy, tissue handling) and how to correct it.
+            </div>
+          </div>
+          <div class="checkpoint">Current task: Orient anatomical landmarks — A2/P2 scallops &amp; commissures.</div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-steps" role="tabpanel" aria-labelledby="tab-steps">
+        <div class="checklist" id="checklist" aria-describedby="steps-desc">
+          <p class="sr-only" id="steps-desc">Follow each step in order. Training mode enforces target highlights; Practice offers guidance with scoring.</p>
+          <div class="check"><input type="checkbox" disabled id="chk-0"><label for="chk-0">1. Orient: Identify A2/P2 &amp; commissures</label></div>
+          <div class="check"><input type="checkbox" disabled id="chk-1"><label for="chk-1">2. Select: Needle Driver + 2‑0 braided suture</label></div>
+          <div class="check"><input type="checkbox" disabled id="chk-2"><label for="chk-2">3. Plan: Review 12 evenly spaced annular targets</label></div>
+          <div class="check"><input type="checkbox" disabled id="chk-3"><label for="chk-3">4. Place Suture 1 (12 o’clock, A2)</label></div>
+          <div class="check"><input type="checkbox" disabled id="chk-4"><label for="chk-4">5. Place Suture 2</label></div>
+          <div class="check"><input type="checkbox" disabled id="chk-5"><label for="chk-5">6. Place Suture 3</label></div>
+          <div class="check"><input type="checkbox" disabled id="chk-6"><label for="chk-6">7. Place Suture 4</label></div>
+          <div class="check"><input type="checkbox" disabled id="chk-7"><label for="chk-7">8. Place Suture 5</label></div>
+          <div class="check"><input type="checkbox" disabled id="chk-8"><label for="chk-8">9. Place Suture 6</label></div>
+          <div class="check"><input type="checkbox" disabled id="chk-9"><label for="chk-9">10. Place Suture 7</label></div>
+          <div class="check"><input type="checkbox" disabled id="chk-10"><label for="chk-10">11. Place Suture 8</label></div>
+          <div class="check"><input type="checkbox" disabled id="chk-11"><label for="chk-11">12. Place Suture 9</label></div>
+          <div class="check"><input type="checkbox" disabled id="chk-12"><label for="chk-12">13. Place Suture 10</label></div>
+          <div class="check"><input type="checkbox" disabled id="chk-13"><label for="chk-13">14. Place Suture 11</label></div>
+          <div class="check"><input type="checkbox" disabled id="chk-14"><label for="chk-14">15. Place Suture 12</label></div>
+          <div class="check"><input type="checkbox" disabled id="chk-15"><label for="chk-15">16. Review: Verify spacing &amp; depth across annulus</label></div>
+          <div class="check"><input type="checkbox" disabled id="chk-16"><label for="chk-16">17. Finish: Tie &amp; cut (simulation)</label></div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-scores" role="tabpanel" aria-labelledby="tab-scores">
+        <div class="scorebox" aria-live="polite">
+          <div class="metric"><div class="label">Total Score</div><div class="val" id="score-total">0</div></div>
+          <div class="metric"><div class="label">Accuracy</div><div class="val" id="score-acc">0%</div></div>
+          <div class="metric"><div class="label">Angle</div><div class="val" id="score-ang">0%</div></div>
+          <div class="metric"><div class="label">Depth</div><div class="val" id="score-depth">0%</div></div>
+          <div class="metric"><div class="label">Sequence</div><div class="val" id="score-seq">0%</div></div>
+          <div class="metric"><div class="label">Handling</div><div class="val" id="score-hand">0%</div></div>
+          <div class="metric"><div class="label">Time</div><div class="val" id="score-time">0%</div></div>
+          <div class="metric"><div class="label">Errors</div><div class="val" id="score-err">0</div></div>
+        </div>
+        <p class="meta">
+          Scoring model: 40% accuracy · 15% angle · 15% depth · 10% sequence · 10% handling · 10% time.
+          The AI Co‑Pilot explains low sub-scores and how to correct them (e.g., “angle too shallow,” “entry too far from annulus,” “avoid leaflet tissue”).
+        </p>
+      </section>
+
+      <section class="panel" id="panel-logs" role="tabpanel" aria-labelledby="tab-logs">
+        <pre class="log" id="log" aria-live="polite">
+<!-- SESSION LOG appears here -->
+        </pre>
+      </section>
+    </aside>
+
+    <!-- Bottom bar -->
+    <footer class="bottombar" role="contentinfo">
+      <div class="hint">Shortcuts:</div>
+      <div class="kbd" aria-label="Needle Driver key">1</div> Needle Driver
+      <div class="kbd" aria-label="Forceps key">2</div> Forceps
+      <div class="kbd" aria-label="Scissors key">3</div> Scissors
+      <div class="kbd" aria-label="Next step key">N</div> Next Step
+      <div class="kbd" aria-label="Back step key">B</div> Back
+      <div class="kbd" aria-label="Toggle highlights key">H</div> Highlights
+      <div class="kbd" aria-label="Toggle ghost key">G</div> Ghost
+      <div class="kbd" aria-label="Help key">?</div> Help
+      <div class="hint" style="margin-left:auto">Voice guidance mirrors all on-screen instructions.</div>
+    </footer>
+  </div>
+
+  <!-- Help modal -->
+  <div class="modal" id="help-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="help-title">
+    <div class="sheet">
+      <h2 id="help-title">How to Use — Suturing Trainer</h2>
+      <ol>
+        <li><strong>Training Mode:</strong> Click <em>Start Session</em>. The highlighted target shows where to place the <em>Entry</em>. A ghost arrow shows how to traverse to the <em>Exit</em>.</li>
+        <li>Click once to set <strong>Entry</strong> near the annulus highlight. Click again to set <strong>Exit</strong> across the annulus. Maintain a near-perpendicular angle.</li>
+        <li>Read <strong>AI Co‑Pilot</strong> feedback. It explains accuracy, angle, depth, and handling (avoid leaflet/chordae zones).</li>
+        <li>Proceed through all 12 targets. Review spacing and depth, then finish.</li>
+        <li><strong>Practice Mode:</strong> Same steps, lighter gating; still scored with detailed explanations.</li>
+      </ol>
+      <p><strong>Keyboard:</strong> <span class="kbd">1</span>/<span class="kbd">2</span>/<span class="kbd">3</span> tools · <span class="kbd">N</span>/<span class="kbd">B</span> steps · <span class="kbd">H</span> highlights · <span class="kbd">G</span> ghost · <span class="kbd">?</span> help.</p>
+      <p class="meta">Educational use only. Not a medical device.</p>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+        <button class="btn" id="help-close">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       APPLICATION SCRIPT (type=module)
+  ============================================================ -->
+  <script type="module">
+    // ============================================================
+    // CONFIG & CONSTANTS
+    // ============================================================
+    const CONFIG = {
+      TASK: {
+        NAME: 'Annuloplasty Suturing',
+        SUTURES: 12,
+        ORDER: [0,1,11,2,10,3,9,4,8,5,7,6],     // surgical sequence (balanced)
+        START_CLOCK_DEG: 270                      // start near 12 o’clock
+      },
+      THRESHOLDS: {
+        ANNULUS_SNAP_PX: 24,        // max px from annulus for Entry to be accepted in Training
+        TARGET_ANGULAR_TOL_DEG: 15, // allowed deviation from highlighted target (±)
+        D0: 12,                     // decay length for accuracy exp(-d/D0)
+        IDEAL_NEEDLE_ANGLE_DEG: 90, // perpendicular to annulus
+        ANGLE_TOL_DEG: 25,          // tolerated deviation from perpendicular (0 score at ~25° off)
+        DEPTH_MIN_PX: 6,            // min traverse across annulus along normal
+        DEPTH_MAX_PX: 24            // max for full depth score
+      },
+      WEIGHTS: { ACC:0.40, ANG:0.15, DEPTH:0.15, SEQ:0.10, HAND:0.10, TIME:0.10 },
+      TIME: { IDEAL_SECONDS_PER_SUTURE: 15 },
+      UI:   { VOICE:true, HAPTICS:'auto' }
+    };
+
+    // ============================================================
+    // CORE UTILS, EVENT BUS, STORAGE, VOICE, SERVICE WORKER
+    // ============================================================
+    const Utils = {
+      clamp:(v,min,max)=>Math.max(min,Math.min(max,v)),
+      lerp:(a,b,t)=>a+(b-a)*t,
+      map:(v,inMin,inMax,outMin,outMax)=>outMin+( (v-inMin)*(outMax-outMin)/(inMax-inMin) ),
+      dist:(x1,y1,x2,y2)=>Math.hypot(x2-x1,y2-y1),
+      rad:(deg)=>deg*Math.PI/180,
+      deg:(rad)=>rad*180/Math.PI,
+      fmtTime:(ms)=>{const s=Math.floor(ms/1000),m=Math.floor(s/60);return `${String(m).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;},
+      now:()=>performance.now(),
+      uid:()=>Math.random().toString(36).slice(2),
+
+      // Ellipse helpers (annulus model)
+      ellipsePoint(a,b,t,rot=0, cx=0, cy=0){
+        const x=a*Math.cos(t), y=b*Math.sin(t);
+        const nx=(2*x)/(a*a), ny=(2*y)/(b*b);
+        const cos=Math.cos(rot), sin=Math.sin(rot);
+        const xr=x*cos - y*sin, yr=x*sin + y*cos;
+        const nxr=nx*cos - ny*sin, nyr=nx*sin + ny*cos;
+        const nl=Math.hypot(nxr,nyr)||1;
+        return {x:cx+xr, y:cy+yr, nx:nxr/nl, ny:nyr/nl, t};
+      },
+      projectToEllipse(a,b,rot,cx,cy,px,py, iters=6){
+        const cos=Math.cos(-rot), sin=Math.sin(-rot);
+        const ux= (px-cx)*cos - (py-cy)*sin;
+        const uy= (px-cx)*sin + (py-cy)*cos;
+        let t=Math.atan2(uy/b, ux/a);
+        for(let i=0;i<iters;i++){
+          const ct=Math.cos(t), st=Math.sin(t);
+          const ex=a*ct, ey=b*st;
+          const vx=ex-ux, vy=ey-uy;
+          const dx=-a*st, dy=b*ct;
+          const f=vx*dx + vy*dy;
+          const g=dx*dx + dy*dy + vx*(-a*ct) + vy*(-b*st);
+          t= t - (f/(g||1e-6));
+        }
+        return (t+Math.PI*2)%(Math.PI*2);
+      },
+      pointInPoly(pt, poly){
+        let c=false;
+        for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+          const xi=poly[i][0], yi=poly[i][1], xj=poly[j][0], yj=poly[j][1];
+          const intersect=((yi>pt[1])!=(yj>pt[1])) && (pt[0] < (xj-xi)*(pt[1]-yi)/(yj-yi+1e-9)+xi);
+          if(intersect)c=!c;
+        }
+        return c;
+      }
+    };
+
+    const Bus = {
+      map:new Map(),
+      on(evt,fn){ if(!this.map.has(evt)) this.map.set(evt,new Set()); this.map.get(evt).add(fn); },
+      off(evt,fn){ this.map.get(evt)?.delete(fn); },
+      emit(evt,data){ this.map.get(evt)?.forEach(fn=>fn(data)); }
+    };
+
+    const Store = {
+      load(key,def){ try{ return JSON.parse(localStorage.getItem(key)) ?? def }catch{ return def } },
+      save(key,val){ try{ localStorage.setItem(key, JSON.stringify(val)) }catch{} }
+    };
+
+    const Voice = {
+      enabled: CONFIG.UI.VOICE && ('speechSynthesis' in window),
+      speak(text){
+        try{
+          if(!this.enabled) return;
+          const utter=new SpeechSynthesisUtterance(text);
+          utter.lang='en-US'; utter.rate=1.0; utter.pitch=1.0;
+          speechSynthesis.speak(utter);
+        }catch{}
+      }
+    };
+
+    // Minimal service worker for offline (single-file)
+    (function registerSW(){
+      if(!('serviceWorker' in navigator)) return;
+      const swCode = `
+        self.addEventListener('install',e=>{
+          e.waitUntil(caches.open('mv-sim-v1').then(c=>c.addAll(['./'])));
+          self.skipWaiting();
+        });
+        self.addEventListener('activate',e=>self.clients.claim());
+        self.addEventListener('fetch',e=>{
+          e.respondWith(caches.match(e.request).then(r=>r || fetch(e.request)));
+        });
+      `;
+      const blob = new Blob([swCode], {type:'text/javascript'});
+      navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
+    })();
+
+    // ============================================================
+    // RENDERING ENGINE — Canvas anatomy + SVG overlay
+    // ============================================================
+    class AnatomyRenderer{
+      constructor(canvas){
+        this.canvas=canvas;
+        this.ctx=canvas.getContext('2d');
+        this.dpr=window.devicePixelRatio||1;
+        this.t=0;
+        this.cx=0; this.cy=0; this.a=0; this.b=0; this.rot = Utils.rad(8);
+        this.restrictedZones=[];
+        this.resizeObserver = new ResizeObserver(()=>this.resize());
+        this.resizeObserver.observe(canvas);
+        this.resize(true);
+        this.animate = this.animate.bind(this);
+        requestAnimationFrame(this.animate);
+      }
+      resize(initial=false){
+        const rect=this.canvas.getBoundingClientRect();
+        const w=Math.max(640, rect.width), h=Math.max(480, rect.height);
+        this.canvas.width = Math.floor(w*this.dpr);
+        this.canvas.height= Math.floor(h*this.dpr);
+        this.canvas.style.width=rect.width+'px';
+        this.canvas.style.height=rect.height+'px';
+        this.ctx.setTransform(this.dpr,0,0,this.dpr,0,0);
+
+        this.cx = w/2;
+        this.cy = h*0.55;
+        this.a = Math.min(w,h)*0.28;
+        this.b = this.a*0.62;
+
+        this.buildGeometry();
+        if(!initial) Bus.emit('renderer:resized', this.viewParams());
+      }
+      viewParams(){
+        return {cx:this.cx, cy:this.cy, a:this.a, b:this.b, rot:this.rot, width:this.canvas.width/this.dpr, height:this.canvas.height/this.dpr};
+      }
+      buildGeometry(){
+        const {cx,cy,a,b,rot}=this;
+        const makePoly=(pts)=>pts.map(p=>{
+          const cos=Math.cos(rot), sin=Math.sin(rot);
+          const xr=p[0]*cos - p[1]*sin, yr=p[0]*sin + p[1]*cos;
+          return [cx + xr, cy + yr];
+        });
+        // Simplified leaflet projections (for handling violations)
+        const leafA = makePoly([
+          [0,-b*0.95],[ a*0.7,-b*0.4],[ a*0.4, 0],[ 0, b*0.1],[-a*0.4, 0],[-a*0.7,-b*0.4]
+        ]);
+        const leafP = makePoly([
+          [0,b*0.2],[ a*0.65,b*0.55],[ a*0.35,b*0.8],[ 0,b*0.75],[-a*0.35,b*0.8],[-a*0.65,b*0.55]
+        ]);
+        this.restrictedZones=[leafA, leafP];
+      }
+      animate(ts){
+        const dt = (ts - this.t) || 16;
+        this.t=ts;
+        this.render(dt);
+        requestAnimationFrame(this.animate);
+      }
+      render(){
+        const ctx=this.ctx;
+        const {width,height}=this.viewParams();
+
+        // Background
+        ctx.clearRect(0,0,width,height);
+        const g=ctx.createRadialGradient(this.cx, this.cy*0.3, 40, this.cx, this.cy*0.3, Math.max(width,height)*0.8);
+        g.addColorStop(0,'#0f162b'); g.addColorStop(1,'#070d1a');
+        ctx.fillStyle=g; ctx.fillRect(0,0,width,height);
+
+        // Beating
+        const beat = 0.5 + 0.5*Math.sin(performance.now()/1000*2*Math.PI*0.8);
+        const scale = 1 + beat*0.02;
+        const a=this.a*scale, b=this.b*scale;
+
+        // Atrial cavity
+        ctx.save();
+        ctx.globalAlpha=0.6;
+        const cavity = ctx.createRadialGradient(this.cx, this.cy, b*0.2, this.cx, this.cy, a*1.2);
+        cavity.addColorStop(0,'#1b2c54'); cavity.addColorStop(0.5,'#0f1a35'); cavity.addColorStop(1,'#0a1327');
+        ctx.fillStyle=cavity;
+        ctx.beginPath(); this.traceEllipse(ctx, this.cx, this.cy, a*1.2, b*1.15, this.rot); ctx.fill();
+        ctx.restore();
+
+        // Annulus rim
+        ctx.save();
+        ctx.lineWidth=6; ctx.strokeStyle='#183258';
+        ctx.beginPath(); this.traceEllipse(ctx,this.cx,this.cy,a,b,this.rot); ctx.stroke();
+        ctx.lineWidth=3; ctx.strokeStyle='#3ba0ff';
+        ctx.beginPath(); this.traceEllipse(ctx,this.cx,this.cy,a,b,this.rot); ctx.stroke();
+        ctx.restore();
+
+        // Leaflets shading (pseudo‑3D)
+        this.drawLeaflets(ctx, a, b);
+
+        // Commissure ticks / markers
+        ctx.save();
+        ctx.lineWidth=1.6; ctx.strokeStyle='#8bd3ff99';
+        for(let i=0;i<12;i++){
+          const t=i*(Math.PI*2/12);
+          const P=Utils.ellipsePoint(a,b,t,this.rot,this.cx,this.cy);
+          ctx.beginPath();
+          ctx.moveTo(P.x - P.nx*8, P.y - P.ny*8);
+          ctx.lineTo(P.x + P.nx*10, P.y + P.ny*10);
+          ctx.stroke();
+        }
+        ctx.restore();
+
+        // Papillary hints
+        ctx.save();
+        ctx.globalAlpha=0.35; ctx.fillStyle='#10233f';
+        ctx.beginPath(); ctx.ellipse(this.cx-this.a*0.35, this.cy+this.b*1.1, 18, 26, 0, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(this.cx+this.a*0.35, this.cy+this.b*1.1, 18, 26, 0, 0, Math.PI*2); ctx.fill();
+        ctx.restore();
+      }
+      drawLeaflets(ctx, a, b){
+        ctx.save();
+        ctx.fillStyle='#1a294f'; ctx.globalAlpha=0.65;
+        ctx.beginPath(); this.traceLeaf(ctx, a,b, true); ctx.fill();     // anterior
+        ctx.globalAlpha=0.58;
+        ctx.beginPath(); this.traceLeaf(ctx, a,b, false); ctx.fill();    // posterior
+        ctx.globalAlpha=0.12; ctx.fillStyle='#9cd9ff';
+        ctx.beginPath(); this.traceLeafHighlight(ctx,a,b); ctx.fill();
+        ctx.restore();
+      }
+      traceLeaf(ctx, a,b, anterior=true){
+        const cx=this.cx, cy=this.cy, r=this.rot;
+        ctx.moveTo(...this.rotPt(0,-b*0.95, r,cx,cy));
+        if(anterior){
+          ctx.bezierCurveTo(...this.rotPt( a*0.7,-b*0.4, r,cx,cy), ...this.rotPt( a*0.4, 0, r,cx,cy), ...this.rotPt( 0, b*0.1, r,cx,cy));
+          ctx.bezierCurveTo(...this.rotPt(-a*0.4, 0, r,cx,cy), ...this.rotPt(-a*0.7,-b*0.4, r,cx,cy), ...this.rotPt( 0,-b*0.95,r,cx,cy));
+        }else{
+          ctx.bezierCurveTo(...this.rotPt( a*0.65, b*0.55, r,cx,cy), ...this.rotPt( a*0.35, b*0.8, r,cx,cy), ...this.rotPt( 0, b*0.75, r,cx,cy));
+          ctx.bezierCurveTo(...this.rotPt(-a*0.35, b*0.8, r,cx,cy), ...this.rotPt(-a*0.65, b*0.55, r,cx,cy), ...this.rotPt( 0, b*0.2, r,cx,cy));
+        }
+      }
+      traceLeafHighlight(ctx,a,b){
+        const cx=this.cx, cy=this.cy, r=this.rot;
+        ctx.moveTo(...this.rotPt(0,-b*0.7, r,cx,cy));
+        ctx.bezierCurveTo(...this.rotPt( a*0.35,-b*0.25, r,cx,cy), ...this.rotPt( a*0.2, b*0.05, r,cx,cy), ...this.rotPt( 0, b*0.18, r,cx,cy));
+      }
+      rotPt(x,y,r,cx,cy){ const cos=Math.cos(r), sin=Math.sin(r); return [cx + x*cos - y*sin, cy + x*sin + y*cos]; }
+      traceEllipse(ctx,cx,cy,a,b,rot){ ctx.save(); ctx.translate(cx,cy); ctx.rotate(rot); ctx.scale(a,b); ctx.beginPath(); ctx.arc(0,0,1,0,Math.PI*2); ctx.setTransform(1,0,0,1,0,0); }
+      isInRestricted(x,y){ return this.restrictedZones.some(poly=>Utils.pointInPoly([x,y], poly)); }
+    }
+
+    class OverlayManager{
+      constructor(svg, renderer){
+        this.svg = svg; this.renderer=renderer;
+        this.gHot = svg.querySelector('#hotspots');
+        this.gGhost= svg.querySelector('#ghost');
+        this.gGuide= svg.querySelector('#guides');
+        this.gSut  = svg.querySelector('#suturing');
+        this.gWarn = svg.querySelector('#warnings');
+        new ResizeObserver(()=>this.resize()).observe(svg);
+        Bus.on('renderer:resized', ()=>this.resize());
+        this.resize();
+      }
+      resize(){ /* nothing special: SVG is responsive */ }
+      clear(){ this.gHot.innerHTML=''; this.gGhost.innerHTML=''; this.gGuide.innerHTML=''; this.gSut.innerHTML=''; this.gWarn.innerHTML=''; }
+      drawTargets(targets, highlightIndex=null){
+        this.gHot.innerHTML='';
+        targets.forEach((t,idx)=>{
+          const P = Utils.ellipsePoint(t.a,t.b, t.t, t.rot, t.cx, t.cy);
+          const haloR = (idx===highlightIndex)?16:0;
+          const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+          g.classList.add('target');
+          g.setAttribute('data-idx', idx);
+          g.innerHTML = `
+            ${haloR?`<circle class="halo" cx="${P.x}" cy="${P.y}" r="${haloR}"></circle>`:''}
+            <circle class="core" cx="${P.x}" cy="${P.y}" r="5"></circle>
+            <text class="label" x="${P.x+10}" y="${P.y-10}">${idx+1}</text>
+          `;
+          this.gHot.appendChild(g);
+        });
+      }
+      drawGhost(pathPairs){
+        this.gGhost.innerHTML='';
+        const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+        g.innerHTML = pathPairs.map(p=>`<path class="guide guide--ghost" d="M${p.entry.x},${p.entry.y} L${p.exit.x},${p.exit.y}"></path>`).join('');
+        this.gGhost.appendChild(g);
+      }
+      drawGuideArc(entry, exit, color="#8bd3ff"){
+        const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+        path.setAttribute('d', `M${entry.x},${entry.y} L${exit.x},${exit.y}`);
+        path.setAttribute('stroke', color);
+        path.setAttribute('class', 'guide');
+        this.gGuide.appendChild(path);
+        return path;
+      }
+      drawSuture(entry, exit, ok=true){
+        const line = document.createElementNS('http://www.w3.org/2000/svg','path');
+        line.setAttribute('d', `M${entry.x},${entry.y} L${exit.x},${exit.y}`);
+        line.setAttribute('class', ok ? 'suture-ok' : 'suture-bad');
+        this.gSut.appendChild(line);
+      }
+      warn(x,y,msg){
+        const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+        g.setAttribute('class','warn');
+        g.innerHTML = `
+          <circle cx="${x}" cy="${y}" r="18"></circle>
+          <text x="${x}" y="${y+4}">!</text>
+          <text x="${x}" y="${y+26}" fill="#ffc857" font-size="10">${msg}</text>
+        `;
+        this.gWarn.appendChild(g);
+        setTimeout(()=>g.remove(), 1600);
+      }
+    }
+
+    // ============================================================
+    // INPUT / TOOLS
+    // ============================================================
+    class ToolController{
+      constructor(renderer){
+        this.renderer=renderer;
+        this.activeTool='needle';
+        this.pointer={x:0,y:0, down:false};
+        this.bindInput();
+      }
+      setTool(name){
+        this.activeTool=name;
+        document.getElementById('hud-tool').textContent =
+          name==='needle' ? 'Needle Driver' :
+          name==='forceps' ? 'Forceps' : 'Scissors';
+      }
+      bindInput(){
+        const root=document.querySelector('main.viewport');
+        root.addEventListener('pointerdown', e=>this.onDown(e));
+        root.addEventListener('pointermove', e=>this.onMove(e));
+        root.addEventListener('pointerup',   e=>this.onUp(e));
+        root.addEventListener('pointerleave',e=>this.onUp(e));
+        window.addEventListener('keydown', e=>{
+          const k=e.key.toLowerCase();
+          if(k==='1') this.setTool('needle');
+          if(k==='2') this.setTool('forceps');
+          if(k==='3') this.setTool('scissors');
+          if(k==='h') Bus.emit('ui:toggle-highlights');
+          if(k==='g') Bus.emit('ui:ghost');
+          if(k==='n') Bus.emit('steps:next');
+          if(k==='b') Bus.emit('steps:back');
+          if(e.key==='?') Bus.emit('ui:help');
+        });
+      }
+      localPoint(e){
+        const rect=e.currentTarget.getBoundingClientRect();
+        return {x:e.clientX - rect.left, y:e.clientY - rect.top};
+      }
+      onDown(e){
+        e.preventDefault();
+        const pt=this.localPoint(e);
+        this.pointer={...pt, down:true};
+        Bus.emit('input:down', {x:pt.x, y:pt.y, tool:this.activeTool});
+      }
+      onMove(e){
+        const rect=e.currentTarget.getBoundingClientRect();
+        const pt={x:e.clientX - rect.left, y:e.clientY - rect.top};
+        this.pointer={...pt, down:this.pointer.down};
+        Bus.emit('input:move', {x:pt.x, y:pt.y, tool:this.activeTool, down:this.pointer.down});
+      }
+      onUp(e){
+        if(!this.pointer.down) return;
+        const pt=this.localPoint(e);
+        this.pointer={...pt, down:false};
+        Bus.emit('input:up', {x:pt.x, y:pt.y, tool:this.activeTool});
+      }
+    }
+
+    // ============================================================
+    // PROCEDURE MODEL & SCORING
+    // ============================================================
+    class ProcedureModel{
+      constructor(renderer){
+        this.renderer=renderer;
+        this.steps=[];
+        this.targets=[];
+        this.sequence=[];
+        this.placed=[];
+        this.mode='training';
+        this.current=0;
+        this.highlights=true;
+        this.buildTargets();
+        this.buildSteps();
+      }
+      buildTargets(){
+        const v=this.renderer.viewParams();
+        const count=CONFIG.TASK.SUTURES;
+        const base = [];
+        for(let i=0;i<count;i++){
+          const t= (i*(Math.PI*2/count) + Utils.rad(CONFIG.TASK.START_CLOCK_DEG)) % (Math.PI*2);
+          base.push({t, a:v.a, b:v.b, rot:v.rot, cx=v.cx, cy=v.cy});
+        }
+        this.sequence=[...CONFIG.TASK.ORDER];
+        this.targets=base;
+      }
+      buildSteps(){
+        const names = [
+          'Orient: Identify A2/P2 & commissures',
+          'Select: Needle Driver + 2‑0 braided suture',
+          'Plan: Review 12 evenly spaced annular targets',
+          'Place Suture 1 (12 o’clock, A2)','Place Suture 2','Place Suture 3','Place Suture 4',
+          'Place Suture 5','Place Suture 6','Place Suture 7','Place Suture 8','Place Suture 9',
+          'Place Suture 10','Place Suture 11','Place Suture 12',
+          'Review: Assess spacing & depth','Finish: Tie & cut (simulation)'
+        ];
+        this.steps = names.map((label,i)=>({id:i, label, done:false}));
+      }
+      reset(){ this.placed=[]; this.current=0; this.steps.forEach(s=>s.done=false); }
+      setMode(mode){ this.mode=mode; }
+      currentTargetIndex(){ return this.sequence[Math.min(this.placed.length, this.sequence.length-1)]; }
+    }
+
+    class ScoringEngine{
+      constructor(renderer, model){
+        this.renderer=renderer; this.model=model;
+        this.startAt=Utils.now();
+        this.errors=0;
+      }
+      reset(){ this.startAt=Utils.now(); this.errors=0; }
+      bumpError(){ this.errors++; document.getElementById('hud-err').textContent=String(this.errors); }
+
+      evaluate(entry, exit){
+        const v=this.renderer.viewParams();
+        const te = Utils.projectToEllipse(v.a,v.b,v.rot,v.cx,v.cy, entry.x,entry.y);
+        const tx = Utils.projectToEllipse(v.a,v.b,v.rot,v.cx,v.cy, exit.x, exit.y);
+        const Pe = Utils.ellipsePoint(v.a,v.b,te,v.rot,v.cx,v.cy);
+        const Px = Utils.ellipsePoint(v.a,v.b,tx,v.rot,v.cx,v.cy);
+        const de = Utils.dist(entry.x,entry.y, Pe.x,Pe.y);
+        const dx = Utils.dist(exit.x, exit.y, Px.x,Px.y);
+
+        // angle vs normal at entry
+        const ux = exit.x - entry.x, uy = exit.y - entry.y;
+        const ul = Math.hypot(ux,uy)||1;
+        const nx= Pe.nx, ny=Pe.ny;
+        const dot = (ux/ul)*nx + (uy/ul)*ny;
+        const angle = Math.acos(Utils.clamp(dot,-1,1));
+        const angleDegErr = Math.abs(CONFIG.THRESHOLDS.IDEAL_NEEDLE_ANGLE_DEG - Utils.deg(angle)); // closeness to 90°
+        const angleScore = Math.max(0, 1 - (angleDegErr/CONFIG.THRESHOLDS.ANGLE_TOL_DEG));
+
+        // depth proxy (projection along normal)
+        const along = (ux*nx + uy*ny);
+        const depthScore = Utils.clamp(Utils.map(along, CONFIG.THRESHOLDS.DEPTH_MIN_PX, CONFIG.THRESHOLDS.DEPTH_MAX_PX, 0, 1), 0, 1);
+
+        // accuracy
+        const accE = Math.max(0, Math.exp(-de/CONFIG.THRESHOLDS.D0));
+        const accX = Math.max(0, Math.exp(-dx/CONFIG.THRESHOLDS.D0));
+        const accScore = (accE + accX)/2;
+
+        // sequence spacing
+        const deg12 = Math.PI*2/CONFIG.TASK.SUTURES;
+        let seqScore=1;
+        if(this.model.placed.length>0){
+          const last = this.model.placed[this.model.placed.length-1];
+          const delta = Math.abs((te - last.entry.t + Math.PI*2)%(Math.PI*2));
+          const dev = Math.abs(delta - deg12);
+          seqScore = Math.max(0, 1 - (dev/(deg12*1.2)));
+        }
+
+        // handling penalties
+        const handlingBad = (this.renderer.isInRestricted(entry.x, entry.y) || this.renderer.isInRestricted(exit.x, exit.y));
+        const handlingScore = handlingBad ? 0.1 : 1;
+
+        // time
+        const elapsed = Utils.now() - this.startAt;
+        const targetTime = CONFIG.TASK.SUTURES * CONFIG.TIME.IDEAL_SECONDS_PER_SUTURE * 1000;
+        const timeScore = Math.max(0, 1 - (elapsed/targetTime));
+
+        // total
+        const w = CONFIG.WEIGHTS;
+        const total = w.ACC*accScore + w.ANG*angleScore + w.DEPTH*depthScore + w.SEQ*seqScore + w.HAND*handlingScore + w.TIME*timeScore;
+
+        return {
+          entry:{...entry, t:te}, exit:{...exit, t:tx},
+          metrics:{accScore, angleScore, depthScore, seqScore, handlingScore, timeScore, elapsed},
+          angleDeg: Math.abs(Utils.deg(angle)), de, dx, along, total
+        };
+      }
+
+      recomputeTotals(){
+        const list=this.model.placed.map(p=>p.metrics);
+        const sum = (key)=> list.reduce((a,b)=>a+(b[key]||0),0) / (list.length||1);
+        const roundPct=(v)=>`${Math.round(v*100)}%`;
+        const totalPct = Math.round(sum('accScore')*40 + sum('angleScore')*15 + sum('depthScore')*15 + sum('seqScore')*10 + sum('handlingScore')*10 + sum('timeScore')*10);
+        document.getElementById('hud-score').textContent=String(totalPct);
+        document.getElementById('hud-acc').textContent=roundPct(sum('accScore'));
+        document.getElementById('hud-time').textContent=Utils.fmtTime(Utils.now()-this.startAt);
+        document.getElementById('score-total').textContent=String(totalPct);
+        document.getElementById('score-acc').textContent=roundPct(sum('accScore'));
+        document.getElementById('score-ang').textContent=roundPct(sum('angleScore'));
+        document.getElementById('score-depth').textContent=roundPct(sum('depthScore'));
+        document.getElementById('score-seq').textContent=roundPct(sum('seqScore'));
+        document.getElementById('score-hand').textContent=roundPct(sum('handlingScore'));
+        document.getElementById('score-time').textContent=roundPct(sum('timeScore'));
+        document.getElementById('score-err').textContent=String(this.errors);
+      }
+    }
+
+    // ============================================================
+    // AI CO‑PILOT (Guidance, feedback, lifecycle)
+    // ============================================================
+    class AICoPilot{
+      constructor(model, renderer, overlay, scoring){
+        this.model=model; this.renderer=renderer; this.overlay=overlay; this.scoring=scoring;
+        this.chat=document.getElementById('chat');
+        this.checklist=document.getElementById('checklist');
+        this.hudStep=document.getElementById('hud-step');
+        this.ghostVisible=false;
+        this.entryPending=null;
+        this.highlights=true;
+
+        this.installUI();
+        this.refreshChecklist();
+        this.updateHUDStep();
+        this.renderTargets();
+        this.bindEvents();
+      }
+
+      installUI(){
+        document.getElementById('btn-start').addEventListener('click', ()=>this.startSession());
+        document.getElementById('btn-ghost').addEventListener('click', ()=>this.toggleGhost());
+        document.getElementById('btn-reset').addEventListener('click', ()=>this.reset());
+        document.getElementById('btn-export').addEventListener('click', ()=>this.exportReport());
+        document.getElementById('help-close').addEventListener('click', ()=>this.toggleHelp(false));
+
+        document.querySelectorAll('.tab').forEach(tab=>{
+          tab.addEventListener('click', ()=>{
+            document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+            tab.classList.add('active');
+            document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+            const panel=document.getElementById('panel-'+tab.dataset.tab);
+            panel.classList.add('active');
+            Store.save('tab', tab.dataset.tab);
+          });
+        });
+
+        document.getElementById('mode-training').addEventListener('change', e=>{ if(e.target.checked) this.setMode('training'); });
+        document.getElementById('mode-practice').addEventListener('change', e=>{ if(e.target.checked) this.setMode('practice'); });
+      }
+
+      bindEvents(){
+        Bus.on('input:down', (e)=>this.onPointerDown(e));
+        Bus.on('input:up',   (e)=>this.onPointerUp(e));
+        Bus.on('ui:ghost', ()=>this.toggleGhost());
+        Bus.on('steps:next', ()=>this.advanceStep());
+        Bus.on('steps:back', ()=>this.backStep());
+        Bus.on('ui:toggle-highlights', ()=>{
+          this.highlights=!this.highlights; this.renderTargets();
+          this.say(this.highlights ? "Highlights on." : "Highlights off.");
+        });
+        Bus.on('ui:help', ()=>this.toggleHelp(true));
+      }
+
+      setMode(mode){
+        this.model.setMode(mode);
+        this.say(`Mode set to ${mode==='training'?'Training':'Practice'}.`);
+        document.getElementById('assist-level').textContent = mode==='training'?'High':'Medium';
+      }
+
+      startSession(){
+        this.say("Session started. Follow highlighted annular targets. Click Entry near the highlight, then traverse across the annulus to set Exit. Maintain a near-perpendicular angle.");
+        Voice.speak("Session started. Follow the highlights and place your first annular bite at twelve o'clock.");
+        this.model.reset();
+        this.scoring.reset();
+        this.entryPending=null;
+        document.getElementById('hud-err').textContent='0';
+        this.overlay.clear();
+        this.renderTargets();
+        this.refreshChecklist();
+        this.updateHUDStep();
+        this.renderGhostIfNeeded();
+        this.updateLog(`SESSION START :: ${new Date().toLocaleString()}`);
+        // Pre-checklist ticks for first 3 steps (orientation, instrument, plan) for demonstration
+        this.setStepDone(0,true); this.setStepDone(1,true); this.setStepDone(2,true);
+      }
+
+      reset(){
+        this.model.reset();
+        this.scoring.reset();
+        this.entryPending=null;
+        this.overlay.clear();
+        this.renderTargets();
+        this.refreshChecklist();
+        this.updateHUDStep();
+        this.say("Reset complete. Highlights restored.");
+        this.updateLog(`RESET`);
+      }
+
+      toggleGhost(){
+        this.ghostVisible=!this.ghostVisible;
+        this.renderGhostIfNeeded();
+        const btn=document.getElementById('btn-ghost');
+        btn.setAttribute('aria-pressed', String(this.ghostVisible));
+        btn.textContent = this.ghostVisible ? 'Hide Ghost' : 'Show Ghost';
+        this.say(this.ghostVisible?"Ghost trajectory visible.":"Ghost trajectory hidden.");
+      }
+      renderGhostIfNeeded(){
+        if(!this.ghostVisible){ this.overlay.gGhost.innerHTML=''; return; }
+        const v=this.renderer.viewParams();
+        const ghostPairs = this.model.sequence.map(idx=>{
+          const t=this.model.targets[idx].t;
+          const P = Utils.ellipsePoint(v.a,v.b,t,v.rot,v.cx,v.cy);
+          const entry=P;
+          const exit={x:P.x + P.nx*18, y:P.y + P.ny*18};
+          return {entry, exit};
+        });
+        this.overlay.drawGhost(ghostPairs);
+      }
+
+      renderTargets(){
+        const v=this.renderer.viewParams();
+        this.model.targets.forEach(t=>{ t.a=v.a; t.b=v.b; t.rot=v.rot; t.cx=v.cx; t.cy=v.cy; });
+        const hi = (this.highlights) ? this.model.currentTargetIndex() : null;
+        this.overlay.drawTargets(this.model.targets, hi);
+      }
+
+      refreshChecklist(){
+        // Keep static DOM, just tick boxes based on step.done
+        this.model.steps.forEach((s,i)=>{ const chk=document.getElementById('chk-'+i); if(chk) chk.checked = !!s.done; });
+        this.updateHUDStep();
+      }
+      setStepDone(i, val=true){ if(this.model.steps[i]){ this.model.steps[i].done=!!val; const chk=document.getElementById('chk-'+i); if(chk) chk.checked=!!val; } }
+
+      updateHUDStep(){
+        document.getElementById('hud-step').textContent = `${Math.min(this.model.placed.length+1, this.model.steps.length)}/${this.model.steps.length}`;
+      }
+
+      onPointerDown({x,y,tool}){
+        if(tool!=='needle') { this.warnAt(x,y,"Use needle"); this.say("Switch to Needle Driver to place sutures."); return; }
+        const v=this.renderer.viewParams();
+        const t = Utils.projectToEllipse(v.a,v.b,v.rot,v.cx,v.cy,x,y);
+        const P = Utils.ellipsePoint(v.a,v.b,t,v.rot,v.cx,v.cy);
+        const d = Utils.dist(P.x,P.y,x,y);
+
+        if(!this.entryPending){
+          const idx = this.model.currentTargetIndex();
+          const target = this.model.targets[idx].t;
+          const deltaDeg = Math.abs(Utils.deg((t - target + Math.PI*2)%(Math.PI*2)));
+          if(this.model.mode==='training'){
+            if(d>CONFIG.THRESHOLDS.ANNULUS_SNAP_PX || deltaDeg>CONFIG.THRESHOLDS.TARGET_ANGULAR_TOL_DEG){
+              this.warnAt(x,y,"Off-target");
+              this.say(`Entry outside highlighted zone. Aim near marker ${idx+1}.`, true);
+              this.scoring.bumpError();
+              return;
+            }
+          }else{
+            if(d>CONFIG.THRESHOLDS.ANNULUS_SNAP_PX+4){ this.warnAt(x,y,"Far"); this.scoring.bumpError(); }
+          }
+          this.entryPending={x, y, t};
+          this.say(`Entry set. Advance across annulus, keeping needle near perpendicular.`);
+          // Optional: draw a short guide arrow from entry normal (visual cue)
+          const guideEnd={x:P.x + P.nx*18, y:P.y + P.ny*18};
+          this.overlay.gGuide.innerHTML=''; this.overlay.drawGuideArc(P, guideEnd, "#8bd3ff");
+        }
+      }
+
+      onPointerUp({x,y}){
+        if(!this.entryPending) return;
+        const entry=this.entryPending;
+        const exit={x,y};
+        this.entryPending=null;
+
+        const evalRes = this.scoring.evaluate(entry, exit);
+        const ok = evalRes.metrics.accScore>0.45 && evalRes.metrics.angleScore>0.45 && evalRes.metrics.depthScore>0.4 && evalRes.metrics.handlingScore>0.5;
+
+        if(this.renderer.isInRestricted(exit.x, exit.y)){
+          this.warnAt(exit.x, exit.y, "Avoid leaflet");
+          this.say("Exit traversed leaflet or chordae zone. Reposition to annular tissue only.", true);
+        }
+
+        this.model.placed.push({entry:evalRes.entry, exit:evalRes.exit, ok, metrics:evalRes.metrics});
+        this.overlay.drawSuture(evalRes.entry, evalRes.exit, ok);
+        this.scoring.recomputeTotals();
+        this.renderTargets();
+        this.updateHUDStep();
+        this.updateLog(`SUTURE ${this.model.placed.length}: acc=${(evalRes.metrics.accScore*100|0)} angle=${(evalRes.metrics.angleScore*100|0)} depth=${(evalRes.metrics.depthScore*100|0)} ${ok?'OK':'ISSUE'}`);
+
+        if(ok){
+          this.say(`Good. Entry ${Math.round(evalRes.de)}px to annulus, exit ${Math.round(evalRes.dx)}px, angle ${Math.round(Math.abs(90 - evalRes.angleDeg))}° from perpendicular.`);
+        }else{
+          const causes=[];
+          if(evalRes.metrics.accScore<=0.45) causes.push("entry/exit off annulus");
+          if(evalRes.metrics.angleScore<=0.45) causes.push("needle not perpendicular");
+          if(evalRes.metrics.depthScore<=0.4) causes.push("insufficient depth across annulus");
+          if(evalRes.metrics.handlingScore<=0.5) causes.push("tissue handling in restricted zone");
+          this.say("Issues: "+causes.join("; ")+". Toggle ghost and imitate the trajectory; aim for perpendicular entry.", true);
+          this.scoring.bumpError();
+        }
+
+        const stepIdx = Math.min(3 + (this.model.placed.length-1), this.model.steps.length-1);
+        this.setStepDone(stepIdx, ok);
+
+        if(this.model.placed.length>=this.model.sequence.length){
+          this.say("All sutures placed. Review spacing, then tie and cut. Session complete.");
+          Voice.speak("Suturing sequence complete. Well done.");
+          this.setStepDone(15,true); this.setStepDone(16,true);
+        }
+
+        // clear guide for next
+        this.overlay.gGuide.innerHTML='';
+      }
+
+      advanceStep(){
+        if(this.model.placed.length < this.model.sequence.length){
+          const idx = this.model.currentTargetIndex();
+          this.say(`Next: Target ${idx+1}. Aim for annular tissue; maintain 75–95° needle angle.`);
+        }else{
+          this.say("No further steps. You may reset or export the report.");
+        }
+      }
+
+      backStep(){
+        if(this.model.placed.length>0){
+          this.model.placed.pop();
+          this.overlay.gSut.lastElementChild?.remove();
+          this.scoring.recomputeTotals();
+          this.renderTargets();
+          this.refreshChecklist();
+          this.updateHUDStep();
+          this.say("Last suture undone.");
+          this.updateLog("UNDO last suture");
+        }
+      }
+
+      exportReport(){
+        const data={
+          when:new Date().toISOString(),
+          mode:this.model.mode,
+          score:document.getElementById('score-total').textContent,
+          errors:this.scoring.errors,
+          placements:this.model.placed.map((p,i)=>({
+            index:i+1,
+            entry:{x:Math.round(p.entry.x),y:Math.round(p.entry.y),t:p.entry.t},
+            exit:{x:Math.round(p.exit.x),y:Math.round(p.exit.y),t:p.exit.t},
+            metrics:p.metrics
+          }))
+        };
+        const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+        const a=document.createElement('a');
+        a.href=URL.createObjectURL(blob);
+        a.download=`mv_suturing_report_${Date.now()}.json`;
+        a.click();
+        this.say("Exported report (JSON).");
+      }
+
+      toggleHelp(forceOpen=null){
+        const modal=document.getElementById('help-modal');
+        const open = forceOpen===null ? !modal.classList.contains('open') : forceOpen;
+        modal.classList.toggle('open', open);
+        modal.setAttribute('aria-hidden', String(!open));
+      }
+
+      warnAt(x,y,msg){ this.overlay.warn(x,y,msg); }
+      say(text, warn=false){
+        const el=document.createElement('div');
+        el.className='msg '+(warn?'user':'coach');
+        el.innerHTML=`<div class="role">${warn?'Feedback':'Co‑Pilot'}</div><div class="text">${text}</div>`;
+        this.chat.appendChild(el);
+        this.chat.scrollTop=this.chat.scrollHeight;
+        if(!warn) Voice.speak(text);
+      }
+      updateLog(line){ const log=document.getElementById('log'); log.textContent += line+"\n"; }
+    }
+
+    // ============================================================
+    // BOOTSTRAP
+    // ============================================================
+    const canvas = document.getElementById('render3d');
+    const overlaySVG = document.getElementById('overlay');
+    const renderer = new AnatomyRenderer(canvas);
+    const overlay  = new OverlayManager(overlaySVG, renderer);
+    const tools    = new ToolController(renderer);
+    const model    = new ProcedureModel(renderer);
+    const scoring  = new ScoringEngine(renderer, model);
+    const coach    = new AICoPilot(model, renderer, overlay, scoring);
+
+    // Initial targets & ghost state
+    coach.renderTargets();
+
+    // Restore tab selection
+    (function initTabs(){
+      const tabPref=Store.load('tab','coach');
+      const tabBtn=document.querySelector(`.tab[data-tab="${tabPref}"]`) || document.querySelector('.tab');
+      tabBtn.click();
+    })();
+
+    // Default tool
+    tools.setTool('needle');
+
+    // Welcome tip
+    coach.say("Use Start Session to begin. Press G to toggle ghost path. Press N to proceed to next target if needed.");
+  </script>
+</body>
+</html>
