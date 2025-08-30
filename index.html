@@ -1,1231 +1,434 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>MitraSim Pro — Web Mitral Valve Suturing Trainer (Single‑File)</title>
-<meta name="description" content="Professional, realistic, web-based mitral valve suturing simulation with training and practice modes, AI co-pilot, scoring, and export — single-file, no libraries." />
-<meta name="theme-color" content="#0f1322" />
-<style>
-  /* =========================
-     MitraSim Pro — Visual System
-     ========================= */
-  :root{
-    /* Base */
-    --bg:#0c101a; --panel:#121828; --panel-2:#0e1422; --ink:#e9f2ff; --muted:#a9b8d9;
-    --line:#22304a; --line-2:#1a263e; --ring:#dcdcdc; --leaf:#ecf5f1;
+  <!-- =========================================================
+       MITRAL VALVE REPAIR TRAINER — SINGLE-FILE APP (PART 1/✱)
+       SECTION: <head> meta + full STYLE system + global SVG defs
+       GOAL:
+         • Production-grade head metadata (SEO, social, PWA-friendly).
+         • Commercial UI design system (tokens, layout grid, component shells).
+         • Accessibility, theming, print, motion safety.
+         • Visual primitives for: highlights, legends, guides, marked spots.
+       NOTE:
+         This block is self-contained and does not include <body> or <script>.
+  ============================================================ -->
 
-    /* Accents */
-    --accent:#68d3ff; --accent-2:#43ffa8; --warn:#ffcf5a; --bad:#ff6b6b; --good:#3bd671; --info:#86a9ff;
-    --ghost:#3a86ff; --pledget:#ffffff; --calc:#c4952f; --drape:#0b3a2b; --chord:#9aa2ad;
+  <!-- ===== META (production-ready) ===== -->
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Mitral Valve Repair Trainer — Annuloplasty Suturing (Training & Practice)</title>
+  <meta name="description" content="Professional, high-fidelity web simulation for mitral valve repair training. Step-by-step suturing guidance with AI Co‑Pilot, annotations, and detailed scoring — single-file app, GitHub Pages-ready." />
+  <meta name="keywords" content="mitral valve, surgery training, cardiac surgery, annuloplasty, suturing, simulation, web simulator, education, scoring, AI copilot" />
+  <meta name="theme-color" content="#0d1321" />
+  <meta name="color-scheme" content="dark light">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="MV Repair Trainer">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%25%27 y1=%270%25%27 x2=%27100%25%27 y2=%27100%25%27%3E%3Cstop stop-color=%27%235de4c7%27/%3E%3Cstop stop-color=%27%238bd3ff%27 offset=%271%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill=%27url(%23g)%27 d=%27M32 58C12 44 4 34 4 22a14 14 0 0 1 26-7 14 14 0 0 1 30 7c0 12-8 22-28 36z%27/%3E%3C/svg%3E" />
+  <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAFElEQVR4Ae3BAQ0AAADCIPunNscCFQAAUzsT2QAAI1iSAAAAAElFTkSuQmCC">
+  <link rel="canonical" href="." />
 
-    /* Elevated highlight */
-    --hl:#7fd0ff; --hl-soft:#7fd0ff33;
+  <!-- OpenGraph / Twitter (social share) -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Mitral Valve Repair Trainer — Annuloplasty Suturing">
+  <meta property="og:description" content="Super realistic, professional web simulation for cardiac surgeons. AI-guided steps, clear legends, highlighted targets, marked spots, and a rigorous scoring system.">
+  <meta property="og:image" content="data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%221200%22 height=%22630%22%3E%3Crect width=%27100%25%27 height=%27100%25%27 fill=%27%230d1321%27/%3E%3Ctext x=%2750%25%27 y=%2748%25%27 fill=%27%235de4c7%27 font-size=%2750%27 font-family=%27Arial,Helvetica,sans-serif%27 text-anchor=%27middle%27%3EMitral Valve Trainer%3C/text%3E%3Ctext x=%2750%25%27 y=%2766%25%27 fill=%27%238bd3ff%27 font-size=%2728%27 text-anchor=%27middle%27%3EAnnuloplasty Suturing%3C/text%3E%3C/svg%3E">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Mitral Valve Repair Trainer — Annuloplasty Suturing">
+  <meta name="twitter:description" content="AI co‑pilot guidance, stepwise suturing, clear highlights/marks, and detailed scoring — in a single-file app.">
+  <meta name="twitter:image" content="data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%221200%22 height=%22630%22%3E%3Crect width=%27100%25%27 height=%27100%25%27 fill=%27%230d1321%27/%3E%3Ctext x=%2750%25%27 y=%2748%25%27 fill=%27%235de4c7%27 font-size=%2750%27 font-family=%27Arial,Helvetica,sans-serif%27 text-anchor=%27middle%27%3EMitral Valve Trainer%3C/text%3E%3Ctext x=%2750%25%27 y=%2766%25%27 fill=%27%238bd3ff%27 font-size=%2728%27 text-anchor=%27middle%27%3EAnnuloplasty Suturing%3C/text%3E%3C/svg%3E">
 
-    /* Pills */
-    --pill:#1b2540; --pillText:#cfe1ff;
+  <!-- ===== Optional CSP (single-file requires 'unsafe-inline'; document first) =====
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self' data: blob:; img-src 'self' data: blob:; media-src 'self' data: blob:;
+                 style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; font-src 'self' data:;">
+  -->
 
-    /* Shadows */
-    --shadow: 0 20px 60px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.02);
+  <!-- =========================================================
+       STYLE ARCHITECTURE — PRODUCTION-GRADE DESIGN SYSTEM
+       • Dark-first theme, light fallback via [data-theme="light"].
+       • Grid shell: topbar / sidebar / viewport / copilot / bottombar.
+       • Components for training/practice: legend, guidance, highlights, marks.
+       • Motion primitives: halos, ghost dashes, attention pulses.
+  ============================================================ -->
+  <style>
+    /* =========================
+       0) CSS RESET & BASELINE
+       ========================= */
+    *,*::before,*::after{box-sizing:border-box}
+    html,body{height:100%}
+    html{color-scheme:dark light}
+    body{
+      margin:0; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+      background:radial-gradient(1400px 800px at 60% -10%, #1a2547 0%, #0d1321 60%);
+      color:var(--ink-0, #e7ecfb);
+      font-family: var(--sans, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial);
+      line-height:1.35;
+    }
+    img,svg,video,canvas{max-width:100%; height:auto}
+    :focus{outline:none}
+    :focus-visible{outline:2px solid var(--focus, #8bd3ff); outline-offset:.15rem}
+    ::selection{background: #234b7d; color:#fff}
+    [hidden]{display:none !important}
 
-    /* Colorblind-friendly palette markers (for legend swatches) */
-    --cb-blue:#2e86de; --cb-orange:#f39c12; --cb-green:#27ae60; --cb-purple:#8e44ad; --cb-red:#c0392b;
+    /* =========================
+       1) DESIGN TOKENS
+       ========================= */
+    :root{
+      /* Color tokens (dark) */
+      --bg-0:#0d1321;    /* page */
+      --bg-1:#101a34;    /* panels */
+      --bg-2:#0f1730;    /* elevated panels */
+      --ink-0:#e7ecfb;   /* primary text */
+      --ink-1:#a7b5dc;   /* secondary text */
+      --ink-dim:#7c89b4;
 
-    --radius:14px;
-  }
-  html, body { height:100%; background:var(--bg); color:var(--ink); font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
-  * { box-sizing:border-box; }
-  ::selection { background:#39537a; color:#fff; }
-  #app { display:grid; grid-template-rows:auto 1fr auto; min-height:100%; }
+      --brand:#5de4c7;   /* teal accent: targets, success focus */
+      --brand-2:#8bd3ff; /* blue accent: guides, sutures */
+      --warn:#ffc857;    /* guidance warnings */
+      --danger:#ff5661;  /* errors / tissue violation */
+      --ok:#5dd39e;      /* check/ok */
+      --muted:#0a1327;   /* deep background */
+      --ink-invert:#09222f;
 
-  /* Header */
-  header {
-    display:grid; grid-template-columns: 1fr auto auto; gap:12px; align-items:center;
-    padding:12px 16px; border-bottom:1px solid var(--line); background:linear-gradient(180deg,#0f1524,#0b1120);
-    position:sticky; top:0; z-index:50;
-  }
-  .brand { display:flex; gap:12px; align-items:center; }
-  .logo { width:34px; height:34px; border-radius:9px; display:grid; place-items:center;
-          background:conic-gradient(from 120deg at 50% 50%, #1fe8b7, #23a9ff 50%, #1fe8b7);
-          color:#04111a; font-weight:900; box-shadow: var(--shadow); }
-  .brandText { line-height:1.05; }
-  .brandText .t1 { font-weight:800; letter-spacing:0.3px; }
-  .brandText .t2 { font-size:12px; color:var(--muted); }
-  .kpis { display:flex; gap:8px; flex-wrap:wrap; }
-  .pill { background:var(--pill); color:var(--pillText); border:1px solid #2f3d5a; padding:6px 10px; border-radius:999px; font-size:12px; white-space:nowrap; }
-  .controls { display:flex; gap:8px; }
-  button, .btnlike {
-    background:linear-gradient(180deg,#121b31,#0f172b); color:var(--ink); border:1px solid #2a395c;
-    padding:9px 12px; border-radius:10px; font-weight:700; cursor:pointer; transition:0.15s ease all; box-shadow: var(--shadow);
-  }
-  button:hover { border-color:#42639e; transform: translateY(-1px); }
-  button.primary { background:linear-gradient(180deg,#153457,#0e1d36); border-color:#2f6db6; }
-  button.alt { background:#131a2a; border-color:#334465; }
-  button.ghost { background:transparent; border-color:#334465; }
-  button.danger { background:#2a1313; border-color:#6e2a2a; color:#ffdede; }
-  button.success { background:#0f2a1e; border-color:#2d6e4f; }
-  .kbd { border:1px solid #344568; background:#162039; padding:2px 6px; border-radius:6px; font-size:12px; font-weight:800; }
+      /* Elevation & radii */
+      --shadow-1:0 4px 16px rgba(0,0,0,.35);
+      --shadow-2:0 10px 28px rgba(0,0,0,.45);
+      --radius-lg:14px; --radius:10px; --radius-sm:8px;
 
-  /* Layout */
-  main { display:grid; grid-template-columns: 320px 1fr 380px; gap:12px; padding:12px; }
-  aside.left, aside.right, .stageWrap { border:1px solid var(--line); background:var(--panel); border-radius:var(--radius); box-shadow: var(--shadow); }
-  .stageWrap { display:grid; grid-template-rows:auto 1fr; overflow:hidden; }
-  .stageTop { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid var(--line-2); background:var(--panel-2); }
-  .stage { position:relative; overflow:hidden; }
-  canvas { display:block; width:100%; height:100%; background:
-    radial-gradient(1400px 900px at 50% 45%, #165e46 0%, #0c3f2e 40%, var(--drape) 68%, #06261c 100%),
-    radial-gradient(800px 400px at 10% 10%, rgba(255,255,255,0.06), transparent 60%); }
-  #hud { position:absolute; inset:0; pointer-events:none; }
+      /* Grid max width */
+      --app-mxw:1600px;
 
-  /* Panels */
-  .panel { padding:12px; }
-  .panel h3 { margin:0 0 8px 0; font-size:14px; color:#cde2ff; letter-spacing:0.25px; }
-  .section { border:1px solid var(--line-2); background:#0d1427; border-radius:12px; margin-bottom:12px; overflow:hidden; }
-  .section h4 { margin:0; padding:10px 12px; border-bottom:1px solid var(--line-2); color:#b8c6f0; background:#0f172b; font-size:13px; }
-  .sectionBody { padding:10px 12px; display:grid; gap:10px; }
-  .row { display:grid; grid-template-columns: 1fr auto; align-items:center; gap:8px; }
-  .radioRow { display:flex; flex-wrap:wrap; gap:8px; }
-  .radioRow button { padding:7px 10px; border-radius:9px; border:1px solid #2b3c5e; background:#0e1526; font-weight:700; }
-  .radioRow button.active { border-color:#4f7ed1; outline:1px solid #4f7ed144; background:#0a1222; }
-  .option { display:flex; gap:8px; align-items:center; }
-  input[type="range"]{ width:100%; }
-  input[type="checkbox"]{ transform: translateY(1px); }
-  .legend { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:10px; }
-  .key { display:flex; gap:8px; align-items:center; font-size:12px; color:var(--muted); }
-  .sw { width:16px; height:12px; border-radius:3px; border:1px solid #0006; }
-  .sw.leaf{ background:var(--leaf); } .sw.ring{ background:var(--ring); } .sw.calc{ background:var(--calc); }
-  .sw.safe{ background:#a9ffcd; } .sw.ghost{ background:var(--ghost); } .sw.suture{ background:#cfe3ff; } .sw.pledget{ background:#fff; }
-  .callout { border:1px solid #2a3754; background:#0d1629; border-radius:10px; padding:10px; }
-  .hint { background:#192744; border:1px dashed #39507c; padding:10px; border-radius:8px; color:#cfe1ff; }
-  .storyStep { border:1px solid #2b3550; background:#11182a; padding:10px; border-radius:10px; }
-  .storyStep.active { border-color:#3a86ff; box-shadow:0 0 0 1px #3a86ff55 inset; }
-  .storyStep.done { opacity:0.75; }
-  .small { font-size:12px; color:#b8c6f0; }
-  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace; }
+      /* Typography */
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      --fs-xxs:10px; --fs-xs:12px; --fs-sm:13px; --fs-md:14px; --fs-lg:16px; --fs-xl:18px; --fs-2xl:22px; --fs-3xl:28px;
 
-  /* Copilot feedback cards */
-  .feedback { display:grid; gap:10px; }
-  .fb { border:1px solid #293a5f; background:#0f1a32; border-radius:12px; padding:10px; }
-  .fb.good { border-color:#2f6e4f; background:#0f2a1e; }
-  .fb.warn { border-color:#6e5f2f; background:#2a2410; }
-  .fb.bad { border-color:#6e2f2f; background:#2a1010; }
-  .badge { display:inline-block; font-size:11px; padding:2px 6px; border-radius:999px; border:1px solid #2a5670; background:#0b2636; color:#8fd4ff; margin-left:6px;}
+      /* Motion */
+      --dur-1:120ms; --dur-2:220ms; --dur-3:420ms; --dur-4:800ms;
+      --eio:cubic-bezier(.22,.61,.36,1);
+      --focus:#8bd3ff;
 
-  /* Score breakdown bars */
-  .meter { height:8px; background:#16213a; border:1px solid #25365a; border-radius:999px; overflow:hidden; }
-  .meter > span { display:block; height:100%; background:linear-gradient(90deg, #18e3a1, #22a9ff); width:0%; }
+      /* Z-layers */
+      --z-topbar:20; --z-overlay:10; --z-hud:15; --z-toast:30; --z-modal:50;
+    }
+    /* Light theme */
+    [data-theme="light"]{
+      --bg-0:#f6f8fc; --bg-1:#ffffff; --bg-2:#f1f4fb;
+      --ink-0:#0f1730; --ink-1:#3a4a77; --ink-dim:#5b6a96;
+      --muted:#e8eefc; --ink-invert:#e7fcf6;
+      --focus:#0066cc;
+      background:linear-gradient(180deg,#eff3ff,#ffffff);
+      color:var(--ink-0);
+    }
 
-  /* Footer */
-  footer { display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-top:1px solid var(--line); color:var(--muted); background:#0c121f; }
+    /* =========================
+       2) TYPOGRAPHY SYSTEM
+       ========================= */
+    h1,h2,h3,h4,h5,h6{margin:.25rem 0; font-weight:800}
+    h1{font-size:var(--fs-xl)}
+    h2{font-size:var(--fs-lg)}
+    h3{font-size:var(--fs-md)}
+    p{margin:.5rem 0}
+    small,.meta{color:var(--ink-1); font-size:var(--fs-xs)}
+    code,kbd,samp{font-family:var(--mono); font-size: .95em}
 
-  /* Annotations & overlays */
-  .pulse { animation:pulse 1.8s ease-in-out infinite; }
-  @keyframes pulse { 0%{ box-shadow:0 0 0 0 rgba(104,211,255,0.6);} 70%{ box-shadow:0 0 0 12px rgba(104,211,255,0);} 100%{ box-shadow:0 0 0 0 rgba(104,211,255,0);} }
-  .glow { filter: drop-shadow(0 0 8px rgba(104,211,255,0.65)); }
-  .dim { opacity:0.4; }
+    /* =========================
+       3) LAYOUT GRID
+       ========================= */
+    .app{
+      display:grid;
+      grid-template-rows: 64px 1fr 44px;
+      grid-template-columns: 300px minmax(720px,1fr) 420px;
+      grid-template-areas:
+        "topbar topbar topbar"
+        "sidebar viewport copilot"
+        "bottombar bottombar bottombar";
+      height:100%;
+      margin:0 auto; max-width:var(--app-mxw);
+    }
+    header.topbar{grid-area:topbar}
+    aside.sidebar{grid-area:sidebar}
+    main.viewport{grid-area:viewport}
+    aside.copilot{grid-area:copilot}
+    footer.bottombar{grid-area:bottombar}
 
-  /* Tooltip */
-  .tooltip { position:relative; }
-  .tooltip:hover::after{
-    content:attr(data-tip); position:absolute; left:0; top:calc(100% + 6px);
-    background:#0b1426; color:#cfe1ff; border:1px solid #29406b; padding:6px 8px; border-radius:6px; white-space:nowrap; z-index:10;
-  }
+    /* Responsive breakpoints */
+    @media (max-width: 1440px){
+      .app{ grid-template-columns: 260px 1fr 380px; }
+    }
+    @media (max-width: 1200px){
+      .app{ grid-template-columns: 1fr; grid-template-rows: 64px auto auto 44px;
+            grid-template-areas:
+              "topbar" "viewport" "copilot" "bottombar"; }
+      aside.sidebar{display:none}
+    }
+    @media (max-width: 640px){
+      .app{ grid-template-rows: 56px auto auto 40px; }
+    }
 
-  /* Responsive */
-  @media (max-width: 1200px){
-    main { grid-template-columns: 1fr; }
-    aside.right { order:3; }
-    aside.left { order:2; }
-    .stageWrap { order:1; min-height:64vh; }
-  }
-</style>
+    /* =========================
+       4) COMPONENT SHELLS
+       (Visuals tuned for commercial polish but logic added later)
+       ========================= */
+
+    /* Top bar */
+    header.topbar{
+      display:flex; align-items:center; gap:16px;
+      padding:10px 14px;
+      background:linear-gradient(180deg, rgba(17,24,43,.85), rgba(17,24,43,.6));
+      border-bottom:1px solid #223055; box-shadow:var(--shadow-1);
+      position:relative; z-index:var(--z-topbar);
+      backdrop-filter: blur(8px) saturate(1.1);
+    }
+    .title{display:flex; align-items:center; gap:12px; min-width:240px}
+    .title .mark{
+      width:38px; height:38px; border-radius:10px;
+      background:conic-gradient(from 90deg, var(--brand-2), var(--brand), var(--brand-2));
+      box-shadow: inset 0 0 18px #0008, 0 2px 8px #000a;
+      position:relative;
+    }
+    .title .mark::after{
+      content:"MV"; position:absolute; inset:0; display:grid; place-items:center;
+      font-weight:900; color:var(--ink-invert); letter-spacing:.3px;
+      text-shadow:0 1px 0 #ffffff22;
+    }
+    .title h1{font-size:var(--fs-xl); margin:0}
+    .title .subtitle{font-size:var(--fs-xs); color:var(--ink-1); margin-top:-2px}
+
+    /* Segmented control (Training | Practice) */
+    .segmented{
+      display:inline-flex; padding:2px; border-radius:12px;
+      background: #0e1a33; border:1px solid #223055; box-shadow:var(--shadow-1);
+    }
+    .segmented input{display:none}
+    .segmented label{
+      padding:6px 10px; font-size:var(--fs-xs); color:var(--ink-1);
+      cursor:pointer; border-radius:8px; min-width:120px; text-align:center; user-select:none;
+    }
+    .segmented input:checked + label{
+      color:#041c16; font-weight:800;
+      background:linear-gradient(180deg, #3bd2b6, #3abfc1);
+      box-shadow:inset 0 -1px 0 #0005, 0 1px 2px #0008;
+    }
+
+    .topbar-actions{margin-left:auto; display:flex; align-items:center; gap:8px}
+
+    /* Buttons */
+    .btn{
+      appearance:none; border:1px solid #27406a; background:linear-gradient(180deg,#1a2646,#131c34);
+      color:var(--ink-0); padding:8px 12px; border-radius:10px; font-weight:700; letter-spacing:.2px; cursor:pointer;
+      box-shadow:inset 0 0 0 1px #0008, var(--shadow-1);
+      transition:transform var(--dur-1) var(--eio), filter var(--dur-1) var(--eio);
+    }
+    .btn:hover{filter:brightness(1.08)}
+    .btn:active{transform:translateY(1px)}
+    .btn.ghost{background:transparent}
+    .btn.brand{border-color:#197e6e; background:linear-gradient(180deg,#0f423b,#0c302b)}
+    .btn.warn{border-color:#8a5a11; background:linear-gradient(180deg,#4d3612,#3a2a10)}
+
+    /* Sidebar cards */
+    aside.sidebar{
+      padding:10px; overflow:auto; background:linear-gradient(180deg,#0f1730,#0d1426);
+      border-right:1px solid #223055;
+    }
+    .card{
+      background:linear-gradient(180deg,#121c38,#0f1832);
+      border:1px solid #1f2c52; border-radius:var(--radius-lg); padding:12px; margin-bottom:10px; box-shadow:var(--shadow-1);
+    }
+    .card h3{margin:.2em 0 .6em 0; font-size:var(--fs-md); letter-spacing:.3px}
+    .kv{display:grid; grid-template-columns: 1fr auto; gap:6px; font-size:var(--fs-xs)}
+    .kv div:nth-child(odd){color:var(--ink-1)}
+    .badge{display:inline-block; padding:3px 8px; border-radius:999px; background:#132145; border:1px solid #2a3d67; font-size:var(--fs-xxs); color:#9ec2ff}
+
+    /* Legend (explicit color+shape coding for step shadowing) */
+    .legend{display:grid; gap:6px; font-size:var(--fs-xs)}
+    .legend .item{display:flex; align-items:center; gap:8px}
+    .legend .swatch{width:12px; height:12px; border-radius:50%; box-shadow:0 0 0 3px #0006}
+    .swatch.teal{background:var(--brand)}
+    .swatch.blue{background:var(--brand-2)}
+    .swatch.gold{background:var(--warn)}
+    .swatch.red{background:var(--danger)}
+
+    /* Viewport shell */
+    main.viewport{
+      position:relative; overflow:hidden;
+      background:
+        radial-gradient(900px 500px at 50% -100px, #1b2b52, transparent 50%),
+        radial-gradient(900px 500px at 50% 120%, #0a1122, transparent 50%),
+        var(--muted);
+      border-left:1px solid #20325a; border-right:1px solid #20325a;
+    }
+    #render3d{
+      position:absolute; inset:0; width:100%; height:100%; display:block; cursor: crosshair;
+      filter: drop-shadow(0 30px 60px #0009);
+    }
+    #overlay{
+      position:absolute; inset:0; width:100%; height:100%;
+      pointer-events:none; /* interaction via controller in script */
+      z-index:var(--z-overlay);
+    }
+
+    /* Overlay visual primitives — Matches training/practice requirements */
+    /* Targets (“mark the spots”) */
+    #overlay .target { /* <g class="target"> */
+      --halo-r:16px;
+      animation: halo-breathe var(--dur-4) ease-in-out infinite;
+    }
+    #overlay .target circle.core{ fill:var(--brand); stroke:#022; stroke-width:1.2; }
+    #overlay .target circle.halo{ fill:url(#halo-brand); }
+    #overlay .target text.label{
+      fill:var(--brand-2); font-weight:900; font-size:10px; text-shadow:0 1px 0 #000;
+    }
+
+    /* Guides (arcs/arrows) */
+    #overlay .guide{ stroke:var(--brand-2); stroke-width:3; fill:none; marker-end:url(#arrow); filter:url(#soft-glow); }
+    #overlay .guide--ghost{ stroke:var(--warn); stroke-dasharray:5 5; animation: dashflow 1.8s linear infinite; }
+
+    /* Sutures */
+    #overlay .suture-ok{ stroke:var(--brand-2); stroke-width:3; fill:none; filter:url(#soft-glow) }
+    #overlay .suture-bad{ stroke:var(--danger); stroke-width:3.5; fill:none; filter:url(#soft-glow) }
+
+    /* Warnings (leaflet/chordae violations) */
+    #overlay .warn circle{ fill:url(#halo-warn) }
+    #overlay .warn text{ fill:#2b1f00; font-weight:900; font-size:11px; text-anchor:middle }
+
+    /* HUD tiles */
+    .hud{
+      position:absolute; left:12px; bottom:12px; right:12px;
+      display:flex; gap:12px; justify-content:space-between; pointer-events:none; z-index:var(--z-hud);
+    }
+    .hud .cluster{ display:flex; gap:10px; align-items:flex-end; }
+    .tile{
+      pointer-events:auto; padding:8px 12px; border-radius:12px;
+      background:linear-gradient(180deg,#111c38,#0e172e);
+      border:1px solid #20345f; box-shadow:var(--shadow-1); font-size:var(--fs-xs);
+      min-width:90px;
+    }
+    .tile strong{display:block; font-size:var(--fs-2xl); line-height:1.1}
+
+    /* Right panel: tabs/panels, chat, checklist, metrics, logs */
+    aside.copilot{
+      display:flex; flex-direction:column; background:linear-gradient(180deg,#121a33,#0f1526);
+      border-left:1px solid #223055;
+    }
+    .tabs{display:flex; gap:6px; padding:10px; border-bottom:1px solid #223055}
+    .tab{
+      padding:8px 10px; font-size:var(--fs-xs); border-radius:10px; cursor:pointer; border:1px solid transparent; color:var(--ink-1);
+      user-select:none; transition:filter var(--dur-1) var(--eio);
+    }
+    .tab:hover{filter:brightness(1.08)}
+    .tab.active{color:#041a15; font-weight:800; background:linear-gradient(180deg,#3bd2b6,#3bc3c2); box-shadow:var(--shadow-1)}
+    .panel{flex:1; overflow:auto; padding:12px; display:none}
+    .panel.active{display:block}
+
+    .chat{display:flex; flex-direction:column; gap:10px}
+    .msg{
+      display:grid; grid-template-columns:auto 1fr; gap:10px; align-items:flex-start;
+      background:linear-gradient(180deg,#0f1a32,#0c1529); border:1px solid #223055; border-radius:14px; padding:10px;
+    }
+    .msg .role{font-size:var(--fs-xxs); text-transform:uppercase; letter-spacing:.5px; color:var(--ink-1)}
+    .msg .text{font-size:var(--fs-sm)}
+    .msg.coach{border-color:#226e62; box-shadow:0 0 0 2px #1a3f3a inset}
+    .msg.user{border-color:#334a7a; box-shadow:0 0 0 2px #263553 inset}
+    .checkpoint{padding:8px 10px; border-left:3px solid var(--brand); background:#0c1a2b; border-radius:10px; font-size:var(--fs-xs)}
+
+    .checklist{display:grid; gap:8px}
+    .check{display:flex; gap:8px; align-items:flex-start; background:#0f1830; border:1px solid #223055; border-radius:10px; padding:8px}
+    .check input{accent-color:var(--brand)}
+
+    .scorebox{display:grid; grid-template-columns:repeat(2,1fr); gap:10px}
+    @media (min-width: 1440px){ .scorebox{grid-template-columns:repeat(4,1fr)} }
+    .metric{background:#0f1830; border:1px solid #223055; border-radius:12px; padding:8px}
+    .metric .label{font-size:var(--fs-xxs); color:var(--ink-1)}
+    .metric .val{font-size:var(--fs-2xl); font-weight:900}
+
+    .log{font-family:var(--mono); font-size:var(--fs-xs); background:#0b1224; border:1px solid #1e2a4d; border-radius:10px; padding:8px; white-space:pre-wrap}
+
+    /* Bottom bar */
+    footer.bottombar{
+      display:flex; align-items:center; gap:10px; padding:6px 10px;
+      background:linear-gradient(180deg, rgba(16,25,44,.9), rgba(12,19,34,.9)); border-top:1px solid #223055;
+    }
+    .kbd{font-family:var(--mono); font-size:var(--fs-xxs); background:#0a162b; border:1px solid #20345f; padding:3px 6px; border-radius:6px}
+    .hint{color:var(--ink-1); font-size:var(--fs-xs)}
+
+    /* =========================
+       5) ACCESSIBILITY & FOCUS
+       ========================= */
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    @media (prefers-reduced-motion: reduce){
+      *{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; scroll-behavior:auto !important}
+    }
+    @media (prefers-contrast: more){
+      :root{--focus:#00b7ff}
+      .btn,.card,.tile,.metric,.msg{border-width:2px}
+    }
+    @media (forced-colors: active){
+      .tab.active{background:Highlight; color:HighlightText}
+    }
+
+    /* =========================
+       6) THEMING HOOKS & PRINT
+       ========================= */
+    @media print{
+      body{background:#fff; color:#000}
+      .app{max-width:100%; grid-template-columns:1fr; grid-template-areas:"topbar" "viewport" "scores"; grid-template-rows:auto auto auto}
+      aside.sidebar, aside.copilot, footer.bottombar{display:none}
+      main.viewport{border:none}
+    }
+
+    /* =========================
+       7) MOTION PRIMITIVES (highlights/ghost)
+       ========================= */
+    @keyframes halo-breathe{
+      0%,100%{ opacity:.85; transform:scale(1) }
+      50%{ opacity:.55; transform:scale(1.06) }
+    }
+    @keyframes dashflow{
+      to{ stroke-dashoffset:-1000 }
+    }
+  </style>
+
+  <!-- =========================================================
+       GLOBAL SVG DEFINITIONS (for highlights, arrows, glows, clips)
+       These defs power “highlight area”, “mark the spots”, guides, etc.
+  ============================================================ -->
+  <svg width="0" height="0" class="sr-only" aria-hidden="true" focusable="false">
+    <defs>
+      <!-- Highlight halos -->
+      <radialGradient id="halo-brand" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#5de4c7" stop-opacity="0.95"/>
+        <stop offset="55%" stop-color="#5de4c7" stop-opacity="0.42"/>
+        <stop offset="100%" stop-color="#5de4c7" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="halo-warn" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#ffc857" stop-opacity="0.95"/>
+        <stop offset="55%" stop-color="#ffc857" stop-opacity="0.42"/>
+        <stop offset="100%" stop-color="#ffc857" stop-opacity="0"/>
+      </radialGradient>
+
+      <!-- Guidance arrowheads -->
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#8bd3ff"/>
+      </marker>
+
+      <!-- Soft glow for sutures/guides (subtle realism) -->
+      <filter id="soft-glow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="2" result="blur"/>
+        <feMerge>
+          <feMergeNode in="blur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+
+      <!-- Optional viewport clip (ellipse) to contain overlays -->
+      <clipPath id="viewport-clip">
+        <!-- Path supplied later when geometry is known -->
+        <rect x="0" y="0" width="100%" height="100%"></rect>
+      </clipPath>
+    </defs>
+  </svg>
 </head>
-<body>
-<div id="app" aria-live="polite">
-  <!-- =======================
-       Header
-       ======================= -->
-  <header>
-    <div class="brand">
-      <div class="logo">M</div>
-      <div class="brandText">
-        <div class="t1">MitraSim Pro — Suturing Trainer</div>
-        <div class="t2">Posterior annuloplasty sutures (P1–P3) • Training & Practice • Single‑file</div>
-      </div>
-    </div>
-
-    <div class="kpis" role="status" aria-label="session KPIs">
-      <div class="pill" id="kpiMode">🎛 Mode: Training</div>
-      <div class="pill" id="kpiStep">📋 Step: 1/7</div>
-      <div class="pill" id="kpiTimer">⏱ 00:00</div>
-      <div class="pill" id="kpiSutures">🧵 0</div>
-      <div class="pill" id="kpiSpacing">↔ Spacing: —</div>
-      <div class="pill" id="kpiDepth">⬇ Depth: —</div>
-      <div class="pill" id="kpiAngle">⟂ Angle: —</div>
-      <div class="pill" id="kpiTrauma">🩸 Trauma: 0</div>
-      <div class="pill" id="kpiGap">➖ Gap: —</div>
-      <div class="pill" id="kpiScore">⭐ Score: —/100</div>
-    </div>
-
-    <div class="controls">
-      <button class="alt tooltip" id="btnSwitchMode" data-tip="Toggle Training / Practice">🎚 Switch Mode</button>
-      <button class="primary" id="btnStart">▶ Start</button>
-      <button id="btnPause">⏸ Pause</button>
-      <button class="danger" id="btnReset">♻ Reset Tissue</button>
-      <button class="ghost tooltip" id="btnUndo" data-tip="Undo last action (Ctrl+Z)">↶ Undo</button>
-      <button class="ghost tooltip" id="btnRedo" data-tip="Redo (Ctrl+Y)">↷ Redo</button>
-      <button class="ghost tooltip" id="btnScreenshot" data-tip="Capture image (Canvas+HUD)">📸 Screenshot</button>
-      <button class="ghost tooltip" id="btnSave" data-tip="Save to your browser">💾 Save</button>
-      <button class="ghost tooltip" id="btnLoad" data-tip="Load saved case">📂 Load</button>
-      <button class="ghost tooltip" id="btnDownload" data-tip="Export JSON report">⬇ Report</button>
-    </div>
-  </header>
-
-  <!-- =======================
-       Main
-       ======================= -->
-  <main>
-    <!-- Left: Instruments, Scenario, Legend, Procedure -->
-    <aside class="left panel" aria-label="controls and legend">
-      <div class="section">
-        <h4>Instruments</h4>
-        <div class="sectionBody">
-          <div class="radioRow" id="instrumentRow" role="radiogroup" aria-label="Instrument selection">
-            <button data-tool="needle" class="active">🪡 Needle Driver <span class="badge">N</span></button>
-            <button data-tool="forceps">🔗 Forceps <span class="badge">F</span></button>
-            <button data-tool="scissors">✂ Scissors</button>
-          </div>
-          <div class="row">
-            <label>Needle curvature (fraction of circle)</label>
-            <div id="kpiCurv">3/8</div>
-          </div>
-          <input type="range" id="needleCurvature" min="0.30" max="0.55" step="0.005" value="0.375" />
-          <div class="row">
-            <label>Entry angle vs annular tangent (°)</label>
-            <div id="kpiEntryAngle">70°</div>
-          </div>
-          <input type="range" id="needleAngle" min="40" max="110" step="1" value="70" />
-          <div class="row">
-            <label>Suture tension (N)</label>
-            <div id="kpiTension">0.00 N</div>
-          </div>
-          <input type="range" id="tension" min="0" max="12" step="0.1" value="0" />
-          <div class="option"><input type="checkbox" id="pledget" /><label for="pledget">Use pledget</label></div>
-          <div class="option"><input type="checkbox" id="ghostTargets" checked /><label for="ghostTargets">Show ideal targets</label></div>
-          <div class="option"><input type="checkbox" id="voice" /><label for="voice">Spoken guidance</label></div>
-        </div>
-      </div>
-
-      <div class="section">
-        <h4>Scenario</h4>
-        <div class="sectionBody">
-          <div class="row"><label>Difficulty</label>
-            <div class="radioRow" id="difficultyRow">
-              <button data-diff="resident" class="active">Resident</button>
-              <button data-diff="fellow">Fellow</button>
-              <button data-diff="attending">Attending</button>
-            </div>
-          </div>
-          <div class="row"><label>Calcification pattern</label>
-            <div class="radioRow" id="calcRow">
-              <button data-calc="none" class="active">None</button>
-              <button data-calc="posterior">Posterior</button>
-              <button data-calc="anterior">Anterior</button>
-            </div>
-          </div>
-          <div class="row">
-            <label>Annulus size (mm)</label><div id="kpiAnnulus">32</div>
-          </div>
-          <input type="range" id="annulusSize" min="26" max="40" step="1" value="32" />
-          <div class="row">
-            <label>Target spacing (mm)</label><div id="kpiTargetSpacing">4.0</div>
-          </div>
-          <input type="range" id="targetSpacing" min="3" max="6" step="0.1" value="4.0" />
-          <div class="row">
-            <label>Target bite depth (mm)</label><div id="kpiTargetDepth">3.5</div>
-          </div>
-          <input type="range" id="targetDepth" min="2.5" max="5.0" step="0.1" value="3.5" />
-        </div>
-      </div>
-
-      <div class="section">
-        <h4>Legend</h4>
-        <div class="sectionBody legend">
-          <div class="key"><span class="sw leaf"></span> Leaflet tissue</div>
-          <div class="key"><span class="sw ring"></span> Annulus / ring</div>
-          <div class="key"><span class="sw calc"></span> Calcified zone (avoid)</div>
-          <div class="key"><span class="sw safe"></span> Safe bite band (3–5 mm)</div>
-          <div class="key"><span class="sw suture"></span> Suture / needle path</div>
-          <div class="key"><span class="sw pledget"></span> Pledget</div>
-          <div class="key"><span class="sw ghost"></span> AI target markers</div>
-        </div>
-      </div>
-
-      <div class="section">
-        <h4>Procedure — Step‑by‑Step (Training)</h4>
-        <div class="sectionBody" id="story">
-          <!-- Steps rendered dynamically; placeholder for accessibility -->
-          <div class="storyStep">Steps will populate when Training mode is active.</div>
-        </div>
-      </div>
-    </aside>
-
-    <!-- Center: Stage -->
-    <div class="stageWrap" aria-label="simulation stage">
-      <div class="stageTop">
-        <div class="small">Task: Posterior annuloplasty sutures (P1–P3). <b>Training</b> gates each step; <b>Practice</b> coaches continuously. Click to set <b>entry</b> (posterior leaflet), guide arc, click to set <b>exit</b>. Adjust <b>Tension</b> to approximate without tearing.</div>
-        <div class="small">Hotkeys: <span class="kbd">N</span> Needle • <span class="kbd">F</span> Forceps • <span class="kbd">S</span> Scissors • <span class="kbd">R</span> Reset • <span class="kbd">G</span> Toggle Ghost • <span class="kbd">Space</span> Co‑Pilot</div>
-      </div>
-      <div class="stage">
-        <canvas id="sim" width="1920" height="1080" aria-label="operative field"></canvas>
-        <svg id="hud" viewBox="0 0 1920 1080" aria-hidden="true"></svg>
-      </div>
-    </div>
-
-    <!-- Right: AI Co-Pilot / Feedback / Score -->
-    <aside class="right panel" aria-label="AI co-pilot and scoring">
-      <div class="section">
-        <h4>AI Co‑Pilot</h4>
-        <div class="sectionBody">
-          <div class="callout">
-            <div id="hintBox" class="hint">Welcome. Select <b>Needle Driver</b>. Set curvature near <b>3/8</b> and angle ~<b>70°</b>. Place your first bite in <b>P2</b> within <b>3–5 mm</b> of the annulus, perpendicular to the annular tangent.</div>
-            <div class="row" style="grid-template-columns:auto auto auto 1fr;">
-              <button id="btnCoach">💡 Ask Co‑Pilot</button>
-              <button id="btnGhost" class="ghost">👻 Toggle Hints</button>
-              <button id="btnDemo" class="ghost">🎬 Demo</button>
-              <span></span>
-            </div>
-          </div>
-
-          <div class="feedback" id="feedback">
-            <!-- dynamic feedback cards -->
-          </div>
-        </div>
-      </div>
-
-      <div class="section">
-        <h4>Score & Metrics</h4>
-        <div class="sectionBody">
-          <div class="row"><span>Overall Score</span><strong id="scoreOverall">—</strong></div>
-          <div class="meter"><span id="meterOverall" style="width:0%"></span></div>
-
-          <div id="scoreBreakdown"></div>
-
-          <div class="section" style="margin:6px 0 0; border-color:#25365a;">
-            <h4>History</h4>
-            <div class="sectionBody">
-              <canvas id="spark" width="340" height="80" aria-label="score sparkline"></canvas>
-              <div class="small">Each dot = a suture. Hover canvas for values (desktop).</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="section">
-        <h4>Case Log</h4>
-        <div class="sectionBody">
-          <div id="log" class="small mono" style="max-height:200px; overflow:auto; background:#0b1222; border:1px solid #1e2945; border-radius:8px; padding:8px;"></div>
-          <div class="row" style="grid-template-columns:auto auto 1fr;">
-            <button id="btnClearLog" class="ghost">🧹 Clear</button>
-            <button id="btnCopyLog" class="ghost">📋 Copy</button>
-            <span></span>
-          </div>
-        </div>
-      </div>
-    </aside>
-  </main>
-
-  <!-- =======================
-       Footer
-       ======================= -->
-  <footer>
-    <div class="small">© MitraSim Pro — educational use only (not a medical device). Expandable to ring seating, neochordae, and valve replacement in the same single‑file architecture.</div>
-    <div class="small">Build: single‑file (no libraries), high‑DPI canvas, PBD tissue model, comprehensive rubric.</div>
-  </footer>
-</div>
-
-<script>
-/* ============================================================
-   MitraSim Pro — Single-file Professional Trainer
-   (c) Educational use only — Not a medical device
-   ============================================================
-   Major Systems:
-   • Geometry: annulus ellipse + segments A1–A3 / P1–P3, calcified arcs
-   • Tissue: dense leaflet mesh with Position-Based Dynamics (PBD)
-   • Sutures: curved needle pass (cubic Bézier), spring constraint, pledget, tensioning, knot lock
-   • Instruments: needle driver (place), forceps (grab/hold), scissors (cut suture)
-   • Guidance: Training storyboard (gated), Practice coaching (continuous), ghost markers, animated demo
-   • Scoring: OSATS-style + task metrics; sparkline history, breakdown meters
-   • Persistence: localStorage save/load, JSON report, screenshot (canvas + HUD)
-   • UX: accessibility labels, keyboard shortcuts, color-blind friendly palette
-============================================================ */
-
-/* ---------- Utilities ---------- */
-const App = {
-  DPR: Math.max(1, Math.min(2, window.devicePixelRatio || 1.25)),
-  W: 1920, H: 1080,
-  pxPerMm: 5, // scale: 1mm = 5px
-  canvas: null, ctx: null, hud: null, running: true, paused:false, last: performance.now(),
-  // Mode & steps
-  mode: 'training', // or 'practice'
-  stepIndex: 0,
-  steps: [],
-  // Scenario
-  sizeMm: 32, targetSpacingMm: 4.0, targetDepthMm: 3.5,
-  calcPattern: 'none', difficulty: 'resident',
-  // Instruments
-  instrument: 'needle', needleCurvature: 0.375, needleAngle: 70, tensionN: 0, pledget: false, showGhost: true, voice:false,
-  // Models
-  valve: null, tissue: null, sutures: [], undoStack: [], redoStack: [],
-  placing: { state:'idle', entry:null, arc:null, hover:null },
-  // Metrics
-  startTime: null, timerId:null,
-  coaptationGapMm: null, score: null,
-  metrics: { spacingMmArr:[], depthMmArr:[], angleArr:[], zoneOkArr:[], calcAvoidArr:[], tensionDisciplineArr:[], trauma:0, perSutureScore:[] },
-  logs: [],
-  // Interactions
-  grab: { active:false, nodeIdx:null, offsetX:0, offsetY:0 },
-  // Demo
-  demoPlaying:false, demoId:null,
-};
-
-/* DOM helpers */
-const $ = sel => document.querySelector(sel);
-const $$ = sel => Array.from(document.querySelectorAll(sel));
-function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
-function lerp(a,b,t){ return a + (b-a)*t; }
-function dist(a,b){ const dx=a.x-b.x, dy=a.y-b.y; return Math.hypot(dx,dy); }
-function mmToPx(mm){ return mm * App.pxPerMm; }
-function pxToMm(px){ return px / App.pxPerMm; }
-function speak(text){
-  if(!App.voice) return;
-  try{ const u = new SpeechSynthesisUtterance(String(text).replace(/<[^>]+>/g,' ')); u.rate=1; u.pitch=1; speechSynthesis.speak(u);}catch(_){}
-}
-function log(msg){ const t = App.startTime? ((Date.now()-App.startTime)/1000).toFixed(1)+'s' : '0.0s'; const line = `[${t}] ${msg}`; App.logs.push(line); renderLog(); }
-
-/* RoundRect polyfill path */
-function pathRoundRect(ctx, x,y,w,h,r){ const rr = Math.min(r, w*0.5, h*0.5); ctx.beginPath();
-  ctx.moveTo(x+rr,y); ctx.arcTo(x+w,y,x+w,y+h,rr); ctx.arcTo(x+w,y+h,x,y+h,rr); ctx.arcTo(x,y+h,x,y,rr); ctx.arcTo(x,y,x+w,y,rr); ctx.closePath();
-}
-
-/* ---------- Valve Geometry ---------- */
-function buildValve(){
-  const cx = App.W*0.5, cy = App.H*0.54;
-  const ML = App.sizeMm + 6, AP = App.sizeMm - 6;
-  const rx = mmToPx(ML*0.5), ry = mmToPx(AP*0.5);
-  // Seg labels
-  const segs = [
-    { id:'A1', t: -Math.PI*0.18 }, { id:'A2', t: 0 }, { id:'A3', t: Math.PI*0.18 },
-    { id:'P1', t: Math.PI - Math.PI*0.18 }, { id:'P2', t: Math.PI }, { id:'P3', t: Math.PI + Math.PI*0.18 }
-  ];
-  // Calcification arcs
-  let calcZones = [];
-  if(App.calcPattern==='posterior'){ calcZones.push({t0: Math.PI*0.9, t1: Math.PI*1.1}); }
-  if(App.calcPattern==='anterior'){ calcZones.push({t0: -Math.PI*0.25, t1: Math.PI*0.25}); }
-  return { cx, cy, rx, ry, segs, calcZones };
-}
-function ellipsePoint(v, t){ return { x: v.cx + v.rx*Math.cos(t), y: v.cy + v.ry*Math.sin(t) }; }
-function ellipseParamForPoint(v, p){ const dx=(p.x-v.cx)/v.rx, dy=(p.y-v.cy)/v.ry; return Math.atan2(dy, dx); }
-function ellipseNormal(v, t){ const nx = Math.cos(t)/v.rx, ny = Math.sin(t)/v.ry; const L=Math.hypot(nx,ny)||1; return { x: nx/L, y: ny/L }; }
-function ellipseTangent(v,t){ const tx = -v.rx*Math.sin(t), ty=v.ry*Math.cos(t); const m=Math.hypot(tx,ty)||1; return {x:tx/m, y:ty/m}; }
-function ellipseNormalizedRadius(v,p){ const dx=p.x-v.cx, dy=p.y-v.cy; return Math.sqrt((dx*dx)/(v.rx*v.rx) + (dy*dy)/(v.ry*v.ry)); }
-function approxArcLen(v,t0,t1){ const steps=28; let L=0; for(let i=0;i<steps;i++){ const a=lerp(t0,t1,i/steps), b=lerp(t0,t1,(i+1)/steps); const pA=ellipsePoint(v,a), pB=ellipsePoint(v,b); L+=Math.hypot(pB.x-pA.x,pB.y-pA.y);} return Math.abs(L); }
-
-/* ---------- Tissue (PBD mesh) ---------- */
-function buildTissueMesh(v){
-  const nodes=[], springs=[]; const nx=56, ny=38; // denser for realism
-  const xmin = v.cx - v.rx, xmax = v.cx + v.rx;
-  const ymin = v.cy - v.ry, ymax = v.cy + v.ry;
-  const dx=(xmax-xmin)/(nx-1), dy=(ymax-ymin)/(ny-1);
-  const index=(ix,iy)=> iy*nx+ix;
-  for(let iy=0; iy<ny; iy++){
-    for(let ix=0; ix<nx; ix++){
-      const x=xmin+ix*dx, y=ymin+iy*dy;
-      const r=ellipseNormalizedRadius(v,{x,y});
-      if(r<=1.01){
-        const pinned = (Math.abs(r-1)<0.02); // annulus line
-        nodes.push({ x,y, px:x,py:y, pinned, dmg:0, type: pinned? 'annulus':'leaflet', mass:1 });
-      } else { nodes.push(null); }
-    }
-  }
-  const k = 1.0; // PBD constraint stiffness factor
-  for(let iy=0; iy<ny; iy++){
-    for(let ix=0; ix<nx; ix++){
-      const i=index(ix,iy); if(!nodes[i]) continue; const here=nodes[i];
-      const neigh=[[1,0],[0,1],[1,1],[1,-1]];
-      for(const [dxi,dyi] of neigh){
-        const jx=ix+dxi, jy=iy+dyi; if(jx<0||jx>=nx||jy<0||jy>=ny) continue;
-        const j=index(jx,jy); if(!nodes[j]) continue; const other=nodes[j];
-        const L0=Math.hypot(other.x-here.x, other.y-here.y);
-        springs.push({ i, j, L0, k, broken:false });
-      }
-    }
-  }
-  return { nodes, springs, nx, ny };
-}
-
-/* PBD step */
-function stepPhysicsPBD(dt){
-  const t=App.tissue; if(!t) return;
-  const damping=0.995;
-  // Integrate (Verlet)
-  for(const n of t.nodes){ if(!n) continue; if(n.pinned) { n.px=n.x; n.py=n.y; continue; }
-    const vx=(n.x - n.px)*damping, vy=(n.y - n.py)*damping + 0.0; // no gravity
-    n.px=n.x; n.py=n.y; n.x += vx; n.y += vy;
-  }
-  // External: suture tension shortens L0 gradually (handled elsewhere)
-  // Constraints iterations
-  const iters = 6 + (App.difficulty==='attending'? 1: 0);
-  for(let iter=0; iter<iters; iter++){
-    for(const s of t.springs){
-      if(s.broken) continue;
-      const a=t.nodes[s.i], b=t.nodes[s.j]; if(!a||!b) continue;
-      const dx=b.x-a.x, dy=b.y-a.y, L=Math.hypot(dx,dy)||1; const diff=(L - s.L0)/L;
-      // Tear check for leaflet springs on high strain
-      if((a.type==='leaflet'||b.type==='leaflet') && L > s.L0*1.6){
-        s.broken=true; if(a.type==='leaflet') a.dmg++; if(b.type==='leaflet') b.dmg++; App.metrics.trauma++; log('⚠ Tissue tear near suture (spring broken)'); updateKPI(); continue;
-      }
-      const corrx = dx*0.5*diff*s.k, corry = dy*0.5*diff*s.k;
-      if(!a.pinned){ a.x += corrx; a.y += corry; }
-      if(!b.pinned){ b.x -= corrx; b.y -= corry; }
-    }
-  }
-  // If grabbed with forceps, override position to mouse
-  if(App.grab.active && App.grab.nodeIdx!=null){
-    const n=t.nodes[App.grab.nodeIdx]; if(n && !n.pinned){
-      n.x = App.grab.targetX; n.y = App.grab.targetY;
-    }
-  }
-  // Suture tension: shorten rest length slightly based on App.tensionN
-  for(const st of App.sutures){ const s=st.spring; if(!s || s.broken) continue;
-    const shorten = clamp(App.tensionN,0,12) * 0.0008;
-    s.L0 = Math.max(1, s.L0 * (1 - shorten));
-  }
-}
-
-/* ---------- Sutures ---------- */
-function computeNeedleArc(p1, p2, curvatureFrac, entryAngleDeg){
-  // Build cubic Bézier based on chord, bulge, and angle vs tangent
-  const mid = { x:(p1.x+p2.x)/2, y:(p1.y+p2.y)/2 };
-  const chord = { x:p2.x-p1.x, y:p2.y-p1.y }; const len=Math.hypot(chord.x,chord.y)||1;
-  const nx = -chord.y/len, ny= chord.x/len;
-  const bulge = len * (0.35 + 0.55*(curvatureFrac-0.3)); // more curvature => larger bulge
-  const angleRad = (entryAngleDeg-90) * Math.PI/180;
-  const rot = Math.cos(angleRad);
-  const c1 = { x: p1.x + chord.x*0.25 + nx*bulge*rot, y: p1.y + chord.y*0.25 + ny*bulge*rot };
-  const c2 = { x: p2.x - chord.x*0.25 + nx*bulge*rot, y: p2.y - chord.y*0.25 + ny*bulge*rot };
-  return { p1, c1, c2, p2 };
-}
-function makeSuture(entry, exit){
-  const id = 'S' + (App.sutures.length+1);
-  const arc = computeNeedleArc(entry, exit, App.needleCurvature, App.needleAngle);
-  const sSpring = { i: entry.nodeIdx, j: exit.nodeIdx, L0: dist(entry, exit)*0.82, k: 1.0, broken:false };
-  const st = { id, entry, exit, arc, spring:sSpring, pledget:App.pledget, angle:App.needleAngle, curvature:App.needleCurvature, tied:false,
-               metrics: assessSingleSuture(entry, exit, App.needleAngle) };
-  App.sutures.push(st); App.tissue.springs.push(sSpring);
-  App.undoStack.push({ type:'addSuture', data:{ suture: st } }); App.redoStack.length=0;
-  log(`Placed ${id}: depth=${st.metrics.depthMm.toFixed(1)}mm spacing=${st.metrics.spacingMm?st.metrics.spacingMm.toFixed(1):'—'}mm angleΔ=${st.metrics.angleDeltaDeg.toFixed(0)}° zoneOk=${st.metrics.zoneOk?'Y':'N'}`);
-  afterSuturePlaced(st);
-  return st;
-}
-function removeLastSuture(){
-  const st = App.sutures.pop(); if(!st) return;
-  // remove spring object (reference)
-  const idx = App.tissue.springs.indexOf(st.spring); if(idx>=0) App.tissue.springs.splice(idx,1);
-  App.undoStack.push({ type:'removeSuture', data:{ suture: st } }); App.redoStack.length=0;
-  log(`✂ Removed ${st.id}`);
-  updateKPI(); renderHUD(); renderFeedback();
-}
-
-/* ---------- Metrics & Scoring ---------- */
-function assessSingleSuture(entry, exit, angleDeg){
-  const v=App.valve;
-  // Depth at entry
-  const te = ellipseParamForPoint(v, entry);
-  const ann = ellipsePoint(v, te);
-  const depthPx = Math.hypot(entry.x-ann.x, entry.y-ann.y);
-  const depthMm = pxToMm(depthPx);
-
-  // Angle vs ideal (90 deg to tangent)
-  const angleDelta = Math.abs(angleDeg - 90);
-
-  // Spacing vs previous along arc
-  let spacingMm=null;
-  if(App.sutures.length>0){
-    const prev = App.sutures[App.sutures.length-1];
-    const tPrev = ellipseParamForPoint(v, prev.entry);
-    const arcLen = approxArcLen(v, tPrev, te);
-    spacingMm = pxToMm(arcLen);
-  }
-
-  // Zone compliance: entry within 3–5 mm band from annulus
-  const zoneOk = depthMm>=3 && depthMm<=5;
-
-  // Calcification avoidance: entry not inside calcified arcs (± tolerance)
-  const inCalc = pointInCalcZone(entry);
-
-  // Coaptation proxy updated elsewhere
-  return { depthMm, spacingMm, angleDeltaDeg: angleDelta, zoneOk, avoidedCalc: !inCalc };
-}
-function pointInCalcZone(p){
-  const v=App.valve; if(!v.calcZones.length) return false;
-  const t=ellipseParamForPoint(v,p);
-  for(const cz of v.calcZones){ if(t>=Math.min(cz.t0,cz.t1) && t<=Math.max(cz.t0,cz.t1)) return true; }
-  return false;
-}
-function computeCoaptationGap(){
-  // Proxy: inner edges near A2 and P2 displaced inward by 4 mm
-  const v=App.valve;
-  const a2 = ellipsePoint(v, 0), p2=ellipsePoint(v, Math.PI);
-  const inward=(p,t)=>{ const n=ellipseNormal(v,t); return { x:p.x - n.x*mmToPx(4), y:p.y - n.y*mmToPx(4) }; }
-  const A=inward(a2,0), P=inward(p2,Math.PI);
-  return pxToMm(dist(A,P));
-}
-
-/* Composite score */
-function scoreNow(final=false){
-  const M=App.metrics;
-  const w = { spacing:0.18, depth:0.16, angle:0.12, zone:0.10, calc:0.10, tension:0.12, trauma:0.10, coapt:0.12 };
-  const sSpacing = avgScoreFromTargets(M.spacingMmArr, App.targetSpacingMm, 1.1);
-  const sDepth   = avgScoreFromTargets(M.depthMmArr, App.targetDepthMm, 0.9);
-  const sAngle   = avgScoreFromTargets(M.angleArr.map(a=>90-a), 0, 0.6);
-  const sZone    = avgBinary(M.zoneOkArr);
-  const sCalc    = avgBinary(M.calcAvoidArr);
-  const sTens    = avgScoreFromTargets(M.tensionDisciplineArr, 0, 1.0); // 0 is ideal deviation
-  const sTrauma  = Math.max(0, 1.0 - (M.trauma*0.07));
-  const gap = App.coaptationGapMm ?? computeCoaptationGap();
-  const sCoapt  = clamp((6 - clamp(gap,2,6)) / 4, 0, 1);
-
-  const score = Math.round(100*(w.spacing*sSpacing + w.depth*sDepth + w.angle*sAngle + w.zone*sZone + w.calc*sCalc + w.tension*sTens + w.trauma*sTrauma + w.coapt*sCoapt));
-  return { score, breakdown:{ sSpacing, sDepth, sAngle, sZone, sCalc, sTens, sTrauma, sCoapt } };
-}
-function avgScoreFromTargets(arr, target, tol){ if(!arr.length) return 0.5; let s=0; for(const v of arr){ const e=Math.abs(v-target); s += clamp(1 - e/(tol*2), 0, 1);} return s/arr.length; }
-function avgBinary(arr){ if(!arr.length) return 0.5; let ok=0; for(const v of arr) if(v) ok++; return ok/arr.length; }
-
-/* ---------- Rendering ---------- */
-function resizeCanvas(){
-  const c = App.canvas, dpr = App.DPR;
-  const rect = c.getBoundingClientRect();
-  const w = Math.floor(rect.width*dpr), h = Math.floor(rect.height*dpr);
-  if(c.width!==w || c.height!==h){
-    c.width=w; c.height=h;
-    App.W=w; App.H=h;
-    App.valve = buildValve();
-    renderHUD();
-  }
-}
-function draw(){
-  const ctx=App.ctx, v=App.valve, t=App.tissue;
-  ctx.clearRect(0,0,App.W,App.H);
-
-  // Ring (annulus)
-  ctx.save();
-  ctx.strokeStyle='#d9d9d9'; ctx.lineWidth=3;
-  ctx.beginPath();
-  for(let i=0;i<=280;i++){ const th=i/280*Math.PI*2; const p=ellipsePoint(v,th); if(i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y); }
-  ctx.stroke();
-
-  // Safe zone band (3–5mm)
-  for(const band of [3,5]){
-    const rx = (v.rx - mmToPx(band)), ry=(v.ry - mmToPx(band));
-    ctx.beginPath();
-    for(let i=0;i<=240;i++){ const th=i/240*Math.PI*2; const x=v.cx+rx*Math.cos(th), y=v.cy+ry*Math.sin(th); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
-    ctx.strokeStyle = band===3? 'rgba(169,255,205,0.5)':'rgba(169,255,205,0.18)'; ctx.lineWidth = band===3? 2:1; ctx.setLineDash(band===3?[6,6]:[3,7]); ctx.stroke(); ctx.setLineDash([]);
-  }
-  ctx.restore();
-
-  // Calcified patches
-  if(v.calcZones.length){
-    ctx.save(); ctx.lineWidth=8; ctx.strokeStyle='rgba(196,149,47,0.95)';
-    for(const cz of v.calcZones){
-      ctx.beginPath();
-      for(let i=0;i<=80;i++){ const th=lerp(cz.t0,cz.t1,i/80); const p=ellipsePoint(v,th); if(i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y); }
-      ctx.stroke();
-    }
-    ctx.restore();
-  }
-
-  // Leaflet fill
-  ctx.save();
-  const clip = new Path2D(); clip.moveTo(v.cx+v.rx,v.cy);
-  for(let i=0;i<=360;i++){ const th=i/360*Math.PI*2; const p=ellipsePoint(v,th); if(i===0) clip.moveTo(p.x,p.y); else clip.lineTo(p.x,p.y); }
-  clip.closePath(); ctx.clip(clip);
-
-  // base tissue
-  ctx.fillStyle = '#e9f5f0'; ctx.globalAlpha=0.88; ctx.fillRect(v.cx-v.rx, v.cy-v.ry, v.rx*2, v.ry*2);
-  ctx.globalAlpha=1;
-
-  // Mesh (subtle)
-  ctx.strokeStyle='rgba(40,52,70,0.65)'; ctx.lineWidth=1;
-  for(const s of t.springs){ if(s.broken) continue; const a=t.nodes[s.i], b=t.nodes[s.j]; if(!a||!b) continue; if(a.type==='annulus'&&b.type==='annulus') continue;
-    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
-  }
-  // Blanching halos around sutures (depth proxy)
-  for(const st of App.sutures){
-    const m = st.metrics.depthMm; const r = clamp(mmToPx(m*0.8), 4, 18);
-    const g = ctx.createRadialGradient(st.entry.x, st.entry.y, 0, st.entry.x, st.entry.y, r);
-    g.addColorStop(0, 'rgba(255,255,255,0.8)'); g.addColorStop(1, 'rgba(255,255,255,0.0)');
-    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(st.entry.x, st.entry.y, r, 0, Math.PI*2); ctx.fill();
-  }
-  ctx.restore();
-
-  // Chordae / papillary hints (static aesthetic)
-  drawChordae(ctx, v);
-
-  // Segment labels
-  drawSegments(ctx, v);
-
-  // Sutures (arcs + points + pledget)
-  for(const st of App.sutures){ drawSuture(ctx, st); }
-
-  // Placement preview
-  if(App.placing.state==='entry-set' && App.placing.arc){ drawBezier(ctx, App.placing.arc, '#cfe3ff', 2.5, [6,4]); }
-
-  // Forceps grab visualization
-  if(App.grab.active && App.instrument==='forceps'){
-    ctx.save(); ctx.strokeStyle='#86a9ff'; ctx.lineWidth=2; const n=App.tissue.nodes[App.grab.nodeIdx];
-    if(n){ ctx.beginPath(); ctx.arc(n.x, n.y, 8, 0, Math.PI*2); ctx.stroke(); }
-    ctx.restore();
-  }
-
-  // HUD overlay refresh
-  renderHUD();
-}
-function drawSegments(ctx,v){
-  ctx.save(); ctx.font='700 16px Inter, system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillStyle='#b8c6f0';
-  for(const s of v.segs){
-    const p=ellipsePoint(v,s.t), n=ellipseNormal(v,s.t); const lx=p.x + n.x*mmToPx(9), ly=p.y + n.y*mmToPx(9);
-    ctx.fillText(s.id, lx, ly);
-  }
-  ctx.restore();
-}
-function drawChordae(ctx,v){
-  ctx.save(); ctx.strokeStyle='rgba(150,160,170,0.85)'; ctx.lineWidth=2;
-  const pap1={x:v.cx-mmToPx(11), y:v.cy+mmToPx(20)}, pap2={x:v.cx+mmToPx(11), y:v.cy+mmToPx(20)};
-  const attach=[ ellipsePoint(v, Math.PI*0.86), ellipsePoint(v, Math.PI), ellipsePoint(v, Math.PI*1.14) ];
-  for(const a of attach){ ctx.beginPath(); ctx.moveTo(pap1.x,pap1.y); ctx.lineTo(a.x,a.y); ctx.stroke();
-                          ctx.beginPath(); ctx.moveTo(pap2.x,pap2.y); ctx.lineTo(a.x,a.y); ctx.stroke(); }
-  ctx.restore();
-}
-function drawBezier(ctx, bez, color, w=3, dash=null){
-  ctx.save(); ctx.beginPath(); ctx.moveTo(bez.p1.x, bez.p1.y);
-  ctx.bezierCurveTo(bez.c1.x, bez.c1.y, bez.c2.x, bez.c2.y, bez.p2.x, bez.p2.y);
-  ctx.strokeStyle=color; ctx.lineWidth=w; if(dash) ctx.setLineDash(dash); ctx.stroke(); ctx.restore();
-}
-function drawSuture(ctx, st){
-  drawBezier(ctx, st.arc, '#c6e0ff', 3);
-  ctx.save(); ctx.fillStyle='#c6e0ff'; for(const p of [st.entry, st.exit]){ ctx.beginPath(); ctx.arc(p.x,p.y,5,0,Math.PI*2); ctx.fill(); }
-  if(st.pledget){ ctx.fillStyle='#ffffff'; ctx.strokeStyle='#284a7a'; ctx.lineWidth=1.6;
-    const cx=(st.entry.x+st.exit.x)/2, cy=(st.entry.y+st.exit.y)/2;
-    pathRoundRect(ctx, cx-9, cy-6, 18, 12, 3); ctx.fill(); ctx.stroke();
-  } ctx.restore();
-}
-
-/* ---------- HUD (SVG) ---------- */
-function renderHUD(){
-  const svg = App.hud; svg.innerHTML='';
-  if(App.showGhost){ drawGhostTargets(svg); }
-  drawHighlights(svg);
-  if(App.mode==='training'){ drawTrainingCallouts(svg); }
-}
-function svgel(tag, attrs={}){ const el=document.createElementNS('http://www.w3.org/2000/svg', tag); for(const k in attrs){ el.setAttribute(k, attrs[k]); } return el; }
-function drawGhostTargets(svg){
-  const v=App.valve;
-  const tStart = Math.PI*0.80, tEnd = Math.PI*1.20; // posterior arc
-  const spacingPx = mmToPx(App.targetSpacingMm);
-  let prev=null;
-  for(let th=tStart; th<=tEnd; th+=0.006){
-    const p=ellipsePoint(v, th); if(!prev){ prev=p; continue; }
-    if(Math.hypot(p.x-prev.x, p.y-prev.y)>=spacingPx){
-      const n=ellipseNormal(v, th);
-      const inx = p.x - n.x*mmToPx(App.targetDepthMm), iny=p.y - n.y*mmToPx(App.targetDepthMm);
-      const c = svgel('circle', { cx:inx, cy:iny, r:5, fill:'#3a86ff', 'fill-opacity':'0.85', class:'glow' });
-      svg.appendChild(c); prev=p;
-    }
-  }
-}
-function drawHighlights(svg){
-  // Highlight safe band, current step area, calc zones
-  const v=App.valve;
-  for(const cz of v.calcZones){
-    // translucent overlay over calcified arc
-    const path = pathArcRibbon(v, cz.t0, cz.t1, 0, mmToPx(6));
-    const p = svgel('path', { d:path, fill:'#c4952f', 'fill-opacity':'0.28', stroke:'#c4952f', 'stroke-opacity':'0.8', 'stroke-width':'2' });
-    svg.appendChild(p);
-  }
-  // Training highlight: P2 band
-  if(App.mode==='training' && App.stepIndex===1){
-    const t0=Math.PI*0.92, t1=Math.PI*1.08;
-    const band = pathArcRibbon(v, t0,t1, mmToPx(3), mmToPx(5));
-    const p = svgel('path', { d:band, fill:'#7fffd455', stroke:'#7fffd4', 'stroke-width':'1.5', class:'glow' });
-    svg.appendChild(p);
-  }
-}
-function pathArcRibbon(v, t0,t1, innerOffsetPx, outerOffsetPx){
-  // Build a ribbon path between offsets from annulus
-  let d=''; const steps=64;
-  // inner
-  for(let i=0;i<=steps;i++){ const th=lerp(t0,t1,i/steps); const n=ellipseNormal(v,th); const e=ellipsePoint(v,th);
-    const x=e.x - n.x*innerOffsetPx, y=e.y - n.y*innerOffsetPx; d += (i===0?`M ${x} ${y}`:` L ${x} ${y}`); }
-  // outer (reverse)
-  for(let i=steps;i>=0;i--){ const th=lerp(t0,t1,i/steps); const n=ellipseNormal(v,th); const e=ellipsePoint(v,th);
-    const x=e.x - n.x*outerOffsetPx, y=e.y - n.y*outerOffsetPx; d += ` L ${x} ${y}`; }
-  d += ' Z'; return d;
-}
-function drawTrainingCallouts(svg){
-  // Step-specific labels/arrows
-  const v=App.valve;
-  const addCallout=(x,y,text)=>{
-    const g=svgel('g',{}); const rect=svgel('rect',{x:x-120, y:y-52, width:240, height:44, rx:8, ry:8, fill:'#0f1a32', stroke:'#39507c', 'stroke-width':'1.5', opacity:'0.98'});
-    const tx=svgel('text',{x, y:y-27, 'text-anchor':'middle', 'font-size':'14', fill:'#cfe1ff'}); tx.textContent=text;
-    const tri=svgel('path',{d:`M ${x} ${y-7} l 8 14 l -16 0 Z`, fill:'#39507c'}); g.append(rect,tx,tri); svg.appendChild(g);
-  };
-  if(App.stepIndex===0) addCallout(App.W*0.28, App.H*0.10, 'Set needle curvature ~3/8 and entry angle ~70°');
-  if(App.stepIndex===1) addCallout(App.W*0.50, App.H*0.24, 'Place entry at P2 within the safe band (3–5 mm)');
-  if(App.stepIndex===2) addCallout(App.W*0.52, App.H*0.25, 'Select exit point symmetric to the entry along the annular normal');
-}
-
-/* ---------- Interaction ---------- */
-function getMousePos(e){
-  const rect=App.canvas.getBoundingClientRect(), scaleX=App.canvas.width/rect.width, scaleY=App.canvas.height/rect.height;
-  return { x:(e.clientX-rect.left)*scaleX, y:(e.clientY-rect.top)*scaleY };
-}
-function findNearestLeafletNode(p, maxPx=22){
-  const t=App.tissue; let best=null, idx=-1, bd=1e9;
-  for(let i=0;i<t.nodes.length;i++){ const n=t.nodes[i]; if(!n||n.type!=='leaflet') continue; const d=Math.hypot(n.x-p.x,n.y-p.y); if(d<bd){ bd=d; best=n; idx=i; } }
-  if(bd>maxPx) return null; best.idx=idx; return best;
-}
-function onDown(e){
-  const p=getMousePos(e);
-  if(App.instrument==='needle'){
-    if(App.mode==='training'){
-      // Gate: step 1 -> parameters; step 2 -> entry; step 3 -> exit
-      if(App.stepIndex===1){ // expecting entry
-        const node=findNearestLeafletNode(p);
-        if(!node) { setHint('Aim within the highlighted band near P2.'); return; }
-        // Validate safe band and avoid calc
-        const v=App.valve, t=ellipseParamForPoint(v,node), ann=ellipsePoint(v,t);
-        const depthMm=pxToMm(Math.hypot(node.x-ann.x, node.y-ann.y));
-        if(depthMm<3 || depthMm>5){ setHint('Entry must be within the 3–5 mm safe band. Adjust closer/further from annulus.'); flashFeedback('Entry depth off safe band (3–5 mm).', 'warn'); return; }
-        if(pointInCalcZone(node)){ setHint('Avoid calcified patch. Slide along the annulus to a softer segment.'); flashFeedback('Entry placed over calcified zone.', 'bad'); return; }
-        App.placing.entry = { x:node.x, y:node.y, nodeIdx:node.idx };
-        App.placing.state='entry-set'; setHint('Good. Now choose the exit point across the leaflet along the annular normal.'); advanceTraining(2);
-      } else if(App.stepIndex===2 && App.placing.state==='entry-set'){
-        const node=findNearestLeafletNode(p);
-        if(!node){ setHint('Pick an appropriate exit across the leaflet.'); return; }
-        App.placing.exit = { x:node.x, y:node.y, nodeIdx:node.idx };
-        const st=makeSuture(App.placing.entry, App.placing.exit);
-        App.placing = { state:'idle', entry:null, arc:null };
-        setHint('Suture placed. Tension gradually to approximate, avoid blanching/tears. Optionally add pledget.'); advanceTraining(3);
-      } else {
-        // Ignore other steps or give hint
-        setHint('Follow the storyboard: set parameters → place entry in P2 → set exit.');
-      }
-    } else {
-      // Practice: free
-      if(App.placing.state==='idle'){
-        const node=findNearestLeafletNode(p); if(!node) return;
-        App.placing.entry={ x:node.x, y:node.y, nodeIdx:node.idx }; App.placing.state='entry-set';
-      } else {
-        const node=findNearestLeafletNode(p); if(!node) return;
-        App.placing.exit={ x:node.x, y:node.y, nodeIdx:node.idx };
-        const st=makeSuture(App.placing.entry, App.placing.exit);
-        App.placing = { state:'idle', entry:null, arc:null };
-      }
-    }
-  } else if(App.instrument==='forceps'){
-    const node=findNearestLeafletNode(p, 28); if(!node) return;
-    App.grab.active=true; App.grab.nodeIdx=node.idx; App.grab.targetX=node.x; App.grab.targetY=node.y;
-  } else if(App.instrument==='scissors'){
-    removeLastSuture();
-  }
-}
-function onMove(e){
-  const p=getMousePos(e);
-  if(App.instrument==='needle' && App.placing.state==='entry-set'){
-    const fakeExit = findNearestLeafletNode(p, 999) || {x:p.x, y:p.y, idx:null};
-    App.placing.arc = computeNeedleArc(App.placing.entry, fakeExit, App.needleCurvature, App.needleAngle);
-  }
-  if(App.grab.active){ App.grab.targetX=p.x; App.grab.targetY=p.y; }
-}
-function onUp(){ if(App.instrument==='forceps'){ App.grab.active=false; App.grab.nodeIdx=null; } }
-
-function bindUI(){
-  /* Instruments */
-  $('#instrumentRow').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; setInstrument(b.dataset.tool); });
-  /* Difficulty */
-  $('#difficultyRow').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; setDifficulty(b.dataset.diff); });
-  /* Calcification */
-  $('#calcRow').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; setCalc(b.dataset.calc); });
-
-  /* Sliders + options */
-  $('#needleCurvature').addEventListener('input', e=>{ App.needleCurvature=Number(e.target.value); $('#kpiCurv').textContent = asCurvStr(App.needleCurvature); if(App.mode==='training' && App.stepIndex===0) checkTrainingParams(); });
-  $('#needleAngle').addEventListener('input', e=>{ App.needleAngle=Number(e.target.value); $('#kpiEntryAngle').textContent = `${App.needleAngle}°`; if(App.mode==='training' && App.stepIndex===0) checkTrainingParams(); });
-  $('#tension').addEventListener('input', e=>{ App.tensionN=Number(e.target.value); $('#kpiTension').textContent=`${App.tensionN.toFixed(2)} N`; App.metrics.tensionDisciplineArr.push(Math.abs(App.tensionN - 4)); /* 4N nominal */ });
-  $('#annulusSize').addEventListener('input', e=>{ App.sizeMm=Number(e.target.value); $('#kpiAnnulus').textContent=String(App.sizeMm); App.valve=buildValve(); });
-  $('#targetSpacing').addEventListener('input', e=>{ App.targetSpacingMm=Number(e.target.value); $('#kpiTargetSpacing').textContent=App.targetSpacingMm.toFixed(1); renderHUD(); });
-  $('#targetDepth').addEventListener('input', e=>{ App.targetDepthMm=Number(e.target.value); $('#kpiTargetDepth').textContent=App.targetDepthMm.toFixed(1); renderHUD(); });
-  $('#pledget').addEventListener('change', e=> App.pledget=e.target.checked);
-  $('#ghostTargets').addEventListener('change', e=>{ App.showGhost=e.target.checked; renderHUD(); });
-  $('#voice').addEventListener('change', e=> App.voice=e.target.checked);
-
-  /* Stage mouse */
-  App.canvas.addEventListener('mousedown', onDown);
-  App.canvas.addEventListener('mousemove', onMove);
-  window.addEventListener('mouseup', onUp);
-
-  /* Core buttons */
-  $('#btnStart').addEventListener('click', ()=>{ startTimer(); App.paused=false; App.running=true; setHint('Begin. Follow the storyboard on the left.'); });
-  $('#btnPause').addEventListener('click', ()=>{ App.paused=!App.paused; $('#btnPause').textContent = App.paused? '▶ Resume':'⏸ Pause'; setHint(App.paused?'Paused.':'Resumed.'); });
-  $('#btnReset').addEventListener('click', resetAll);
-  $('#btnSwitchMode').addEventListener('click', toggleMode);
-  $('#btnGhost').addEventListener('click', ()=>{ App.showGhost=!App.showGhost; renderHUD(); });
-  $('#btnCoach').addEventListener('click', coachNow);
-  $('#btnDemo').addEventListener('click', playDemo);
-
-  /* Save/Load/Export/Screenshot */
-  $('#btnSave').addEventListener('click', saveState);
-  $('#btnLoad').addEventListener('click', loadState);
-  $('#btnDownload').addEventListener('click', downloadReport);
-  $('#btnScreenshot').addEventListener('click', screenshot);
-  $('#btnClearLog').addEventListener('click', ()=>{ App.logs=[]; renderLog(); });
-  $('#btnCopyLog').addEventListener('click', copyLog);
-
-  /* Undo/Redo */
-  $('#btnUndo').addEventListener('click', undo);
-  $('#btnRedo').addEventListener('click', redo);
-
-  /* Hotkeys */
-  window.addEventListener('keydown', (e)=>{
-    if(e.key==='n' || e.key==='N'){ setInstrument('needle'); }
-    else if(e.key==='f' || e.key==='F'){ setInstrument('forceps'); }
-    else if(e.key==='s' || e.key==='S'){ setInstrument('scissors'); }
-    else if(e.key==='r' || e.key==='R'){ resetAll(); }
-    else if(e.code==='Space'){ coachNow(); e.preventDefault(); }
-    else if(e.key==='g' || e.key==='G'){ App.showGhost=!App.showGhost; renderHUD(); }
-    else if((e.ctrlKey||e.metaKey) && e.key==='z'){ undo(); }
-    else if((e.ctrlKey||e.metaKey) && (e.key==='y' || (e.shiftKey && e.key==='Z'))){ redo(); }
-  });
-
-  /* Resize */
-  new ResizeObserver(resizeCanvas).observe(App.canvas);
-}
-
-/* ---------- Instruments / Mode ---------- */
-function setInstrument(name){
-  App.instrument=name; $$('#instrumentRow button').forEach(b=> b.classList.toggle('active', b.dataset.tool===name));
-  log(`Instrument: ${name}`); setHint(`Instrument: <b>${name}</b>`);
-}
-function setDifficulty(level){
-  App.difficulty=level; $$('#difficultyRow button').forEach(b=> b.classList.toggle('active', b.dataset.diff===level));
-  // stiffer tissue for higher difficulty (slightly more resistant)
-  for(const s of App.tissue.springs){ s.k = level==='resident'? 0.95 : level==='fellow'? 1.05 : 1.15; }
-  log(`Difficulty: ${level}`);
-}
-function setCalc(pattern){
-  App.calcPattern=pattern; $$('#calcRow button').forEach(b=> b.classList.toggle('active', b.dataset.calc===pattern));
-  App.valve=buildValve(); renderHUD(); log(`Calcification: ${pattern}`);
-}
-function toggleMode(){
-  App.mode = (App.mode==='training') ? 'practice' : 'training';
-  $('#kpiMode').textContent = `🎛 Mode: ${App.mode[0].toUpperCase()+App.mode.slice(1)}`;
-  if(App.mode==='training'){ setupTraining(); } else { clearTrainingUI(); setHint('Practice mode: place sutures freely. Co‑Pilot will coach after each action.'); }
-}
-
-/* ---------- Training Storyboard ---------- */
-function setupTraining(){
-  App.stepIndex = 0;
-  App.steps = [
-    { id:'params', title:'Set Parameters', desc:'Set needle curvature near 3/8 and entry angle ≈70°. This optimizes arc and perpendicularity.', check: checkTrainingParams },
-    { id:'entry', title:'Place Entry (P2)', desc:'Posterior leaflet (P2). Click inside the highlighted 3–5 mm band, avoiding calcification.', check: ()=>App.placing.state==='entry-set' },
-    { id:'exit', title:'Place Exit', desc:'Choose a corresponding exit across the leaflet along the annular normal.', check: ()=>App.sutures.length>=1 },
-    { id:'tension', title:'Tension & Pledget', desc:'Gradually increase tension (≈3–5 N). Add pledget if indicated.', check: ()=>true },
-    { id:'repeat', title:'Repeat Sutures', desc:'Repeat along P1–P3 maintaining ≈4 mm spacing.', check: ()=>App.sutures.length>=3 },
-    { id:'assess', title:'Assess Coaptation', desc:'Observe coaptation gap proxy and tissue trauma.', check: ()=>true },
-    { id:'final', title:'Finalize & Score', desc:'Click End/Score or continue practicing.', check: ()=>true },
-  ];
-  renderStory();
-  setHint('Training mode: follow the left storyboard. Start by setting parameters.');
-  speak('Training mode activated. Start by setting parameters.');
-}
-function renderStory(){
-  const box=$('#story'); box.innerHTML='';
-  App.steps.forEach((s, i)=>{
-    const div=document.createElement('div'); div.className='storyStep'+(i===App.stepIndex?' active':'')+(i<App.stepIndex?' done':'');
-    div.innerHTML = `<strong>${i+1}) ${s.title}</strong><div class="small">${s.desc}</div>`;
-    box.appendChild(div);
-  });
-  $('#kpiStep').textContent = `📋 Step: ${App.stepIndex+1}/${App.steps.length}`;
-}
-function advanceTraining(nextIndex=null){
-  if(App.mode!=='training') return;
-  const target = nextIndex!=null? nextIndex : App.stepIndex+1;
-  App.stepIndex = clamp(target, 0, App.steps.length-1);
-  renderStory();
-}
-function checkTrainingParams(){
-  const okCurv = App.needleCurvature>=0.34 && App.needleCurvature<=0.42;
-  const okAng  = App.needleAngle>=60 && App.needleAngle<=80;
-  if(okCurv && okAng){ advanceTraining(1); setHint('Parameters set. Now place the <b>entry</b> in P2 within the safe band.'); return true; }
-  else { setHint('Tune parameters: curvature near <b>3/8</b>, angle ~<b>70°</b>.'); return false; }
-}
-function clearTrainingUI(){ $('#story').innerHTML = '<div class="storyStep">Practice mode active. Storyboard hidden.</div>'; $('#kpiStep').textContent='📋 Step: —'; }
-
-/* ---------- Coaching (Practice & On-demand) ---------- */
-function coachNow(){
-  const st=App.sutures.at(-1);
-  if(!st){ setHint('No sutures yet. Place an entry then an exit.'); return; }
-  const m=st.metrics; const adv=[];
-  if(m.depthMm < App.targetDepthMm-0.6) adv.push('Increase <b>bite depth</b> toward target.');
-  if(m.depthMm > App.targetDepthMm+0.8) adv.push('Reduce <b>bite depth</b> to avoid blanching.');
-  if(m.spacingMm!=null && Math.abs(m.spacingMm-App.targetSpacingMm)>0.8) adv.push(`Aim for <b>${App.targetSpacingMm.toFixed(1)}mm</b> spacing.`);
-  if(m.angleDeltaDeg>15) adv.push('Enter more <b>perpendicular</b> to the annulus (≈90°).');
-  if(!m.zoneOk) adv.push('Place within the <b>safe band</b> (3–5 mm).');
-  if(!m.avoidedCalc) adv.push('Avoid <b>calcified</b> segments; slide to a softer zone.');
-  if(App.tensionN>8) adv.push('Ease off <b>tension</b>; risk of tissue tear.');
-  if(adv.length===0) adv.push('Nice technique. Maintain consistency across P1–P3.');
-  setHint(adv.join(' ')); flashFeedback(adv.join(' '), 'info');
-}
-
-/* After each suture placed */
-function afterSuturePlaced(st){
-  // Update arrays
-  App.metrics.depthMmArr.push(st.metrics.depthMm);
-  if(st.metrics.spacingMm!=null) App.metrics.spacingMmArr.push(st.metrics.spacingMm);
-  App.metrics.angleArr.push(90 - st.metrics.angleDeltaDeg);
-  App.metrics.zoneOkArr.push(st.metrics.zoneOk);
-  App.metrics.calcAvoidArr.push(st.metrics.avoidedCalc);
-  // Tension discipline tracked via slider interactions separately
-  // Evaluate per-suture score snapshot
-  App.coaptationGapMm = computeCoaptationGap();
-  const {score} = scoreNow();
-  App.metrics.perSutureScore.push(score);
-  updateKPI(); renderFeedback(); drawSpark();
-  // Training: proceed
-  if(App.mode==='training'){ if(App.stepIndex===2) advanceTraining(3); }
-  // Practice coaching
-  if(App.mode==='practice') coachNow();
-}
-
-/* ---------- Feedback & Score UI ---------- */
-function setHint(html){ const el=$('#hintBox'); el.innerHTML=html; speak(html); }
-function flashFeedback(text, tone='info'){
-  const fb=document.createElement('div'); fb.className='fb '+(tone==='good'?'good':tone==='bad'?'bad':tone==='warn'?'warn':'');
-  fb.innerHTML = `<strong>${tone==='good'?'✅':'ℹ️'} ${tone==='bad'?'Issue':'Note'}</strong><div class="small">${text}</div>`;
-  $('#feedback').prepend(fb); // add on top
-  setTimeout(()=>{ fb.style.opacity='0.0'; setTimeout(()=>fb.remove(), 3000); }, 4000);
-}
-function renderFeedback(){
-  $('#feedback').innerHTML='';
-  const {score, breakdown} = scoreNow();
-  showMeter('Overall', score, '#meterOverall', '#scoreOverall');
-  const bd = [
-    ['Spacing Accuracy', breakdown.sSpacing],
-    ['Bite Depth', breakdown.sDepth],
-    ['Entry Angle', breakdown.sAngle],
-    ['Safe Band Compliance', breakdown.sZone],
-    ['Calcification Avoidance', breakdown.sCalc],
-    ['Tension Discipline', breakdown.sTens],
-    ['Respect for Tissue', breakdown.sTrauma],
-    ['Coaptation Proxy', breakdown.sCoapt],
-  ];
-  const box=$('#scoreBreakdown'); box.innerHTML='';
-  for(const [label,val] of bd){
-    const row=document.createElement('div'); row.className='row'; row.style.gridTemplateColumns='1fr 52px';
-    row.innerHTML = `<span class="small">${label}</span><span>${Math.round(val*100)}%</span>`;
-    const meter=document.createElement('div'); meter.className='meter'; const span=document.createElement('span'); span.style.width=`${Math.round(val*100)}%`; meter.appendChild(span);
-    box.appendChild(row); box.appendChild(meter);
-  }
-}
-function showMeter(label, score, meterSel, textSel){
-  $(textSel).textContent = `${score}`;
-  $(meterSel).style.width=`${score}%`;
-}
-function drawSpark(){
-  const cvs=$('#spark'); const ctx=cvs.getContext('2d');
-  ctx.clearRect(0,0,cvs.width,cvs.height);
-  const arr=App.metrics.perSutureScore; if(!arr.length) return;
-  const min=Math.min(...arr, 40), max=Math.max(...arr, 100);
-  const pad=6, w=cvs.width-2*pad, h=cvs.height-2*pad;
-  // axes
-  ctx.strokeStyle='#2b3d64'; ctx.lineWidth=1; ctx.strokeRect(pad, pad, w, h);
-  // path
-  ctx.beginPath();
-  arr.forEach((v,i)=>{ const x=pad + w*(i/(arr.length-1||1)); const y=pad + h*(1 - (v-min)/(max-min||1)); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
-  ctx.strokeStyle='#68d3ff'; ctx.lineWidth=2; ctx.stroke();
-  // points
-  arr.forEach((v,i)=>{ const x=pad + w*(i/(arr.length-1||1)); const y=pad + h*(1 - (v-min)/(max-min||1)); ctx.beginPath(); ctx.arc(x,y,2.8,0,Math.PI*2); ctx.fillStyle='#43ffa8'; ctx.fill(); });
-}
-
-/* ---------- KPIs ---------- */
-function updateKPI(){
-  $('#kpiSutures').textContent = `🧵 ${App.sutures.length}`;
-  const avg=(a)=> a.length? (a.reduce((x,y)=>x+y,0)/a.length) : null;
-  const aS=avg(App.metrics.spacingMmArr), aD=avg(App.metrics.depthMmArr), aA=avg(App.metrics.angleArr);
-  $('#kpiSpacing').textContent = `↔ Spacing: ${aS? aS.toFixed(1)+' mm' : '—'}`;
-  $('#kpiDepth').textContent   = `⬇ Depth: ${aD? aD.toFixed(1)+' mm' : '—'}`;
-  $('#kpiAngle').textContent   = `⟂ Angle: ${aA? aA.toFixed(0)+'°' : '—'}`;
-  $('#kpiTrauma').textContent  = `🩸 Trauma: ${App.metrics.trauma}`;
-  App.coaptationGapMm = computeCoaptationGap();
-  $('#kpiGap').textContent     = `➖ Gap: ${App.coaptationGapMm.toFixed(1)} mm`;
-  const {score} = scoreNow(); App.score = score;
-  $('#kpiScore').textContent   = `⭐ Score: ${score}/100`;
-}
-
-/* ---------- Save/Load/Export/Screenshot ---------- */
-function saveState(){
-  const data = {
-    mode:App.mode, sizeMm:App.sizeMm, targetSpacingMm:App.targetSpacingMm, targetDepthMm:App.targetDepthMm,
-    calcPattern:App.calcPattern, difficulty:App.difficulty,
-    needleCurvature:App.needleCurvature, needleAngle:App.needleAngle, tensionN:App.tensionN, pledget:App.pledget,
-    sutures: App.sutures.map(s=>({ entry:s.entry, exit:s.exit, pledget:s.pledget, angle:s.angle, curvature:s.curvature })),
-    metrics: App.metrics, logs: App.logs, elapsed: App.startTime? Date.now()-App.startTime : 0
-  };
-  localStorage.setItem('mitrasim_pro_save', JSON.stringify(data));
-  log('💾 Case saved.');
-  flashFeedback('Saved to browser storage.', 'good');
-}
-function loadState(){
-  const j=localStorage.getItem('mitrasim_pro_save'); if(!j){ log('No saved case.'); flashFeedback('No saved case found.', 'warn'); return; }
-  resetAll(true);
-  const d=JSON.parse(j);
-  App.mode=d.mode||'training'; App.sizeMm=d.sizeMm; App.targetSpacingMm=d.targetSpacingMm; App.targetDepthMm=d.targetDepthMm;
-  App.calcPattern=d.calcPattern; App.difficulty=d.difficulty; App.needleCurvature=d.needleCurvature; App.needleAngle=d.needleAngle;
-  App.tensionN=d.tensionN; App.pledget=d.pledget;
-  // UI reflect
-  $('#annulusSize').value=App.sizeMm; $('#kpiAnnulus').textContent=String(App.sizeMm);
-  $('#targetSpacing').value=App.targetSpacingMm; $('#kpiTargetSpacing').textContent=App.targetSpacingMm.toFixed(1);
-  $('#targetDepth').value=App.targetDepthMm; $('#kpiTargetDepth').textContent=App.targetDepthMm.toFixed(1);
-  $('#needleCurvature').value=App.needleCurvature; $('#kpiCurv').textContent=asCurvStr(App.needleCurvature);
-  $('#needleAngle').value=App.needleAngle; $('#kpiEntryAngle').textContent=`${App.needleAngle}°`;
-  $('#tension').value=App.tensionN; $('#kpiTension').textContent=`${App.tensionN.toFixed(2)} N`;
-  $('#pledget').checked=App.pledget; setCalc(App.calcPattern); setDifficulty(App.difficulty);
-  // Sutures
-  for(const s of d.sutures||[]){ const st=makeSuture(s.entry, s.exit); st.pledget=!!s.pledget; st.angle=s.angle; st.curvature=s.curvature; }
-  App.metrics=d.metrics || App.metrics; App.logs=d.logs||[]; renderLog();
-  if(d.elapsed){ App.startTime = Date.now()-d.elapsed; startTimer(); }
-  if(App.mode==='training') setupTraining(); else clearTrainingUI();
-  updateKPI(); renderHUD(); renderFeedback(); drawSpark();
-  log('📂 Case loaded.');
-}
-function reportJSON(){
-  const {score, breakdown} = scoreNow(true);
-  return {
-    timestamp: new Date().toISOString(),
-    scenario: { mode:App.mode, difficulty:App.difficulty, calcification:App.calcPattern, annulusSizeMm:App.sizeMm },
-    performance: { score, breakdown, coaptationGapMm: App.coaptationGapMm, sutures: App.sutures.length, traumaEvents: App.metrics.trauma, elapsedSec: App.startTime? ((Date.now()-App.startTime)/1000)|0 : 0 },
-    sutures: App.sutures.map(s=>({ entry:s.entry, exit:s.exit, depthMm: assessSingleSuture(s.entry,s.exit,s.angle).depthMm,
-                                    spacingMm: assessSingleSuture(s.entry,s.exit,s.angle).spacingMm, angleDeg:s.angle, pledget:s.pledget })),
-    logs: App.logs
-  };
-}
-function downloadReport(){
-  const blob = new Blob([JSON.stringify(reportJSON(), null, 2)], {type:'application/json'});
-  const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`MitraSimPro_report_${Date.now()}.json`; a.click();
-  setTimeout(()=>URL.revokeObjectURL(url), 1500);
-  log('⬇ Report downloaded.');
-}
-function screenshot(){
-  // Compose canvas + HUD (SVG) to PNG
-  const c=App.canvas; const off=document.createElement('canvas'); off.width=c.width; off.height=c.height; const ctx=off.getContext('2d');
-  ctx.drawImage(c, 0,0);
-  const svg = new XMLSerializer().serializeToString(App.hud);
-  const svg64 = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
-  const img = new Image(); img.onload=()=>{ ctx.drawImage(img,0,0); off.toBlob(b=>{ const url=URL.createObjectURL(b); const a=document.createElement('a'); a.href=url; a.download=`MitraSimPro_${Date.now()}.png`; a.click(); setTimeout(()=>URL.revokeObjectURL(url),1500); }); };
-  img.src=svg64;
-}
-
-/* ---------- Undo/Redo ---------- */
-function undo(){
-  const u=App.undoStack.pop(); if(!u) return; if(u.type==='addSuture'){ const st=u.data.suture; const idx=App.sutures.indexOf(st); if(idx>=0){ App.sutures.splice(idx,1); const i2=App.tissue.springs.indexOf(st.spring); if(i2>=0) App.tissue.springs.splice(i2,1); } }
-  App.redoStack.push(u); log('↶ Undo'); updateKPI(); renderHUD(); renderFeedback(); drawSpark();
-}
-function redo(){
-  const u=App.redoStack.pop(); if(!u) return; if(u.type==='addSuture'){ const st=u.data.suture; App.sutures.push(st); App.tissue.springs.push(st.spring); }
-  App.undoStack.push(u); log('↷ Redo'); updateKPI(); renderHUD(); renderFeedback(); drawSpark();
-}
-
-/* ---------- Logging ---------- */
-function renderLog(){ const el=$('#log'); el.innerHTML=App.logs.slice(-300).map(l=>l.replace(/</g,'&lt;')).join('<br/>'); el.scrollTop=el.scrollHeight; }
-function copyLog(){ const t=App.logs.join('\n'); navigator.clipboard.writeText(t).then(()=>flashFeedback('Log copied to clipboard.', 'good')); }
-
-/* ---------- Timer ---------- */
-function startTimer(){
-  if(App.timerId) clearInterval(App.timerId);
-  if(!App.startTime) App.startTime=Date.now();
-  const tick = ()=>{ const s=Math.floor((Date.now()-App.startTime)/1000); const mm=String((s/60)|0).padStart(2,'0'); const ss=String(s%60).padStart(2,'0'); $('#kpiTimer').textContent=`⏱ ${mm}:${ss}`; };
-  App.timerId=setInterval(tick, 500);
-}
-
-/* ---------- Demo ---------- */
-function playDemo(){
-  if(App.demoPlaying){ cancelAnimationFrame(App.demoId); App.demoPlaying=false; setHint('Demo stopped.'); return; }
-  setHint('Demo: watch the ghost hand place a sequence of three sutures along P2→P1→P3.');
-  const v=App.valve; const seq = [Math.PI, Math.PI*0.92, Math.PI*1.08];
-  let i=0;
-  const step=()=>{
-    if(i>=seq.length){ App.demoPlaying=false; return; }
-    const th=seq[i]; const p=ellipsePoint(v, th); const n=ellipseNormal(v, th);
-    const entry = snapToLeaflet({x:p.x - n.x*mmToPx(App.targetDepthMm), y:p.y - n.y*mmToPx(App.targetDepthMm)});
-    const exit  = snapToLeaflet({x:p.x + n.x*mmToPx(App.targetDepthMm*0.9), y:p.y + n.y*mmToPx(App.targetDepthMm*0.9)});
-    if(entry && exit){ makeSuture(entry, exit); }
-    i++; App.demoId=requestAnimationFrame(()=>setTimeout(step, 450));
-  };
-  App.demoPlaying=true; step();
-}
-function snapToLeaflet(p){ const t=App.tissue; let best=null, idx=-1, bd=1e9; for(let i=0;i<t.nodes.length;i++){ const n=t.nodes[i]; if(!n||n.type!=='leaflet') continue; const d=Math.hypot(n.x-p.x,n.y-p.y); if(d<bd){ bd=d; best=n; idx=i; } } if(!best) return null; best.idx=idx; return { x:best.x, y:best.y, nodeIdx:best.idx }; }
-
-/* ---------- Reset ---------- */
-function resetAll(silent=false){
-  // rebuild
-  App.valve=buildValve(); App.tissue=buildTissueMesh(App.valve); App.sutures=[]; App.undoStack=[]; App.redoStack=[];
-  App.placing={state:'idle', entry:null, arc:null};
-  App.metrics={ spacingMmArr:[], depthMmArr:[], angleArr:[], zoneOkArr:[], calcAvoidArr:[], tensionDisciplineArr:[], trauma:0, perSutureScore:[] };
-  if(!silent) App.logs=[]; renderLog();
-  App.startTime=null; if(App.timerId){ clearInterval(App.timerId); App.timerId=null; } $('#kpiTimer').textContent='⏱ 00:00';
-  updateKPI(); renderHUD(); renderFeedback(); drawSpark();
-  if(App.mode==='training') setupTraining(); else clearTrainingUI();
-  log('Tissue reset.');
-}
-
-/* ---------- Render loop ---------- */
-function loop(now){
-  const dt = Math.min(0.033, (now-App.last)/1000); App.last=now;
-  if(App.running && !App.paused){ stepPhysicsPBD(dt); draw(); }
-  requestAnimationFrame(loop);
-}
-
-/* ---------- Helpers ---------- */
-function asCurvStr(frac){
-  // map numeric to friendly fraction string
-  const opts=[[0.25,'1/4'],[0.375,'3/8'],[0.50,'1/2']]; let best=''; let bd=1e9; for(const [v,s] of opts){ const d=Math.abs(frac-v); if(d<bd){ bd=d; best=s; } } return best;
-}
-
-/* ---------- Initialization ---------- */
-function init(){
-  App.canvas = document.getElementById('sim'); App.ctx=App.canvas.getContext('2d');
-  App.hud = document.getElementById('hud');
-
-  // Initial builds
-  App.valve=buildValve(); App.tissue=buildTissueMesh(App.valve);
-
-  // UI wiring
-  bindUI();
-
-  // Mode
-  setupTraining();
-
-  // Initial KPIs & HUD
-  updateKPI(); renderHUD(); renderFeedback(); drawSpark();
-
-  // Start loop
-  requestAnimationFrame(loop);
-
-  // Start timer automatically (demo friendly)
-  startTimer();
-}
-
-window.addEventListener('load', init);
-</script>
-</body>
-</html>
