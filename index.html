@@ -1,1273 +1,935 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>MitralSim — A01 Anatomy Orientation (A1–A3 / P1–P3, chordae, papillary) + TEE</title>
-
-  <!-- Meta / SEO -->
-  <meta name="description" content="MitralSim A01: Anatomy orientation module for the mitral valve—A1–A3 / P1–P3 segments, papillary muscles, chordae—plus TEE landmark overlays with step-by-step AI guidance." />
-  <meta name="color-scheme" content="dark light" />
-  <meta name="theme-color" content="#0b1220" media="(prefers-color-scheme: dark)" />
-  <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)" />
-
-  <!-- Single-file favicon -->
-  <link rel="icon" type="image/svg+xml"
-        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3CradialGradient id='g' cx='50%25' cy='45%25' r='60%25'%3E%3Cstop offset='0' stop-color='%2300d1ff'/%3E%3Cstop offset='1' stop-color='%2300a0c6'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='32' cy='32' r='30' fill='url(%23g)'/%3E%3Cpath d='M16 32c5-8 11-12 16-12s11 4 16 12c-5 8-11 12-16 12s-11-4-16-12z' fill='%230b1220' opacity='.9'/%3E%3Ccircle cx='32' cy='32' r='30' fill='none' stroke='%23ffffff' stroke-opacity='.25'/%3E%3C/svg%3E" />
-
-  <!-- Structured data (SoftwareApplication) -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "MitralSim — A01 Anatomy Orientation",
-    "applicationCategory": "EducationalApplication",
-    "operatingSystem": "Web",
-    "isAccessibleForFree": true,
-    "description": "Interactive anatomy orientation of the mitral valve with AI guidance: A1–A3 / P1–P3, papillary muscles, chordae, and TEE overlays.",
-    "offers": {"@type":"Offer","price":"0","priceCurrency":"USD"},
-    "publisher": {"@type":"Organization","name":"MitralSim Project"}
-  }
-  </script>
-
-  <!-- ===== DESIGN TOKENS & GLOBAL CSS ===== -->
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Module 1 — Anatomical Mastery (Mitral Anatomy Recognition)</title>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <meta name="description" content="MitralSim Pro — Module 1: Anatomical Mastery. Interactive 3D mitral apparatus exploration with AI copilot, variations, and scoring."/>
+  <!-- Three.js + Controls (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
   <style>
-    :root{
-      --bg-0:#060913; --bg-1:#0b1220; --bg-2:#111a2e;
-      --surface-1:#0f1830; --surface-2:#14213d; --surface-3:#1a2a4f;
-      --fg-0:#fff; --fg-1:#cbd5e1; --fg-2:#9fb0c9; --muted:#8b9bb3;
-      --accent:#00d1ff; --accent-2:#ff2d55; --ok:#2ecc71; --warn:#ffb020; --bad:#ff4d4f;
-
-      --focus: color-mix(in oklab, var(--accent) 80%, white);
-      --glow: 0 0 0 2px color-mix(in oklab, var(--accent) 40%, transparent),
-              0 0 0 6px color-mix(in oklab, var(--accent) 20%, transparent);
-
-      --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:20px; --space-6:24px;
-      --r-xs:8px; --r-sm:10px; --r:12px; --r-lg:18px;
-      --shadow-1:0 6px 16px rgba(0,0,0,.28);
-      --shadow-2:0 10px 30px rgba(0,0,0,.32);
-      --shadow-3:0 14px 42px rgba(0,0,0,.40);
-
-      --font-ui: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono";
-
-      --fs-xs: clamp(12px,.78rem,13px);
-      --fs-sm: clamp(13px,.88rem,14px);
-      --fs-md: clamp(14px,.95rem + .1vw,16px);
-      --fs-lg: clamp(16px,1rem + .4vw,18px);
-      --fs-xl: clamp(18px,1.05rem + .8vw,22px);
-    }
-    @media (prefers-color-scheme: light){
-      :root{
-        --bg-1:#f8fafc; --bg-2:#eef2f7; --surface-1:#fff; --surface-2:#f3f6fb; --surface-3:#e9eef7;
-        --fg-0:#0b1220; --fg-1:#182338; --fg-2:#3a4a65; --muted:#5d6f8d;
-        --accent:#007aff;
-        --shadow-1:0 4px 14px rgba(12,20,40,.14);
-        --shadow-2:0 8px 24px rgba(12,20,40,.18);
-        --shadow-3:0 14px 42px rgba(12,20,40,.22);
-      }
-    }
-
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; background:linear-gradient(180deg, var(--bg-1), var(--bg-0));
-      color:var(--fg-1); font:14px/1.5 var(--font-ui);
-      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
-    }
-    ::selection{background:color-mix(in oklab, var(--accent) 30%, transparent); color:var(--fg-0)}
-
-    a{color:var(--accent); text-decoration:none} a:hover{text-decoration:underline}
-    .visually-hidden{position:absolute!important; width:1px; height:1px; overflow:hidden; clip:rect(1px,1px,1px,1px); white-space:nowrap}
-
-    #app{display:grid; grid-template-rows:auto 1fr auto; height:100vh}
-    .topbar,.bottombar{display:flex; align-items:center; gap:12px; padding:12px 16px; background:linear-gradient(180deg, color-mix(in oklab, var(--bg-2) 90%, transparent), var(--surface-1)); border-bottom:1px solid color-mix(in oklab, var(--fg-2) 10%, transparent); box-shadow:var(--shadow-2); z-index:10}
-    .bottombar{border-top:1px solid color-mix(in oklab, var(--fg-2) 10%, transparent); border-bottom:none}
-
-    .main{min-height:0; display:grid; grid-template-columns: clamp(280px, 26vw, 360px) 1fr clamp(300px, 28vw, 420px); gap:12px; padding:12px}
-    @media (max-width:1200px){ .main{grid-template-columns:1fr} .main>aside[aria-label="AI Co‑Pilot"]{order:2} .main>.stage{order:1} .main>aside[aria-label="Landmarks & Tools"]{order:0} }
-
-    .panel{background:linear-gradient(180deg, color-mix(in oklab, var(--surface-1) 86%, transparent), color-mix(in oklab, var(--surface-2) 80%, transparent)); border:1px solid color-mix(in oklab, var(--fg-2) 12%, transparent); border-radius:12px; padding:16px; box-shadow:var(--shadow-1); backdrop-filter: blur(6px)}
-    h1,h2,h3,h4{color:var(--fg-0); margin:0 0 8px; line-height:1.2} h1{font-size:var(--fs-xl)} h2{font-size:var(--fs-lg)} h3{font-size:var(--fs-md)} h4{font-size:var(--fs-sm)} small{font-size:var(--fs-xs); color:var(--fg-2)}
-
-    .chip{display:inline-flex; align-items:center; gap:8px; padding:6px 10px; background:color-mix(in oklab, var(--surface-3) 65%, transparent); border:1px solid color-mix(in oklab, var(--fg-2) 14%, transparent); color:var(--fg-1); border-radius:999px; font-size:var(--fs-sm); line-height:1}
-    button, select{font:600 14px/1 var(--font-ui); color:var(--fg-0); background:var(--surface-2); border:1px solid color-mix(in oklab, var(--fg-2) 18%, transparent); border-radius:10px; padding:10px 14px; cursor:pointer; transition:transform .12s cubic-bezier(.2,.8,.2,1), background .2s, box-shadow .2s}
-    button:hover, select:hover{background: color-mix(in oklab, var(--surface-2) 80%, var(--accent) 20%)}
-    button:active{transform:translateY(1px) scale(.995)}
-    button:disabled{opacity:.6; cursor:not-allowed}
-    button.primary{background:var(--accent); color:#001018; border-color:color-mix(in oklab, var(--accent) 70%, #000); box-shadow:0 4px 16px color-mix(in oklab, var(--accent) 28%, transparent)}
-    button.ghost{background:transparent; color:var(--fg-1); border-color:color-mix(in oklab, var(--fg-2) 24%, transparent)}
-    :focus-visible{outline:2px solid var(--focus); outline-offset:2px; box-shadow:var(--glow)}
-
-    .stage{position:relative; background: radial-gradient(120% 100% at 50% 0%, #0a0f1e, #04070f); border-radius:12px; overflow:hidden; min-height:420px; box-shadow:var(--shadow-3); isolation:isolate}
-    #gl{width:100%; height:100%; display:block; touch-action:none; user-select:none}
-    .overlay{position:absolute; inset:0; pointer-events:none}
-    .legend{position:absolute; right:16px; top:16px}
-    .hud{position:absolute; left:16px; bottom:16px}
-    .tooltip{position:fixed; inset:auto auto 20px 20px; max-width:420px; pointer-events:none; background:color-mix(in oklab, var(--surface-1) 92%, transparent); border:1px solid color-mix(in oklab, var(--fg-2) 16%, transparent); border-radius:12px; padding:16px; box-shadow:var(--shadow-2); color:var(--fg-1); font-size:var(--fs-sm)}
-
-    .steps{margin:0; padding-left:0; counter-reset:step}
-    .steps li{list-style:none; margin:0 0 8px; padding:12px; border-radius:10px; background:color-mix(in oklab, var(--surface-3) 50%, transparent); border:1px solid color-mix(in oklab, var(--fg-2) 14%, transparent); position:relative}
-    .steps li::before{counter-increment:step; content:counter(step); position:absolute; left:-10px; top:-10px; width:28px; height:28px; border-radius:50%; display:grid; place-items:center; font-weight:700; font-size:12px; color:#001018; background:var(--accent); border:2px solid color-mix(in oklab, var(--accent) 70%, #000); box-shadow:0 6px 18px color-mix(in oklab, var(--accent) 30%, transparent)}
-    .steps li.active{outline:2px solid var(--accent); background:color-mix(in oklab, var(--accent) 12%, var(--surface-3))}
-
-    .score-grid{display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center}
-    progress{width:100%; height:8px; border:none; background:color-mix(in oklab, var(--surface-3) 60%, transparent); border-radius:999px; overflow:hidden}
-    progress::-webkit-progress-bar{background:transparent}
-    progress::-webkit-progress-value{background:var(--accent)}
-    progress::-moz-progress-bar{background:var(--accent)}
-
-    .grid{display:grid; gap:12px}
-    .row{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
-    .mt-0{margin-top:0!important} .mb-0{margin-bottom:0!important}
-
-    /* subtle pulse for guidance */
-    @keyframes pulse{ 0%{transform:scale(1); opacity:.8} 70%{transform:scale(1.06); opacity:.2} 100%{transform:scale(1.08); opacity:0} }
-    .pulse{animation:pulse 1200ms cubic-bezier(.2,.8,.2,1) infinite}
-
-    @media (prefers-reduced-motion: reduce){
-      *{animation-duration:0.001ms!important; animation-iteration-count:1!important; transition-duration:0.001ms!important; scroll-behavior:auto!important}
-    }
+    /* Module-specific tasteful accents */
+    .pill { display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border:1px solid var(--outline); border-radius:999px; font-size:12px; color:var(--muted) }
+    .kbd-row { display:flex; gap:8px; flex-wrap:wrap }
+    .switch { display:inline-flex; align-items:center; gap:8px; cursor:pointer; }
+    .switch input{ width:18px; height:18px }
+    .panel .row.wrap { flex-wrap:wrap }
+    .tile { background:var(--panel); border:1px solid var(--outline); border-radius:10px; padding:8px 10px; font-size:12px; color:var(--muted) }
+    .tile b { color:var(--ink) }
+    .scorebox { display:grid; grid-template-columns: repeat(2,1fr); gap:8px }
+    .scorebox .kpi { text-align:center }
+    .overlay-label { position:absolute; transform:translate(-50%,-100%); background:rgba(15,18,24,.92); border:1px solid var(--outline); padding:4px 8px; border-radius:8px; font-size:12px; pointer-events:none }
+    .hot { border-color:#ff6b6b !important; box-shadow:0 0 0 2px rgba(255,107,107,.2) inset }
   </style>
-
-  <!-- ===== SVG ICON SPRITE ===== -->
-  <svg width="0" height="0" class="visually-hidden" aria-hidden="true">
-    <symbol id="i-ai" viewBox="0 0 24 24"><path d="M12 2l2 3 3 .5-2 2 .5 3-3-1.5L9 10.5 9.5 7 7 5.5l3-.5 2-3z" fill="currentColor" opacity=".9"/><circle cx="12" cy="14.5" r="6.5" stroke="currentColor" fill="none" stroke-width="2"/><path d="M9 15h6M12 12v6" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"/></symbol>
-    <symbol id="i-training" viewBox="0 0 24 24"><path d="M3 9l9-4 9 4-9 4-9-4z" stroke="currentColor" fill="none" stroke-width="2"/><path d="M12 13v5" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"/><path d="M12 18l4 2 4-2" stroke="currentColor" fill="none" stroke-width="2"/></symbol>
-    <symbol id="i-practice" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" stroke="currentColor" fill="none" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="currentColor" fill="none" stroke-width="2"/><path d="M12 6v12M6 12h12" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"/></symbol>
-    <symbol id="i-assessment" viewBox="0 0 24 24"><path d="M7 4h10a2 2 0 0 1 2 2v14H5V6a2 2 0 0 1 2-2z" stroke="currentColor" fill="none" stroke-width="2"/><path d="M9 4h6v3H9z" fill="currentColor"/><path d="M8 11h8M8 15h8" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"/><path d="M8 19l2.5-3 2 2.4 3.5-4.4" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-    <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" stroke="currentColor" fill="none" stroke-width="2"/><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"/></symbol>
-    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" stroke-width="2"/><path d="M12 10v7M12 7h.01" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"/></symbol>
-    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" stroke-width="2"/><path d="M9.5 9a3 3 0 1 1 5 2.5c-.8.5-1.5 1.2-1.5 2.5M12 17h.01" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"/></symbol>
-    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="currentColor" fill="none" stroke-width="2"/><path d="M12 7v6l4 2" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"/></symbol>
-    <symbol id="i-camera" viewBox="0 0 24 24"><path fill="currentColor" d="M4 7h4l2-2h4l2 2h4v12H4zM12 10a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/></symbol>
-    <symbol id="i-zoom-in" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6" stroke="currentColor" fill="none" stroke-width="2"/><path d="M21 21l-4.3-4.3M11 8v6M8 11h6" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"/></symbol>
-    <symbol id="i-warning" viewBox="0 0 24 24"><path fill="currentColor" d="M1 21h22L12 2 1 21zm11-3h-2v-2h2v2zm0-4h-2V9h2v5z"/></symbol>
-    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"/></symbol>
-  </svg>
-
-  <!-- ===== AUDIO PLACEHOLDERS ===== -->
-  <audio id="snd-ok" preload="auto" aria-hidden="true"></audio>
-  <audio id="snd-warn" preload="auto" aria-hidden="true"></audio>
-  <audio id="snd-bad" preload="auto" aria-hidden="true"></audio>
-  <audio id="snd-hover" preload="auto" aria-hidden="true"></audio>
-  <audio id="snd-click" preload="auto" aria-hidden="true"></audio>
-
-  <!-- Haptics & Audio routing -->
-  <script type="application/json" id="haptics-presets">
-    {"ok":[12,18],"warn":[14,40,14],"bad":[22,70,22,70,22],"step-advance":[10,18]}
-  </script>
-  <script type="application/json" id="audio-manifest">
-    {
-      "policy":{"autoplay":"gesture-required","respectReducedMotion":true},
-      "events":{
-        "ok":{"el":"snd-ok","volume":0.24,"rate":1.02},
-        "warn":{"el":"snd-warn","volume":0.26,"rate":0.96},
-        "bad":{"el":"snd-bad","volume":0.28,"rate":0.90},
-        "ui-hover":{"el":"snd-hover","volume":0.12,"rate":1.05},
-        "ui-click":{"el":"snd-click","volume":0.18,"rate":1.00},
-        "step-advance":{"el":"snd-ok","volume":0.20,"rate":1.10}
-      }
-    }
-  </script>
 </head>
 <body>
-  <!-- Skip links -->
-  <nav class="visually-hidden" aria-label="Skip links">
-    <a href="#main">Skip to simulation</a>
-    <a href="#landmarks">Skip to landmarks</a>
-    <a href="#copilot">Skip to AI Co‑Pilot</a>
-    <a href="#controls">Skip to controls</a>
-  </nav>
-
-  <div id="app" role="application" aria-label="MitralSim A01" aria-describedby="app-desc">
-    <p id="app-desc" class="visually-hidden">
-      A01: Anatomy orientation of the mitral valve. Follow the AI Co‑Pilot in the right panel for step‑by‑step tasks:
-      align the atrial view, identify A2/P2 and other segments, trace the annulus, and click papillary muscles. The legend in
-      the stage explains color codes. Transport controls are in the bottom bar.
-    </p>
-
-    <!-- Live regions -->
-    <div id="sr-live" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
-    <div id="sr-assertive" class="visually-hidden" aria-live="assertive" aria-atomic="true"></div>
-
-    <!-- TOP BAR -->
-    <header class="topbar" aria-label="Top bar">
-      <div class="chip" aria-label="App title">
-        <svg width="16" height="16" aria-hidden="true"><use href="#i-ai"/></svg>
-        <strong>MitralSim</strong> <small>A01 • Anatomy Orientation</small>
-      </div>
-
-      <div class="chip" role="group" aria-label="Mode">
-        <svg id="mode-icon" width="16" height="16" aria-hidden="true"><use href="#i-training"/></svg>
-        <label for="mode" class="visually-hidden">Mode</label>
-        <select id="mode" aria-describedby="mode-help">
-          <option value="training">Training</option>
-          <option value="practice">Practice</option>
-          <option value="assessment">Assessment</option>
-        </select>
-      </div>
-      <span id="mode-help" class="visually-hidden">Training: strict sequence & hints. Practice: guided & flexible. Assessment: silent scoring.</span>
-
-      <div class="chip" role="group" aria-label="TEE overlay">
-        <label for="tee-planar" class="visually-hidden">TEE view</label>
-        <select id="tee-planar" title="TEE overlay view">
-          <option value="none">TEE overlay: off</option>
-          <option value="me-lax">ME long-axis (A2–P2)</option>
-          <option value="me-commissural">ME commissural (A1–P1 / A3–P3)</option>
-          <option value="me-4ch">ME 4‑chamber (A1–A2 seam)</option>
-        </select>
-      </div>
-
-      <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
-        <label class="chip" title="Increase UI contrast">
-          <input id="toggle-contrast" type="checkbox" /> High contrast
-        </label>
-        <button id="open-onboarding" class="ghost" aria-haspopup="dialog" aria-controls="dlg-onboarding" title="Quick start (press ?)">
-          <svg width="18" height="18" aria-hidden="true"><use href="#i-help"/></svg> Help
-        </button>
-        <button id="take-screenshot" class="ghost" title="Save snapshot (PNG)">
-          <svg width="18" height="18" aria-hidden="true"><use href="#i-camera"/></svg> Snapshot
-        </button>
-      </div>
-    </header>
-
-    <!-- MAIN GRID -->
-    <div class="main" id="main">
-      <!-- LEFT RAIL: Landmarks & Tools -->
-      <aside class="panel" aria-label="Landmarks & Tools" id="landmarks">
-        <h3 class="row"><svg width="18" height="18" aria-hidden="true"><use href="#i-target"/></svg> Landmarks & Gestures</h3>
-
-        <div class="grid">
-          <h4 class="mt-0">Annulus Segments</h4>
-          <div class="row">
-            <span class="chip">Anterior: A1 • A2 • A3</span>
-            <span class="chip">Posterior: P1 • P2 • P3</span>
-          </div>
-          <small>Segments are labeled on the ring. Cyan = annulus outline; lime markers = your clicks; red/orange = off‑target.</small>
-
-          <h4>Papillary Muscles</h4>
-          <div class="row">
-            <span class="chip">AL — anterolateral</span>
-            <span class="chip">PM — posteromedial</span>
-          </div>
-          <small>Click the muscle tips (conical domes) in ventricular space.</small>
-        </div>
-
-        <hr/>
-
-        <div class="grid">
-          <h4 class="mt-0">Gestures</h4>
-          <div class="row"><span class="chip">Orbit</span><small>Left‑drag</small></div>
-          <div class="row"><span class="chip">Pan</span><small>Right‑drag / Shift+drag</small></div>
-          <div class="row"><span class="chip">Zoom</span><small>Wheel / Pinch</small></div>
-          <div class="row"><span class="chip">Trace annulus</span><small>Hold <b>left</b> mouse down and follow the cyan ring</small></div>
-          <div class="row"><span class="chip">Place landmark</span><small>Click near the highlighted target</small></div>
-        </div>
-
-        <hr/>
-
-        <h4 class="mt-0">Telemetry</h4>
-        <div class="score-grid">
-          <span>View azimuth</span><span id="tele-yaw" style="text-align:right">0°</span>
-          <span>View elevation</span><span id="tele-pitch" style="text-align:right">0°</span>
-          <span>Annulus traced</span><span id="tele-trace" style="text-align:right">0%</span>
-        </div>
-
-        <div class="grid" style="margin-top:8px;">
-          <label class="row" style="justify-content:space-between;"><small>Trace Coverage</small><small id="trace-percent">0%</small></label>
-          <progress id="trace-bar" max="100" value="0"></progress>
-        </div>
-      </aside>
-
-      <!-- CENTER STAGE -->
-      <section class="stage panel" aria-label="Simulation Stage">
-        <canvas id="gl" aria-label="3D mitral valve scene"></canvas>
-
-        <!-- SVG Overlay -->
-        <svg id="overlay" class="overlay" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <defs>
-            <filter id="f-glow" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="b" />
-              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-            <marker id="m-arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
-            </marker>
-          </defs>
-          <g id="layer-zones"></g>
-          <g id="layer-hotspots"></g>
-          <g id="layer-paths"></g>
-          <g id="layer-rulers"></g>
-          <g id="layer-callouts"></g>
-          <g id="layer-labels"></g>
-        </svg>
-
-        <!-- Floating Legend -->
-        <div class="legend panel" role="note" aria-label="Legend">
-          <h4 class="mt-0 row" style="gap:8px; align-items:center;">
-            <svg width="16" height="16" aria-hidden="true"><use href="#i-info"/></svg> Legend
-          </h4>
-          <ul style="margin:0; padding-left:18px;">
-            <li><b style="color:var(--accent)">Cyan ring</b> — Annulus outline; labels A1–A3 / P1–P3.</li>
-            <li><b style="color:var(--ok)">Green dot</b> — Correct landmark you placed.</li>
-            <li><b style="color:var(--warn)">Amber dot</b> — Near miss; adjust and retry.</li>
-            <li><b style="color:var(--bad)">Red dot</b> — Off target or wrong structure.</li>
-            <li><span class="row" style="gap:6px; align-items:center;"><svg width="16" height="16"><use href="#i-zoom-in"/></svg>Trace the ring by holding left mouse and following the cyan path</span></li>
-          </ul>
-        </div>
-
-        <!-- HUD -->
-        <div class="hud panel" role="status" aria-live="polite">
-          <div class="row" style="gap:8px; align-items:center;">
-            <svg width="16" height="16" aria-hidden="true"><use href="#i-training"/></svg>
-            <div>Step <b id="step-idx">1</b>/<span id="step-total">—</span> • <span id="step-title">—</span></div>
-          </div>
-          <div class="row" style="gap:8px; align-items:center; margin-top:6px;">
-            <svg width="16" height="16" aria-hidden="true"><use href="#i-clock"/></svg>
-            <div>Timer: <span id="timer">00:00</span></div>
-          </div>
-        </div>
-
-        <div id="tooltip" class="tooltip panel" role="status" aria-live="polite">
-          Welcome to A01. Press <b>?</b> for help.
-        </div>
-
-        <template id="tpl-label">
-          <div class="chip" style="position:absolute; transform:translate(-50%,-50%);">
-            <svg width="14" height="14" aria-hidden="true" style="margin-right:4px;"><use href="#i-target"/></svg>
-            <span data-text>Label</span>
-          </div>
-        </template>
-      </section>
-
-      <!-- RIGHT RAIL: AI Co‑Pilot -->
-      <aside class="panel" aria-label="AI Co‑Pilot" id="copilot">
-        <h3 class="row" style="gap:8px; align-items:center;"><svg width="18" height="18" aria-hidden="true"><use href="#i-ai"/></svg> AI Co‑Pilot</h3>
-        <p id="copilot-summary" class="mb-0">We will orient the view, identify segments and papillary muscles, and trace the annulus.</p>
-
-        <div class="row" style="gap:8px; margin:10px 0 14px;">
-          <label class="chip" title="Narrate guidance with speech synthesis"><input id="voice-on" type="checkbox" /> <svg width="14" height="14" aria-hidden="true"><use href="#i-info"/></svg> Voice</label>
-          <label class="chip" title="Automatically advance when a step meets its goal"><input id="auto-advance" type="checkbox" /> Auto‑advance</label>
-          <label class="chip" title="Show callouts and rulers for each step"><input id="show-hints" type="checkbox" checked /> Hints</label>
-        </div>
-
-        <ol id="step-list" class="steps" aria-label="Step-by-step guidance"></ol>
-
-        <div class="row" style="gap:8px; justify-content:flex-end; margin-top:6px;">
-          <button id="btn-prev-step" class="ghost" title="Previous step">Prev</button>
-          <button id="btn-next-step" class="ghost" title="Next step">Next</button>
-        </div>
-
-        <hr/>
-
-        <h4 class="mt-0 row" style="gap:8px; align-items:center;">
-          <svg width="16" height="16" aria-hidden="true"><use href="#i-warning"/></svg> Feedback
-        </h4>
-        <div id="feedback" aria-live="polite">
-          <p class="mb-0">Guidance will appear here.</p>
-        </div>
-
-        <div class="grid" style="margin-top:12px;">
-          <h4 class="mt-0">Targets</h4>
-          <div class="row" style="gap:8px;"><span class="chip">View alignment</span><small>Yaw & pitch within a small tolerance</small></div>
-          <div class="row" style="gap:8px;"><span class="chip">Landmark click</span><small>Within ≤ 2.0 mm of target</small></div>
-          <div class="row" style="gap:8px;"><span class="chip">Annulus tracing</span><small>≥ 70% coverage of the ring</small></div>
-        </div>
-      </aside>
+  <div class="topbar">
+    <div class="inner">
+      <a class="btn secondary" href="../index.html">← Back</a>
+      <div class="logo">Module 1 — Anatomical Mastery</div>
+      <span class="badge">Anatomy Recognition</span>
+      <div style="flex:1"></div>
+      <span class="badge">Educational prototype · Not a medical device</span>
     </div>
-
-    <!-- BOTTOM BAR -->
-    <footer class="bottombar" aria-label="Controls" id="controls">
-      <div class="row" style="gap:8px;">
-        <button id="btn-start" class="primary" title="Start / resume (Space)">Start</button>
-        <button id="btn-pause" title="Pause (Space)">Pause</button>
-        <button id="btn-reset" class="ghost" title="Reset session">Reset</button>
-      </div>
-      <div style="margin-left:auto; display:flex; gap:12px; align-items:center;">
-        <div class="chip" title="Overall grade"><svg width="14" height="14" aria-hidden="true"><use href="#i-assessment"/></svg> Score: <b id="score" style="margin-left:6px;">0</b></div>
-        <div class="chip" title="Landmark identification"><svg width="14" height="14" aria-hidden="true"><use href="#i-target"/></svg> ID: <b id="score-accuracy" style="margin-left:6px;">0%</b></div>
-        <div class="chip" title="View alignment"><svg width="14" height="14" aria-hidden="true"><use href="#i-zoom-in"/></svg> View: <b id="score-efficiency" style="margin-left:6px;">—</b></div>
-      </div>
-    </footer>
   </div>
 
-  <!-- DIALOGS -->
-  <dialog id="dlg-onboarding" class="panel" aria-label="Welcome to A01">
-    <form method="dialog" class="grid">
-      <header class="row" style="gap:8px; align-items:center;">
-        <svg width="18" height="18" aria-hidden="true"><use href="#i-training"/></svg>
-        <h3 class="mt-0 mb-0">Welcome to A01 — Anatomy Orientation</h3>
-      </header>
-      <p class="mb-0">
-        You’ll learn to align the **atrial view**, identify **A1–A3 / P1–P3**, locate the **anterolateral (AL)** and **posteromedial (PM)** papillary muscles, and **trace the annulus**.
-      </p>
-      <div class="grid">
-        <h4 class="mt-0">How it works</h4>
-        <ul style="margin:0; padding-left:18px;">
-          <li><b>Training</b> — strict sequence, bold highlights, voice hints, and auto-advance (optional).</li>
-          <li><b>Practice</b> — flexible but still stepwise guidance & overlays.</li>
-          <li><b>Assessment</b> — silent scoring, no hints.</li>
-        </ul>
+  <div class="container page">
+    <!-- Left sidebar -->
+    <aside class="sidebar">
+      <div class="panel">
+        <h4>Mode</h4>
+        <div class="row">
+          <button id="btnModeTraining" class="btn secondary">Training</button>
+          <button id="btnModePractice" class="btn secondary">Practice</button>
+          <button id="btnModeQuiz" class="btn secondary">Quiz</button>
+        </div>
+        <div class="small">Training = guided lessons with hotspots. Practice = prompts to identify structures. Quiz = timed 10‑question assessment.</div>
       </div>
-      <div class="row" style="gap:8px; justify-content:flex-end;">
-        <button value="cancel" class="ghost">Close</button>
-        <button id="ob-ok" value="default" class="primary">Let’s begin</button>
-      </div>
-    </form>
-  </dialog>
 
-  <!-- ===== MODULE SCRIPT (type=module) ===== -->
+      <div class="panel">
+        <h4>Legend</h4>
+        <div class="legend">
+          <span class="tag">Red: LV myocardium</span>
+          <span class="tag">Teal: LA</span>
+          <span class="tag">Green: Mitral annulus</span>
+          <span class="tag">Light green: Leaflets (A/P)</span>
+          <span class="tag">Yellow: Chordae</span>
+          <span class="tag">Purple: Papillary muscles</span>
+          <span class="tag">Blue: Targets/Segments</span>
+          <span class="tag">Red band: Danger zone</span>
+          <span class="tag">Green band: Safe zone</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h4>Map Layers</h4>
+        <div class="list small" id="layerList">
+          <label class="switch"><input type="checkbox" data-layer="leaflets" checked> Leaflets (A/P)</label>
+          <label class="switch"><input type="checkbox" data-layer="annulus" checked> Mitral Annulus</label>
+          <label class="switch"><input type="checkbox" data-layer="lvot" checked> LVOT & AMC markers</label>
+          <label class="switch"><input type="checkbox" data-layer="papillary" checked> Papillary Muscles</label>
+          <label class="switch"><input type="checkbox" data-layer="chordae" checked> Chordae Tendineae</label>
+          <label class="switch"><input type="checkbox" data-layer="segments" checked> A1–A3 / P1–P3 Hit‑pads</label>
+          <label class="switch"><input type="checkbox" data-layer="zones" checked> Safe / Danger Zones</label>
+          <label class="switch"><input type="checkbox" data-layer="coronaries" checked> Coronary Surrogates</label>
+          <label class="switch"><input type="checkbox" data-layer="labels" checked> Floating Labels</label>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h4>Anatomical Variations</h4>
+        <div class="list">
+          <select id="variationSel" style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--outline); background:#0d1117; color:var(--ink)">
+            <option value="normal">Normal Adult</option>
+            <option value="annular_dilation">Annular Dilatation</option>
+            <option value="posterior_p2_prolapse">Posterior P2 Prolapse</option>
+            <option value="barlow_bileaflet">Barlow‑type Bileaflet Prolapse</option>
+            <option value="annular_calcification">Annular Calcification (posterior)</option>
+            <option value="cleft_a2">Anterior Leaflet Cleft (A2)</option>
+            <option value="short_chordae">Shortened Primary Chordae</option>
+          </select>
+          <div class="row" style="margin-top:8px">
+            <button id="btnApplyVar" class="btn secondary">Apply Variation</button>
+            <button id="btnResetVar" class="btn secondary">Reset</button>
+          </div>
+          <div class="small" id="variationNote">Tip: switch modes after applying a variation to re‑test recognition under different anatomy.</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h4>AI Copilot</h4>
+        <div id="coachUI" class="list small"></div>
+        <div class="row" style="margin-top:8px">
+          <button id="btnPrev" class="btn secondary">◀ Prev</button>
+          <button id="btnNext" class="btn secondary">Next ▶</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h4>Quick Camera</h4>
+        <div class="row wrap">
+          <button class="btn secondary" data-focus="annulus">Focus Annulus</button>
+          <button class="btn secondary" data-focus="aorta">Focus LVOT/AMC</button>
+          <button class="btn secondary" data-focus="pap_al">Focus Pap AL</button>
+          <button class="btn secondary" data-focus="pap_pm">Focus Pap PM</button>
+          <button class="btn secondary" data-focus="reset">Reset View</button>
+        </div>
+        <div class="kbd-row small" style="margin-top:8px">
+          <span class="pill"><b>Orbit</b> drag</span>
+          <span class="pill"><b>Pan</b> shift+drag</span>
+          <span class="pill"><b>Zoom</b> wheel</span>
+          <span class="pill"><b>Hotkeys</b> <kbd>F</kbd> focus, <kbd>L</kbd> labels, <kbd>V</kbd> variations</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h4>Metrics & Scoring</h4>
+        <div class="scorebox">
+          <div class="kpi">
+            <div class="label">Accuracy</div>
+            <div id="kpiAcc" class="value">0%</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Avg. Response</div>
+            <div id="kpiRT" class="value">— s</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Streak</div>
+            <div id="kpiStreak" class="value">0</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Score</div>
+            <div id="kpiScore" class="value">0</div>
+          </div>
+        </div>
+        <div class="small" style="margin-top:8px">Practice/Quiz: score = correctness, speed, difficulty. Training: ungraded.</div>
+      </div>
+
+      <div class="panel">
+        <h4>Finish</h4>
+        <div class="list small">
+          <button id="btnFinish" class="btn">Save to Dashboard</button>
+          <div id="finishNote" class="small">Status: <b>Not saved</b></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right main -->
+    <main>
+      <div id="canvasWrap" class="canvas-wrap">
+        <div id="overlay"></div>
+      </div>
+      <div class="row" style="margin-top:10px; gap:10px">
+        <div class="chip"><b>Task:</b> <span id="taskText" class="small">—</span></div>
+        <div class="chip"><b>Feedback:</b> <span id="feedbackText" class="small">—</span></div>
+      </div>
+    </main>
+  </div>
+
+  <div class="footer small">© 2025 MitralSim Pro — Module 1. Educational prototype. No clinical use.</div>
+
+  <!-- Module script -->
   <script type="module">
-  // ---------- Capability probe ----------
-  const caps = (() => {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches || false;
-    const probe = document.createElement('canvas');
-    let gl2 = null, info = {};
-    try { gl2 = probe.getContext('webgl2', { antialias: true, alpha: false }); } catch(e){}
-    const webgl2 = !!gl2;
-    let maxTexSize = 0;
-    if (gl2) {
-      maxTexSize = gl2.getParameter(gl2.MAX_TEXTURE_SIZE) || 0;
-      info = {
-        vendor: gl2.getParameter(gl2.VENDOR),
-        renderer: gl2.getParameter(gl2.RENDERER),
-        version: gl2.getParameter(gl2.VERSION)
-      };
-    }
-    document.documentElement.dataset.gl = webgl2 ? 'gl2' : 'none';
-    document.documentElement.dataset.dpr = String(dpr);
-    return { dpr, webgl2, maxTexSize, info, prefersReducedMotion };
-  })();
+    import {Bus, Util, Overlay, Voice, Progress} from '../assets/js/core/common.js';
+    import {Renderer3D} from '../assets/js/core/renderer3d.js';
+    import {StepEngine} from '../assets/js/core/coach.js';
 
-  if (!caps.webgl2) {
-    document.body.innerHTML = \`
-      <div style="padding:32px;max-width:720px;margin:40px auto;
-                  font:16px/1.5 var(--font-ui);color:var(--fg-0);">
-        <h2 style="margin:0 0 8px;">WebGL 2 not available</h2>
-        <p>This module requires a modern browser/GPU with WebGL 2.
-           Try the latest Chrome, Edge, Firefox, or Safari on desktop.</p>
-        <pre style="white-space:pre-wrap;background:rgba(255,255,255,.04);padding:12px;border-radius:10px;">
-Caps: \${JSON.stringify(caps, null, 2)}
-        </pre>
-      </div>\`;
-    throw new Error('WebGL2 required');
-  }
-
-  // ---------- Event bus & app state ----------
-  const Bus = new EventTarget();
-  const emit = (type, detail) => Bus.dispatchEvent(new CustomEvent(type, { detail }));
-  const on = (type, fn) => Bus.addEventListener(type, fn);
-
-  const State = {
-    mode: 'training',
-    stepIndex: 0,
-    flags: { voice:false, autoAdvance:false, showHints:true, highContrast:false },
-    // Timer
-    timerStart: 0, timerElapsed: 0, timerRunning: false, _timerInterval: null,
-    // Scores
-    score: { total: 0, id: 0, view: 0 },
-  };
-
-  function _fmt(ms){ const s=Math.max(0,Math.floor(ms/1000)); return String((s/60|0)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
-  function startTimer(){ if(State.timerRunning) return; State.timerRunning=true; State.timerStart=performance.now()-State.timerElapsed; if(!State._timerInterval){ State._timerInterval=setInterval(()=>{ const now=performance.now(); const el=State.timerRunning?(now-State.timerStart):State.timerElapsed; document.getElementById('timer').textContent=_fmt(el); },200);} emit('timer:start',{}); }
-  function pauseTimer(){ if(!State.timerRunning) return; State.timerElapsed=performance.now()-State.timerStart; State.timerRunning=false; emit('timer:pause',{}); }
-  function resetTimer(){ State.timerStart=0; State.timerElapsed=0; State.timerRunning=false; document.getElementById('timer').textContent='00:00'; emit('timer:reset',{}); }
-
-  window.MitralSim = { Bus, emit, State, startTimer, pauseTimer, resetTimer };
-
-  // ---------- Geometry & anatomy model (mm units) ----------
-  // Elliptical annulus: a = semi-major (x), b = semi-minor (y)
-  const TAU = Math.PI*2, DEG=Math.PI/180;
-  const vec3=(x=0,y=0,z=0)=>[x,y,z], add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]], sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]], mul=(a,s)=>[a[0]*s,a[1]*s,a[2]*s], dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2], cross=(a,b)=>[a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]], len=a=>Math.hypot(a[0],a[1],a[2]), norm=a=>{const L=len(a)||1; return [a[0]/L,a[1]/L,a[2]/L]; };
-
-  function ellipsePoint(a,b,theta){ return [ a*Math.sin(theta), b*Math.cos(theta), 0 ]; }
-  function ellipseNormal(a,b,theta){ const tx=a*Math.cos(theta), ty=-b*Math.sin(theta); return norm([-ty, tx, 0]); }
-  const SEG = { A1:[-60,-20], A2:[-20,20], A3:[20,60], P1:[120,160], P2:[160,200], P3:[200,240] };
-
-  function buildLeafletPatch(a,b,theta0,theta1, radialLenMm, radialSteps=22, angularSteps=44, curvatureMm=1.8) {
-    const cols = angularSteps+1, rows=radialSteps+1;
-    const POS=new Float32Array(cols*rows*3), NRM=new Float32Array(cols*rows*3), IDX=new Uint32Array(angularSteps*radialSteps*6);
-    for(let j=0;j<=angularSteps;j++){
-      const t=theta0+(theta1-theta0)*(j/angularSteps);
-      const hinge=ellipsePoint(a,b,t), inward=norm(mul(ellipseNormal(a,b,t),-1));
-      for(let i=0;i<=radialSteps;i++){
-        const r=i/radialSteps, xy=add(hinge, mul(inward, r*radialLenMm));
-        const z=-curvatureMm*Math.sin(Math.PI*r)* (1.0 + 0.15*Math.cos(4.0*t)); // gentle corrugation
-        const k=(j*rows+i)*3; POS[k]=xy[0]; POS[k+1]=xy[1]; POS[k+2]=z;
-      }
-    }
-    let k=0;
-    for(let j=0;j<angularSteps;j++){
-      for(let i=0;i<radialSteps;i++){
-        const a0=j*rows+i, a1=(j+1)*rows+i, a2=j*rows+i+1, a3=(j+1)*rows+i+1;
-        IDX[k++]=a0; IDX[k++]=a1; IDX[k++]=a2; IDX[k++]=a2; IDX[k++]=a1; IDX[k++]=a3;
-      }
-    }
-    // normals via finite differences
-    for(let j=0;j<=angularSteps;j++){
-      for(let i=0;i<=radialSteps;i++){
-        const k=(j*rows+i)*3;
-        const A=[POS[k],POS[k+1],POS[k+2]];
-        const kI=(j*rows+Math.min(i+1,radialSteps))*3;
-        const kJ=(Math.min(j+1,angularSteps)*rows+i)*3;
-        const B=[POS[kI],POS[kI+1],POS[kI+2]];
-        const C=[POS[kJ],POS[kJ+1],POS[kJ+2]];
-        const n=norm(cross(sub(B,A), sub(C,A)));
-        NRM[k]=n[0]; NRM[k+1]=n[1]; NRM[k+2]=n[2];
-      }
-    }
-    return { positions:POS, normals:NRM, indices:IDX };
-  }
-
-  function sampleAnnulus(a,b,segments=256){
-    const pts=new Float32Array((segments+1)*3);
-    for(let i=0;i<=segments;i++){ const t=(i/segments)*TAU, p=ellipsePoint(a,b,t); pts[i*3]=p[0]; pts[i*3+1]=p[1]; pts[i*3+2]=0; }
-    return { positions:pts, segments };
-  }
-
-  const PAP = { AL: vec3(+14,+8,-22), PM: vec3(-14,-8,-22) };
-
-  function buildChordae(a,b,theta0,theta1,radialLenMm,perSide=14, attach='AL'){
-    const lines=new Float32Array(perSide*2*3);
-    const anchor=PAP[attach];
-    for(let i=0;i<perSide;i++){
-      const t=theta0+(theta1-theta0)*((i+0.5)/perSide);
-      const hinge=ellipsePoint(a,b,t), inward=norm(mul(ellipseNormal(a,b,t),-1));
-      const freeEdge=add(hinge, mul(inward, radialLenMm));
-      lines[i*6]=freeEdge[0]; lines[i*6+1]=freeEdge[1]; lines[i*6+2]=freeEdge[2];
-      lines[i*6+3]=anchor[0]; lines[i*6+4]=anchor[1]; lines[i*6+5]=anchor[2];
-    }
-    return lines;
-  }
-
-  function buildSphere(radius=4, lat=16, lon=24){
-    const POS=[], NRM=[], IDX=[];
-    for(let i=0;i<=lat;i++){
-      const v=i/lat, phi=v*Math.PI; const cp=Math.cos(phi), sp=Math.sin(phi);
-      for(let j=0;j<=lon;j++){
-        const u=j/lon, th=u*TAU; const ct=Math.cos(th), st=Math.sin(th);
-        const x=radius*st*sp, y=radius*ct*sp, z=radius*cp;
-        POS.push(x,y,z); const L=Math.hypot(x,y,z)||1; NRM.push(x/L,y/L,z/L);
-      }
-    }
-    for(let i=0;i<lat;i++){
-      for(let j=0;j<lon;j++){
-        const a=i*(lon+1)+j, b=a+lon+1;
-        IDX.push(a, b, a+1, a+1, b, b+1);
-      }
-    }
-    return { positions:new Float32Array(POS), normals:new Float32Array(NRM), indices:new Uint32Array(IDX) };
-  }
-
-  function buildMitral(){
-    const a=17.5, b=15.0, ant=18, post=12;
-    const ann=sampleAnnulus(a,b,288);
-
-    const A1=buildLeafletPatch(a,b, SEG.A1[0]*DEG, SEG.A1[1]*DEG, ant, 22, 32, 2.2);
-    const A2=buildLeafletPatch(a,b, SEG.A2[0]*DEG, SEG.A2[1]*DEG, ant, 24, 36, 2.6);
-    const A3=buildLeafletPatch(a,b, SEG.A3[0]*DEG, SEG.A3[1]*DEG, ant, 22, 32, 2.2);
-
-    const P1=buildLeafletPatch(a,b, SEG.P1[0]*DEG, SEG.P1[1]*DEG, post, 20, 30, 1.6);
-    const P2=buildLeafletPatch(a,b, SEG.P2[0]*DEG, SEG.P2[1]*DEG, post, 20, 32, 1.8);
-    const P3=buildLeafletPatch(a,b, SEG.P3[0]*DEG, SEG.P3[1]*DEG, post, 20, 30, 1.6);
-
-    const chordP2_AL=buildChordae(a,b, SEG.P2[0]*DEG, SEG.P2[1]*DEG, post, 14, 'AL');
-    const chordP2_PM=buildChordae(a,b, SEG.P2[0]*DEG, SEG.P2[1]*DEG, post, 14, 'PM');
-
-    const sphere=buildSphere(4.6, 18, 28);
-    const boundsR=Math.max(a,b)+Math.max(ant,post)+8;
-    const landmarks = (() => {
-      function midOf(deg){ const th=((deg[0]+deg[1])/2)*DEG; return ellipsePoint(a,b,th); }
-      return {
-        annulusMid: { A1:midOf(SEG.A1), A2:midOf(SEG.A2), A3:midOf(SEG.A3), P1:midOf(SEG.P1), P2:midOf(SEG.P2), P3:midOf(SEG.P3) },
-        papillary: { AL:PAP.AL, PM:PAP.PM },
-        ringAB:{a,b}
-      };
-    })();
-
-    return {
-      meshes:{
-        annulus:ann,
-        leaflets:{A1,A2,A3,P1,P2,P3},
-        chordae:{ P2_AL:chordP2_AL, P2_PM:chordP2_PM },
-        spheres:{ unit:sphere } // instanced at AL/PM
+    // ---------- State ----------
+    const state = {
+      mode: 'training',           // 'training' | 'practice' | 'quiz'
+      renderer: null,
+      groups: {
+        core: null,               // entire heart root
+        lv: null, la: null,       // myocardium
+        annulus: null,            // mitral ring
+        leaflets: { A: null, P: null },
+        segments: [],             // A1-A3, P1-P3 hitpads
+        chordae: null,            // chordae bundle
+        pap: { AL: null, PM: null },
+        coronaries: { LAD: null, Cx: null },
+        aorta: null,              // aortic root surrogate
+        zones: { safe: [], danger: [] },
+        labels: []                // floating label anchors
       },
-      bounds:{ min:vec3(-boundsR,-boundsR,-26), max:vec3(boundsR,boundsR,26), center:vec3(0,0,0), radius:boundsR },
-      landmarks
+      variation: 'normal',
+      task: null,                 // current practice/quiz task
+      expectKey: null,            // structure key expected
+      labelVisible: true,
+      quiz: { total: 10, asked: 0, correct: 0, rt: [], score: 0 },
+      practice: { asked: 0, correct: 0, streak: 0, rt: [], score: 0 },
+      timers: { t0: 0 },
+      metricsEls: {
+        acc: document.getElementById('kpiAcc'),
+        rt: document.getElementById('kpiRT'),
+        streak: document.getElementById('kpiStreak'),
+        score: document.getElementById('kpiScore')
+      },
+      ui: {
+        task: document.getElementById('taskText'),
+        feedback: document.getElementById('feedbackText'),
+        finishNote: document.getElementById('finishNote')
+      }
     };
-  }
 
-  const Assets = { mitral: buildMitral() };
+    // ---------- UI bindings ----------
+    Overlay.init(document.getElementById('canvasWrap'));
+    document.getElementById('btnModeTraining').onclick = () => setMode('training');
+    document.getElementById('btnModePractice').onclick = () => setMode('practice');
+    document.getElementById('btnModeQuiz').onclick = () => setMode('quiz');
+    document.getElementById('btnApplyVar').onclick = () => applyVariation(document.getElementById('variationSel').value);
+    document.getElementById('btnResetVar').onclick = () => applyVariation('normal');
+    document.getElementById('btnPrev').onclick = () => engine.prev();
+    document.getElementById('btnNext').onclick = () => engine.next();
+    document.getElementById('btnFinish').onclick = saveProgress;
 
-  // ---------- WebGL2 renderer ----------
-  let gl;
-  const M4 = {
-    ident: ()=>new Float32Array([1,0,0,0,  0,1,0,0,  0,0,1,0,  0,0,0,1]),
-    mul(a,b){const o=new Float32Array(16); for(let r=0;r<4;r++){ for(let c=0;c<4;c++){ o[c*4+r]=a[0*4+r]*b[c*4+0]+a[1*4+r]*b[c*4+1]+a[2*4+r]*b[c*4+2]+a[3*4+r]*b[c*4+3]; } } return o;},
-    translate(m,[x,y,z]){ const t=M4.ident(); t[12]=x; t[13]=y; t[14]=z; return M4.mul(m,t); },
-    scale(m,[x,y,z]){ const t=M4.ident(); t[0]=x; t[5]=y; t[10]=z; return M4.mul(m,t); },
-    perspective(fovy,aspect,near,far){ const f=1/Math.tan(fovy/2), nf=1/(near-far); const o=new Float32Array(16); o[0]=f/aspect; o[5]=f; o[10]=(far+near)*nf; o[11]=-1; o[14]=2*far*near*nf; return o; },
-    lookAt(eye,center,up){ const z=norm(sub(eye,center)); let x=norm(cross(up,z)); let y=cross(z,x); const o=M4.ident();
-      o[0]=x[0]; o[4]=x[1]; o[8]=x[2];
-      o[1]=y[0]; o[5]=y[1]; o[9]=y[2];
-      o[2]=z[0]; o[6]=z[1]; o[10]=z[2];
-      o[12]=-(x[0]*eye[0]+x[1]*eye[1]+x[2]*eye[2]);
-      o[13]=-(y[0]*eye[0]+y[1]*eye[1]+y[2]*eye[2]);
-      o[14]=-(z[0]*eye[0]+z[1]*eye[1]+z[2]*eye[2]);
-      return o;
-    }
-  };
+    // Layer toggles
+    document.getElementById('layerList').addEventListener('change', (e) => {
+      if(!(e.target instanceof HTMLInputElement)) return;
+      toggleLayer(e.target.dataset.layer, e.target.checked);
+    });
 
-  const Shaders = {
-    leafVS: `#version 300 es
-    precision highp float;
-    layout(location=0) in vec3 position;
-    layout(location=1) in vec3 normal;
-    uniform mat4 uProj, uView, uModel;
-    out vec3 vN;
-    out vec3 vW;
-    void main(){
-      vec4 w = uModel * vec4(position,1.0);
-      vW = w.xyz;
-      vN = normalize(mat3(uModel) * normal);
-      gl_Position = uProj * uView * w;
-    }`,
-    // Tissue-like shader: wrapped diffuse, backscatter, specular, rim, micro-noise
-    leafFS: `#version 300 es
-    precision highp float;
-    in vec3 vN; in vec3 vW;
-    uniform vec3 uEye;      // camera pos (world)
-    uniform vec3 uLightDir; // world-space directional light
-    uniform vec3 uBase;
-    uniform vec3 uBlood;
-    uniform float uTranslucency;
-    uniform float uGloss;
-    out vec4 outColor;
+    // Quick camera focus
+    document.querySelectorAll('[data-focus]').forEach(btn => {
+      btn.addEventListener('click', () => focusView(btn.dataset.focus));
+    });
 
-    float hash(vec3 p){ return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453); }
-    float noi(vec3 p){
-      // 3-layer value noise
-      float n = 0.0;
-      n += hash(floor(p*0.25))*0.6;
-      n += hash(floor(p*0.5 + 7.1))*0.25;
-      n += hash(floor(p*1.0 + 23.7))*0.15;
-      return n;
-    }
+    // Hotkeys
+    window.addEventListener('keydown', (e) => {
+      if(e.key === 'f' || e.key === 'F') focusView('annulus');
+      if(e.key === 'l' || e.key === 'L') { state.labelVisible = !state.labelVisible; updateLabelVisibility(); }
+      if(e.key === 'v' || e.key === 'V') cycleVariation();
+    });
 
-    void main(){
-      vec3 N = normalize(vN);
-      vec3 L = normalize(-uLightDir);
-      vec3 V = normalize(uEye - vW);
-      vec3 H = normalize(L + V);
+    // ---------- Renderer ----------
+    state.renderer = new Renderer3D(document.getElementById('canvasWrap'));
+    state.renderer.animate();
 
-      float wrap = 0.5;
-      float diff = clamp((dot(N,L) + wrap)/(1.0 + wrap), 0.0, 1.0); // soft
-      float back = pow(max(dot(-N, L), 0.0), 0.7) * uTranslucency;
-      float spec = pow(max(dot(N,H), 0.0), mix(24.0, 96.0, uGloss)) * (0.06 + 0.24*uGloss);
-      float fres = pow(1.0 - max(dot(N,V), 0.0), 3.0) * 0.35;
+    // ---------- Build anatomy ----------
+    buildMitralAnatomy();
 
-      // micro vascular tint + irregularity
-      float n = noi(vW*0.15);
-      vec3 base = mix(uBase, uBlood, 0.20 + 0.10*(n-0.5));
+    // ---------- Picking & interactions ----------
+    const pickables = new Set();      // objects that can be clicked / quizzed
+    // will be filled while building
 
-      vec3 col = base * (0.25 + 0.75*diff) + base*back + vec3(spec) + vec3(fres*0.22);
-      float alpha = 0.96;
-      outColor = vec4(col, alpha);
-    }`,
-    lineVS:`#version 300 es
-    precision highp float;
-    layout(location=0) in vec3 position;
-    uniform mat4 uProj, uView, uModel;
-    void main(){ gl_Position = uProj * uView * uModel * vec4(position,1.0); }`,
-    lineFS:`#version 300 es
-    precision mediump float;
-    uniform vec4 uColor;
-    out vec4 outColor;
-    void main(){ outColor = uColor; }`
-  };
+    state.renderer.renderer.domElement.addEventListener('click', onClick);
 
-  const Renderer = {
-    proj:M4.ident(), view:M4.ident(), model:M4.ident(),
-    programs:{}, clearColor:[0.025,0.04,0.09,1],
-    lightDir: norm([0.3,0.4,0.7]),
-    eye:[0, -1, 1],
-    vao:{ leaf:[], ann:null, chord:null, sphere:null },
-    count:{ leaf:[], ann:0, chord:0, sphere:0 }
-  };
+    function onClick(ev){
+      const dom = state.renderer.renderer.domElement;
+      const hits = state.renderer.pick(ev.clientX, ev.clientY, Array.from(pickables));
+      if(!hits.length) return;
 
-  const Camera = {
-    target:[0,0,0], yaw:Math.PI*1.05, pitch:0.62, dist:96, fov:45*DEG, near:1, far:520,
-    get eye(){ const cp=Math.cos(this.pitch), sp=Math.sin(this.pitch); const cy=Math.cos(this.yaw), sy=Math.sin(this.yaw);
-      const off=[ this.dist*cp*cy, this.dist*cp*sy, this.dist*sp ]; return [this.target[0]+off[0], this.target[1]+off[1], this.target[2]+off[2]]; }
-  };
+      // Prefer segment pads > key landmarks > surfaces
+      const hit = hits.sort((a,b)=>{
+        const ap = (a.object.userData.kind==='segment')?0: (a.object.userData.kind==='landmark'?1:2);
+        const bp = (b.object.userData.kind==='segment')?0: (b.object.userData.kind==='landmark'?1:2);
+        return ap-bp;
+      })[0];
 
-  function compile(gl, type, src){ const s=gl.createShader(type); gl.shaderSource(s,src); gl.compileShader(s); if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)){ console.error(gl.getShaderInfoLog(s)); throw new Error('Shader compile failed'); } return s; }
-  function program(gl,vs,fs){ const p=gl.createProgram(); gl.attachShader(p, compile(gl, gl.VERTEX_SHADER, vs)); gl.attachShader(p, compile(gl, gl.FRAGMENT_SHADER, fs)); gl.linkProgram(p); if(!gl.getProgramParameter(p, gl.LINK_STATUS)){ console.error(gl.getProgramInfoLog(p)); throw new Error('Program link failed'); } return p; }
+      const obj = hit.object;
+      const key = obj.userData.key;
+      const label = obj.userData.label || obj.name || key;
+      showFloatingLabel(hit.point, label);
 
-  function createLeafVAO(patch){
-    const vao=gl.createVertexArray(); gl.bindVertexArray(vao);
-    const vbo=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vbo); gl.bufferData(gl.ARRAY_BUFFER, patch.positions, gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0,3,gl.FLOAT,false,0,0);
-    const nbo=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, nbo); gl.bufferData(gl.ARRAY_BUFFER, patch.normals, gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1,3,gl.FLOAT,false,0,0);
-    const ebo=gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, patch.indices, gl.STATIC_DRAW);
-    gl.bindVertexArray(null);
-    return { vao, count: patch.indices.length };
-  }
-  function createLineVAO(positions){
-    const vao=gl.createVertexArray(); gl.bindVertexArray(vao);
-    const vbo=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vbo); gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0,3,gl.FLOAT,false,0,0);
-    gl.bindVertexArray(null);
-    return { vao, count: positions.length/3 };
-  }
-
-  function initRenderer(){
-    gl=document.getElementById('gl').getContext('webgl2', { antialias:true, alpha:false, desynchronized:true });
-    gl.enable(gl.DEPTH_TEST); gl.disable(gl.CULL_FACE);
-    gl.clearColor(...Renderer.clearColor);
-    Renderer.programs.leaf=program(gl, Shaders.leafVS, Shaders.leafFS);
-    Renderer.programs.line=program(gl, Shaders.lineVS, Shaders.lineFS);
-
-    const L=Assets.mitral.meshes.leaflets;
-    Renderer.vao.leaf=[
-      createLeafVAO(L.A1), createLeafVAO(L.A2), createLeafVAO(L.A3),
-      createLeafVAO(L.P1), createLeafVAO(L.P2), createLeafVAO(L.P3)
-    ];
-    Renderer.count.leaf = Renderer.vao.leaf.map(v=>v.count);
-
-    const annVAO=createLineVAO(Assets.mitral.meshes.annulus.positions);
-    Renderer.vao.ann=annVAO.vao; Renderer.count.ann=annVAO.count;
-
-    const chord = (()=>{ const c1=Assets.mitral.meshes.chordae.P2_AL; const c2=Assets.mitral.meshes.chordae.P2_PM; const out=new Float32Array(c1.length+c2.length); out.set(c1,0); out.set(c2,c1.length); return out; })();
-    const chVAO=createLineVAO(chord); Renderer.vao.chord=chVAO.vao; Renderer.count.chord=chVAO.count;
-
-    const sp=Assets.mitral.meshes.spheres.unit;
-    const leafSphere=createLeafVAO(sp);
-    Renderer.vao.sphere=leafSphere.vao; Renderer.count.sphere=leafSphere.count;
-
-    fitCamera(Assets.mitral.bounds);
-    onResize();
-  }
-
-  function fitCamera(bounds){ const diag=Math.hypot(bounds.max[0]-bounds.min[0], bounds.max[1]-bounds.min[1]); Camera.dist=Math.max(80, diag*1.18); Camera.pitch=0.62; Camera.yaw=Math.PI*1.05; Camera.target=bounds.center.slice(); }
-
-  function onResize(){ const c=gl.canvas; const dpr=Math.min(window.devicePixelRatio||1,2); const w=c.clientWidth*dpr, h=c.clientHeight*dpr; if(c.width!==w||c.height!==h){ c.width=w; c.height=h; } gl.viewport(0,0,gl.drawingBufferWidth, gl.drawingBufferHeight); const aspect=gl.drawingBufferWidth/Math.max(1,gl.drawingBufferHeight); Renderer.proj=M4.perspective(Camera.fov, aspect, Camera.near, Camera.far); }
-
-  function renderFrame(t){
-    Renderer.view = M4.lookAt(Camera.eye, Camera.target, [0,0,1]);
-    Renderer.model = M4.ident();
-    gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
-
-    // Leaflets (translucent)
-    gl.enable(gl.BLEND);
-    gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-    const Pleaf=Renderer.programs.leaf; gl.useProgram(Pleaf);
-    gl.uniformMatrix4fv(gl.getUniformLocation(Pleaf,'uProj'), false, Renderer.proj);
-    gl.uniformMatrix4fv(gl.getUniformLocation(Pleaf,'uView'), false, Renderer.view);
-    gl.uniformMatrix4fv(gl.getUniformLocation(Pleaf,'uModel'), false, Renderer.model);
-    gl.uniform3fv(gl.getUniformLocation(Pleaf,'uEye'), new Float32Array(Camera.eye));
-    gl.uniform3fv(gl.getUniformLocation(Pleaf,'uLightDir'), new Float32Array(Renderer.lightDir));
-    gl.uniform3fv(gl.getUniformLocation(Pleaf,'uBase'), new Float32Array([0.96,0.72,0.74]));
-    gl.uniform3fv(gl.getUniformLocation(Pleaf,'uBlood'), new Float32Array([0.78,0.10,0.12]));
-    gl.uniform1f(gl.getUniformLocation(Pleaf,'uTranslucency'), 0.40);
-    gl.uniform1f(gl.getUniformLocation(Pleaf,'uGloss'), 0.62);
-    for(let i=0;i<Renderer.vao.leaf.length;i++){ gl.bindVertexArray(Renderer.vao.leaf[i].vao); gl.drawElements(gl.TRIANGLES, Renderer.count.leaf[i], gl.UNSIGNED_INT, 0); }
-    gl.bindVertexArray(null);
-    gl.disable(gl.BLEND);
-
-    // Annulus line (cyan)
-    const Pl=Renderer.programs.line; gl.useProgram(Pl);
-    gl.uniformMatrix4fv(gl.getUniformLocation(Pl,'uProj'), false, Renderer.proj);
-    gl.uniformMatrix4fv(gl.getUniformLocation(Pl,'uView'), false, Renderer.view);
-    gl.uniformMatrix4fv(gl.getUniformLocation(Pl,'uModel'), false, Renderer.model);
-    gl.uniform4f(gl.getUniformLocation(Pl,'uColor'), 0.0, 0.82, 1.0, 0.95);
-    gl.bindVertexArray(Renderer.vao.ann);
-    gl.lineWidth(1);
-    gl.drawArrays(gl.LINE_STRIP, 0, Renderer.count.ann);
-    gl.bindVertexArray(null);
-
-    // Chordae (white, faint)
-    gl.enable(gl.BLEND);
-    gl.useProgram(Pl);
-    gl.uniform4f(gl.getUniformLocation(Pl,'uColor'), 1.0, 1.0, 1.0, 0.28);
-    gl.bindVertexArray(Renderer.vao.chord);
-    gl.drawArrays(gl.LINES, 0, Renderer.count.chord);
-    gl.bindVertexArray(null);
-    gl.disable(gl.BLEND);
-
-    // Papillary muscles (spheres) with slight offsets
-    const mAL = M4.translate(M4.ident(), Assets.mitral.landmarks.papillary.AL);
-    const mPM = M4.translate(M4.ident(), Assets.mitral.landmarks.papillary.PM);
-    function drawSphere(mat, color){
-      gl.useProgram(Pleaf);
-      gl.uniformMatrix4fv(gl.getUniformLocation(Pleaf,'uModel'), false, mat);
-      gl.uniform3fv(gl.getUniformLocation(Pleaf,'uBase'), new Float32Array(color));
-      gl.uniform1f(gl.getUniformLocation(Pleaf,'uGloss'), 0.5);
-      gl.uniform1f(gl.getUniformLocation(Pleaf,'uTranslucency'), 0.15);
-      gl.bindVertexArray(Renderer.vao.sphere); gl.drawElements(gl.TRIANGLES, Renderer.count.sphere, gl.UNSIGNED_INT, 0);
-      gl.bindVertexArray(null);
-    }
-    drawSphere(mAL, [0.95,0.64,0.68]);
-    drawSphere(mPM, [0.95,0.64,0.68]);
-
-    // Update UI/logic
-    Interaction.tick();
-    requestAnimationFrame(renderFrame);
-  }
-
-  // ---------- Overlay (SVG) ----------
-  const Overlay = {
-    svg: document.getElementById('overlay'),
-    layers: {
-      zones: document.getElementById('layer-zones'),
-      hotspots: document.getElementById('layer-hotspots'),
-      paths: document.getElementById('layer-paths'),
-      rulers: document.getElementById('layer-rulers'),
-      callouts: document.getElementById('layer-callouts'),
-      labels: document.getElementById('layer-labels'),
-    },
-    ensureViewBox(){
-      const w=gl.canvas.clientWidth, h=gl.canvas.clientHeight;
-      if (this.svg.getAttribute('viewBox') !== \`0 0 \${w} \${h}\`){
-        this.svg.setAttribute('viewBox', \`0 0 \${w} \${h}\`);
-        this.svg.setAttribute('width', w); this.svg.setAttribute('height', h);
+      if(state.mode === 'training'){
+        // In training, step goals will check specific keys
+        lastClickKey = key;
+        engine.check();
+        feedback(`Selected: ${label}`);
+      } else {
+        evaluateSelection(key, label);
       }
-    },
-    clear(layer){ if(!layer){ for(const k in this.layers) this.layers[k].innerHTML=''; } else { this.layers[layer].innerHTML=''; } },
-    drawRingLabels(){
-      // Place A1..P3 labels near annulus midpoints
-      this.clear('labels'); this.ensureViewBox();
-      const tpl=document.getElementById('tpl-label');
-      const ids=['A1','A2','A3','P1','P2','P3'];
-      ids.forEach(id=>{
-        const p=Project.worldToScreen(Assets.mitral.landmarks.annulusMid[id]);
-        const node=tpl.content.firstElementChild.cloneNode(true);
-        node.querySelector('[data-text]').textContent=id;
-        const fo=document.createElementNS('http://www.w3.org/2000/svg','foreignObject');
-        fo.setAttribute('x', p.x-24); fo.setAttribute('y', p.y-16);
-        fo.setAttribute('width', 48); fo.setAttribute('height', 28);
-        const host=document.createElement('div'); host.style.position='relative'; node.style.transform='translate(-50%,-50%)';
-        node.style.background='rgba(0,209,255,0.12)'; node.style.borderColor='rgba(0,209,255,0.6)';
-        host.appendChild(node); fo.appendChild(host); this.layers.labels.appendChild(fo);
+    }
+
+    function showFloatingLabel(worldPoint, text){
+      if(!state.labelVisible) return;
+      const {x,y} = state.renderer.worldToScreen(worldPoint);
+      const d = document.createElement('div');
+      d.className = 'overlay-label';
+      d.textContent = text;
+      d.style.left = (x|0)+'px';
+      d.style.top  = (y|0)+'px';
+      Overlay.el.appendChild(d);
+      setTimeout(()=>d.remove(), 1500);
+    }
+
+    // ---------- Anatomy construction ----------
+    function buildMitralAnatomy(){
+      const scene = state.renderer.scene;
+      const root = new THREE.Group(); root.name='HeartRoot'; scene.add(root);
+      state.groups.core = root;
+
+      // Lighting tweak (already in renderer) — add subtle rim
+      const rim = new THREE.DirectionalLight(0x88aaff, 0.25); rim.position.set(-3, 2, -4); scene.add(rim);
+
+      // Left Ventricle (LV) — ellipsoid
+      const lvGeo = new THREE.SphereGeometry(0.95, 40, 32);
+      const lvMat = new THREE.MeshStandardMaterial({ color:0x8b2b2b, roughness:0.9, metalness:0.05 });
+      const lv = new THREE.Mesh(lvGeo, lvMat);
+      lv.scale.set(0.85, 1.15, 0.85);
+      lv.position.set(0, -0.15, 0);
+      lv.name = 'LV';
+      root.add(lv);
+      state.groups.lv = lv;
+
+      // Left Atrium (LA) — smaller ellipsoid
+      const laGeo = new THREE.SphereGeometry(0.55, 36, 28);
+      const laMat = new THREE.MeshStandardMaterial({ color:0x2c8b8b, roughness:0.95, metalness:0.02 });
+      const la = new THREE.Mesh(laGeo, laMat);
+      la.scale.set(0.9, 0.7, 0.9);
+      la.position.set(0, 0.55, -0.05);
+      la.name = 'LA';
+      root.add(la);
+      state.groups.la = la;
+
+      // Mitral Annulus — torus scaled elliptical
+      const annGeo = new THREE.TorusGeometry(0.65, 0.045, 28, 180);
+      const annMat = new THREE.MeshStandardMaterial({ color:0x2b7a3f, roughness:0.8, metalness:0.1, emissive:0x001a00 });
+      const ann = new THREE.Mesh(annGeo, annMat);
+      ann.rotation.x = Math.PI/2;
+      ann.scale.set(1.15, 1.0, 0.95);  // ellipse-ish
+      ann.position.set(0, 0.22, 0);
+      ann.name = 'Mitral Annulus';
+      root.add(ann);
+      state.groups.annulus = ann;
+      pickables.add(ann);
+      ann.userData = { key:'annulus', label:'Mitral Annulus', kind:'landmark' };
+
+      // Aortic root & LVOT surrogate
+      const aorta = new THREE.Mesh(
+        new THREE.TorusGeometry(0.35, 0.05, 24, 120),
+        new THREE.MeshStandardMaterial({ color:0x7da0ff, roughness:0.8, metalness:0.1 })
+      );
+      aorta.rotation.set(Math.PI/2.2, 0.0, 0.45);
+      aorta.position.set(0.35, 0.34, 0.1);
+      aorta.name='Aortic Root';
+      root.add(aorta);
+      state.groups.aorta = aorta;
+      pickables.add(aorta);
+      aorta.userData = { key:'aorta', label:'Aortic Root', kind:'landmark' };
+
+      // LVOT point & AMC marker (as tiny spheres)
+      const lvot = new THREE.Mesh(new THREE.SphereGeometry(0.02, 12, 12), new THREE.MeshBasicMaterial({color:0x40a9ff}));
+      lvot.position.set(0.15, 0.28, 0.08); lvot.name='LVOT';
+      root.add(lvot); pickables.add(lvot);
+      lvot.userData = { key:'lvot', label:'LVOT', kind:'landmark' };
+
+      const amc = new THREE.Mesh(new THREE.SphereGeometry(0.022, 12, 12), new THREE.MeshBasicMaterial({color:0x40a9ff}));
+      amc.position.set(0.12, 0.23, 0.0); amc.name='Aorto‑Mitral Continuity';
+      root.add(amc); pickables.add(amc);
+      amc.userData = { key:'amc', label:'Aorto‑Mitral Continuity (AMC)', kind:'landmark' };
+
+      // Leaflets: anterior (A) & posterior (P) — curved planes
+      const leafA = makeLeaflet(+1, 0x6dad8f, 'Anterior Leaflet (A)');
+      const leafP = makeLeaflet(-1, 0x7ca38c, 'Posterior Leaflet (P)');
+      root.add(leafA, leafP);
+      state.groups.leaflets.A = leafA; state.groups.leaflets.P = leafP;
+      pickables.add(leafA); leafA.userData = { key:'leaflet_A', label:'Anterior Leaflet', kind:'landmark' };
+      pickables.add(leafP); leafP.userData = { key:'leaflet_P', label:'Posterior Leaflet', kind:'landmark' };
+
+      // Leaflet segment hitpads A1-A3 / P1-P3 (blue invisible circles)
+      state.groups.segments = [];
+      const segSpec = [
+        {key:'A1', theta: -0.8}, {key:'A2', theta: 0.0}, {key:'A3', theta: +0.8},
+        {key:'P1', theta: -0.8+Math.PI}, {key:'P2', theta: Math.PI}, {key:'P3', theta: +0.8+Math.PI}
+      ];
+      const segGroup = new THREE.Group(); segGroup.name='Segments'; root.add(segGroup);
+      segSpec.forEach(s => {
+        const r = 0.64;
+        const pad = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.06,0.06, 0.003, 24),
+          new THREE.MeshBasicMaterial({ color:0x40a9ff, transparent:true, opacity:0.15 })
+        );
+        const x = Math.cos(s.theta)*r, z = Math.sin(s.theta)*r;
+        pad.position.set(x, 0.23, z);
+        pad.rotation.x = Math.PI/2;
+        pad.name = s.key;
+        segGroup.add(pad);
+        state.groups.segments.push(pad);
+        pickables.add(pad);
+        pad.userData = { key: s.key.toLowerCase(), label: s.key, kind:'segment' };
       });
-    },
-    aim(x,y,color='rgba(0,209,255,1)'){
-      const g=document.createElementNS('http://www.w3.org/2000/svg','g'); g.setAttribute('transform', \`translate(\${x},\${y})\`);
-      const r1=document.createElementNS('http://www.w3.org/2000/svg','circle'); r1.setAttribute('r','10'); r1.setAttribute('fill','none'); r1.setAttribute('stroke',color); r1.setAttribute('stroke-width','2'); r1.classList.add('pulse');
-      const r2=document.createElementNS('http://www.w3.org/2000/svg','circle'); r2.setAttribute('r','3'); r2.setAttribute('fill',color);
-      g.appendChild(r1); g.appendChild(r2); this.layers.hotspots.appendChild(g);
-    },
-    dot(x,y,kind='ok'){
-      const color = kind==='ok' ? '#2ecc71' : kind==='warn' ? '#ffb020' : '#ff4d4f';
-      const g=document.createElementNS('http://www.w3.org/2000/svg','g'); g.setAttribute('transform', \`translate(\${x},\${y})\`);
-      const ring=document.createElementNS('http://www.w3.org/2000/svg','circle'); ring.setAttribute('r','8'); ring.setAttribute('fill','none'); ring.setAttribute('stroke',color); ring.setAttribute('stroke-width','2'); ring.setAttribute('opacity','0.7'); ring.classList.add('pulse');
-      const dot=document.createElementNS('http://www.w3.org/2000/svg','circle'); dot.setAttribute('r','4'); dot.setAttribute('fill',color);
-      g.appendChild(ring); g.appendChild(dot); this.layers.hotspots.appendChild(g);
-    },
-    teePlane(name){
-      // Show a line across the annulus corresponding to classic TEE planes
-      this.clear('paths');
-      const ann = Screen.annulusPolyline();
-      if (!ann.length || name==='none') return;
-      const g=document.createElementNS('http://www.w3.org/2000/svg','g'); this.layers.paths.appendChild(g);
-      function line(a,b,label){
-        const L=document.createElementNS('http://www.w3.org/2000/svg','line');
-        L.setAttribute('x1',a.x); L.setAttribute('y1',a.y); L.setAttribute('x2',b.x); L.setAttribute('y2',b.y);
-        L.setAttribute('stroke','rgba(255,255,255,0.9)'); L.setAttribute('stroke-width','2'); L.setAttribute('marker-end','url(#m-arrow)');
-        g.appendChild(L);
-        const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
-        txt.setAttribute('x',(a.x+b.x)/2); txt.setAttribute('y',(a.y+b.y)/2 - 6); txt.setAttribute('fill','#fff'); txt.setAttribute('font-size','12'); txt.textContent=label; g.appendChild(txt);
+
+      // Papillary muscles (AL/PM) — purple cones inside LV
+      const papAL = makePapillary(new THREE.Color(0x7c4dff)); papAL.position.set(+0.25, -0.25, +0.12); papAL.name='Papillary (AL)';
+      const papPM = makePapillary(new THREE.Color(0x8a4dff)); papPM.position.set(-0.22, -0.27, -0.18); papPM.name='Papillary (PM)';
+      root.add(papAL, papPM);
+      state.groups.pap.AL = papAL; state.groups.pap.PM = papPM;
+      pickables.add(papAL); papAL.userData = { key:'pap_al', label:'Anterolateral Papillary Muscle', kind:'landmark' };
+      pickables.add(papPM); papPM.userData = { key:'pap_pm', label:'Posteromedial Papillary Muscle', kind:'landmark' };
+
+      // Chordae tendineae — yellow tubes from pap tips to leaflet underside (few strands)
+      const chordae = new THREE.Group(); chordae.name='Chordae';
+      root.add(chordae); state.groups.chordae = chordae;
+      const chordMat = new THREE.MeshStandardMaterial({ color:0xe6cf57, roughness:0.5, metalness:0.2 });
+      function strand(from, to){
+        const curve = new THREE.CatmullRomCurve3([from, from.clone().lerp(to,0.4).add(new THREE.Vector3(0,0.06,0)), to]);
+        const geo = new THREE.TubeGeometry(curve, 32, 0.008, 8, false);
+        const m = new THREE.Mesh(geo, chordMat);
+        chordae.add(m); pickables.add(m);
+        m.userData = { key:'chordae', label:'Chordae Tendineae', kind:'landmark' };
+        return m;
       }
-      // Compute midpoints on ring from landmarks
-      const mid = Assets.mitral.landmarks.annulusMid;
-      const S = k => Project.worldToScreen(mid[k]);
-      if (name==='me-lax'){ line(S('A2'), S('P2'), 'ME LAX'); }
-      if (name==='me-commissural'){ line(S('A1'), S('A3'), 'ME Commissural'); }
-      if (name==='me-4ch'){ line(S('A1'), S('P1'), 'ME 4‑Ch (approx)'); }
-    }
-  };
+      const papALTip = new THREE.Vector3().copy(papAL.position).add(new THREE.Vector3(0,0.14,0));
+      const papPMTip = new THREE.Vector3().copy(papPM.position).add(new THREE.Vector3(0,0.14,0));
+      // a few attachments to leaflet underside near A2/P2
+      [ new THREE.Vector3(0.1,0.22, 0.03), new THREE.Vector3(0.0,0.22, 0.07), new THREE.Vector3(-0.1,0.22, 0.02) ].forEach(p=> strand(papALTip, p));
+      [ new THREE.Vector3(0.1,0.22,-0.04), new THREE.Vector3(0.0,0.22,-0.09), new THREE.Vector3(-0.1,0.22,-0.06) ].forEach(p=> strand(papPMTip, p));
 
-  // ---------- Projection helpers ----------
-  const Project = {
-    worldToClip([x,y,z]){
-      const mvp=M4.mul(Renderer.proj, M4.mul(Renderer.view, Renderer.model));
-      const w=x*mvp[3]+y*mvp[7]+z*mvp[11]+mvp[15];
-      const nx=(x*mvp[0]+y*mvp[4]+z*mvp[8] +mvp[12])/w;
-      const ny=(x*mvp[1]+y*mvp[5]+z*mvp[9] +mvp[13])/w;
-      return { nx, ny, w };
-    },
-    worldToScreen(p){
-      const {nx, ny, w} = this.worldToClip(p);
-      const cx=gl.canvas.clientWidth*(nx*0.5+0.5);
-      const cy=gl.canvas.clientHeight*(1-(ny*0.5+0.5));
-      return { x:cx, y:cy, ok:w>0 };
-    }
-  };
+      // Coronary surrogates (simplified): LAD on anterior surface, Cx near posterior annulus
+      const coronaries = new THREE.Group(); coronaries.name='Coronaries'; root.add(coronaries);
+      const vesselMat = new THREE.MeshStandardMaterial({ color:0xff6666, roughness:0.4, metalness:0.3 });
+      const lad = vesselTube([ [0.05,0.35,0.15], [0.00,0.25,0.18], [-0.02,0.15,0.15], [-0.05,0.0,0.1] ], 0.012, vesselMat);
+      const cx  = vesselTube([ [-0.42,0.22,-0.05], [-0.55,0.22,0.0], [-0.65,0.22,0.05] ], 0.012, vesselMat);
+      coronaries.add(lad, cx);
+      state.groups.coronaries.LAD = lad; state.groups.coronaries.Cx = cx;
+      pickables.add(lad); lad.userData = { key:'lad', label:'LAD (surrogate)', kind:'landmark' };
+      pickables.add(cx);  cx.userData  = { key:'cx',  label:'Circumflex (surrogate)', kind:'landmark' };
 
-  // Screen ring sampling (for tracing/landmark distances)
-  const Screen = {
-    annulusPolyline(){
-      const arr=Assets.mitral.meshes.annulus.positions;
-      const pts=[];
-      for(let i=0;i<arr.length;i+=3){
-        const p=Project.worldToScreen([arr[i],arr[i+1],arr[i+2]]);
-        pts.push({x:p.x, y:p.y});
-      }
-      return pts;
-    }
-  };
+      // Safe/Danger annular sectors (LVOT/conduction hazard; posterior Cx proximity)
+      const zonesGroup = new THREE.Group(); zonesGroup.name='Zones'; root.add(zonesGroup);
+      const safe1 = arcSector(0.65, 0.11, Math.PI*0.05, Math.PI*0.35, 0x00ff88);
+      const danger1 = arcSector(0.65, 0.11, Math.PI*0.4, Math.PI*0.55, 0xff3366); // conduction area surrogate
+      const danger2 = arcSector(0.65, 0.11, Math.PI*1.15, Math.PI*1.35, 0xff5c7a); // Cx proximity
+      zonesGroup.add(safe1, danger1, danger2);
+      zonesGroup.position.set(0,0.22,0);
+      zonesGroup.rotation.x = Math.PI/2;
+      state.groups.zones.safe = [safe1];
+      state.groups.zones.danger = [danger1, danger2];
 
-  // ---------- Interaction (camera, tracing, clicks) ----------
-  const Input = { down:false, lastX:0, lastY:0, buttons:0, dragMode:'orbit', tracing:false };
-  const Interaction = {
-    coverage: new Uint8Array(288), // per annulus segment
-    lastTraceTime: 0,
+      // Floating labels (initial)
+      addLabelAnchor(ann.position.clone().add(new THREE.Vector3(0.0, 0.15, 0.0)), 'Annulus');
+      addLabelAnchor(new THREE.Vector3(0.12,0.23,0), 'AMC');
+      addLabelAnchor(new THREE.Vector3(0.15,0.28,0.08), 'LVOT');
+      addLabelAnchor(papAL.position.clone().add(new THREE.Vector3(0,0.22,0)), 'Pap AL');
+      addLabelAnchor(papPM.position.clone().add(new THREE.Vector3(0,0.22,0)), 'Pap PM');
 
-    tick(){
-      // live telemetry
-      const yawDeg = ((Camera.yaw*180/Math.PI)%360+360)%360;
-      const pitchDeg = Camera.pitch*180/Math.PI;
-      document.getElementById('tele-yaw').textContent = yawDeg.toFixed(0)+'°';
-      document.getElementById('tele-pitch').textContent = pitchDeg.toFixed(0)+'°';
-
-      // trace coverage UI
-      const cov = this.coverage.reduce((a,b)=>a+b,0) / this.coverage.length * 100;
-      document.getElementById('trace-percent').textContent = cov.toFixed(0)+'%';
-      document.getElementById('trace-bar').value = cov;
-      document.getElementById('tele-trace').textContent = cov.toFixed(0)+'%';
-
-      StepMachine.onFrame(cov);
-    }
-  };
-
-  function bindInteraction(){
-    const canvas=document.getElementById('gl'); canvas.addEventListener('contextmenu', e=>e.preventDefault());
-    canvas.addEventListener('pointerdown', e=>{ Input.down=true; Input.buttons=e.buttons; Input.lastX=e.clientX; Input.lastY=e.clientY; Input.dragMode=(e.button===2||e.shiftKey)?'pan':'orbit'; if(e.button===0) Input.tracing=true; canvas.setPointerCapture(e.pointerId); });
-    canvas.addEventListener('pointerup', e=>{ Input.down=false; Input.buttons=e.buttons; Input.tracing=false; canvas.releasePointerCapture(e.pointerId); });
-    canvas.addEventListener('pointermove', e=>{
-      const dx=e.clientX-Input.lastX, dy=e.clientY-Input.lastY; Input.lastX=e.clientX; Input.lastY=e.clientY;
-      if(Input.down){
-        if(Input.dragMode==='orbit'){ Camera.yaw -= dx*0.005; Camera.pitch -= dy*0.004; Camera.pitch=Math.max(-Math.PI/2+0.05, Math.min(Math.PI/2-0.05, Camera.pitch)); }
-        else { // pan in screen plane
-          const h=Math.max(1, gl.canvas.clientHeight); const v=Math.tan(Camera.fov/2)*Camera.dist; const scale=v/(h/2);
-          const eye=Camera.eye, tgt=Camera.target; const fwd=norm(sub(tgt, eye)); let right=norm(cross(fwd,[0,0,1])); let up=cross(right,fwd);
-          if(Math.abs(dot(fwd,[0,0,1]))>0.98){ right=norm(cross(fwd,[0,1,0])); up=cross(right,fwd); }
-          const pan=add(mul(right,-dx*scale), mul(up, dy*scale)); Camera.target=add(Camera.target, pan);
+      // Helper functions
+      function makeLeaflet(sign=+1, color=0x6dad8f, name='Leaflet'){
+        const w=1.2, h=0.45, segX=48, segY=16;
+        const geo = new THREE.PlaneGeometry(w, h, segX, segY);
+        geo.rotateX(-Math.PI/2);
+        geo.translate(0, 0.22+sign*0.07, 0);
+        const pos = geo.attributes.position;
+        for(let i=0;i<pos.count;i++){
+          const x = pos.getX(i), z = pos.getZ(i);
+          const bulge = Math.exp(-Math.abs(x))*0.09 * sign;
+          const scallop = Math.sin(x*1.7)*0.03 * sign;
+          pos.setY(i, pos.getY(i) + bulge + scallop);
         }
+        pos.needsUpdate = true;
+        const m = new THREE.MeshStandardMaterial({ color, metalness:0.05, roughness:0.92, side:THREE.DoubleSide });
+        const mesh = new THREE.Mesh(geo, m); mesh.name=name; return mesh;
       }
-      // tracing annulus
-      if (Input.tracing && StepMachine.current()?.type==='trace-annulus'){
-        const p = { x:e.clientX - gl.canvas.getBoundingClientRect().left, y:e.clientY - gl.canvas.getBoundingClientRect().top };
-        const ring=Screen.annulusPolyline();
-        // mark segments near pointer
-        const thresh=8; // px
-        for(let i=1;i<ring.length;i++){
-          const a=ring[i-1], b=ring[i];
-          const abx=b.x-a.x, aby=b.y-a.y, apx=p.x-a.x, apy=p.y-a.y;
-          const t=Math.max(0, Math.min(1, (apx*abx+apy*aby)/((abx*abx+aby*aby)||1)));
-          const qx=a.x+abx*t, qy=a.y+aby*t; const d=Math.hypot(p.x-qx, p.y-qy);
-          if(d<=thresh){ Interaction.coverage[i-1]=1; }
+
+      function makePapillary(color){
+        const cone = new THREE.Mesh(
+          new THREE.ConeGeometry(0.08, 0.24, 24),
+          new THREE.MeshStandardMaterial({ color, roughness:0.6, metalness:0.2 })
+        );
+        cone.rotation.x = -0.4;
+        return cone;
+      }
+
+      function vesselTube(points, r, mat){
+        const pts = points.map(p=> new THREE.Vector3(p[0],p[1],p[2]));
+        const curve = new THREE.CatmullRomCurve3(pts);
+        const geo = new THREE.TubeGeometry(curve, 64, r, 10, false);
+        return new THREE.Mesh(geo, mat);
+      }
+
+      function arcSector(r=0.65, tube=0.12, start=0, end=Math.PI/3, color=0x0a8f4b){
+        const shape = new THREE.Shape();
+        shape.absarc(0,0,r+tube, start, end, false);
+        const inner = new THREE.Path();
+        inner.absarc(0,0,r-tube, end, start, true);
+        shape.holes.push(inner);
+        const geo = new THREE.ShapeGeometry(shape, 40);
+        const mat = new THREE.MeshBasicMaterial({ color, transparent:true, opacity:0.24, side:THREE.DoubleSide });
+        return new THREE.Mesh(geo, mat);
+      }
+
+      function addLabelAnchor(vec3, text){
+        const dot = new THREE.Mesh(new THREE.SphereGeometry(0.01,10,10), new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0.0}));
+        dot.position.copy(vec3); dot.userData = { label: text };
+        root.add(dot); state.groups.labels.push(dot);
+      }
+    }
+
+    // ---------- Variations ----------
+    function applyVariation(kind='normal'){
+      state.variation = kind;
+      const g = state.groups;
+
+      // Reset transforms
+      g.annulus.scale.set(1.15, 1.0, 0.95);
+      g.leaflets.A.position.y = 0.29; g.leaflets.P.position.y = 0.15;
+      g.leaflets.A.geometry.attributes.position.needsUpdate = true;
+      g.leaflets.P.geometry.attributes.position.needsUpdate = true;
+
+      // remove calcification artifacts if any
+      if(g.annulus.userData.calcMeshes){
+        g.annulus.userData.calcMeshes.forEach(m=> g.annulus.remove(m));
+        g.annulus.userData.calcMeshes = [];
+      }
+
+      switch(kind){
+        case 'annular_dilation':
+          g.annulus.scale.set(1.35, 1.0, 1.10);
+          Voice.speak('Variation applied: Annular dilatation.');
+          break;
+        case 'posterior_p2_prolapse':
+          pushLeafletBulge(g.leaflets.P, +0.06, -0.1, 'P2');
+          Voice.speak('Variation applied: posterior P2 prolapse.');
+          break;
+        case 'barlow_bileaflet':
+          pushLeafletBulge(g.leaflets.A, +0.07, 0, 'A2');
+          pushLeafletBulge(g.leaflets.P, +0.07, 0, 'P2');
+          Voice.speak('Variation applied: Barlow-type bileaflet prolapse.');
+          break;
+        case 'annular_calcification':
+          addAnnularCalcificationSegment();
+          Voice.speak('Variation applied: annular calcification on posterior arc.');
+          break;
+        case 'cleft_a2':
+          carveLeafletCleft(g.leaflets.A, 0.0 /* A2 center */);
+          Voice.speak('Variation applied: cleft at A2.');
+          break;
+        case 'short_chordae':
+          shortenChordae(0.85);
+          Voice.speak('Variation applied: shortened primary chordae.');
+          break;
+        default:
+          Voice.speak('Variation reset to normal.');
+      }
+
+      // light visual cue on annulus
+      pulseMaterial(g.annulus.material);
+
+      function pushLeafletBulge(leaf, amp=0.06, xCenter=0.0, tag=''){
+        const pos = leaf.geometry.attributes.position;
+        for(let i=0;i<pos.count;i++){
+          const x = pos.getX(i), z = pos.getZ(i);
+          const near = Math.exp(-Math.pow((x-xCenter)/0.25,2));
+          const lift = amp * near;
+          pos.setY(i, pos.getY(i) + lift);
         }
+        pos.needsUpdate = true;
       }
-    });
-    canvas.addEventListener('wheel', e=>{ e.preventDefault(); const s=Math.exp(e.deltaY*0.0015); Camera.dist=Math.max(40, Math.min(260, Camera.dist*s)); }, {passive:false});
 
-    // Clicks for landmarks
-    canvas.addEventListener('click', e=>{
-      const p={ x: e.clientX - gl.canvas.getBoundingClientRect().left, y: e.clientY - gl.canvas.getBoundingClientRect().top };
-      StepMachine.onClick(p, e);
-    });
-
-    // Keys
-    window.addEventListener('keydown', e=>{
-      if(e.key==='?' || (e.key==='/'&&e.shiftKey)){ document.getElementById('dlg-onboarding')?.showModal(); }
-      if(e.key===' '){ e.preventDefault(); if(State.timerRunning) pauseTimer(); else startTimer(); }
-      if(e.key==='ArrowUp') Camera.pitch = Math.min(Camera.pitch+0.04, Math.PI/2-0.05);
-      if(e.key==='ArrowDown') Camera.pitch = Math.max(Camera.pitch-0.04, -Math.PI/2+0.05);
-      if(e.key==='ArrowLeft') Camera.yaw += 0.06;
-      if(e.key==='ArrowRight') Camera.yaw -= 0.06;
-    });
-
-    window.addEventListener('resize', ()=>{ onResize(); Overlay.ensureViewBox(); Overlay.drawRingLabels(); Overlay.teePlane(document.getElementById('tee-planar').value); });
-  }
-
-  // ---------- Co‑Pilot, Steps, Scoring ----------
-  function speak(text){ const tooltip=document.getElementById('tooltip'); if(tooltip) tooltip.textContent=text; const v=State.flags.voice || document.getElementById('voice-on')?.checked; if(v && 'speechSynthesis' in window){ try{ window.speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.rate=1.02; window.speechSynthesis.speak(u);}catch(_){}} }
-
-  function addFeedback(msg, level='info'){
-    const box=document.getElementById('feedback'); const p=document.createElement('p');
-    const color = level==='bad'?'var(--bad)':level==='warn'?'var(--warn)':'var(--ok)';
-    p.innerHTML = \`<span class="chip" style="border-color:\${color}; color:\${color}; background:rgba(255,255,255,0.06)">\${msg}</span>\`;
-    box.appendChild(p); box.scrollTop=box.scrollHeight;
-    const live=document.getElementById('sr-assertive'); if(live) live.textContent=msg;
-  }
-
-  const Scoring = {
-    metrics:{ id:0, view:0, trace:0 }, // 0..1
-    weights:{ id:0.55, view:0.35, trace:0.10 },
-    computeTotal(){
-      const total = this.metrics.id*this.weights.id + this.metrics.view*this.weights.view + this.metrics.trace*this.weights.trace;
-      State.score.total = Math.round(total*100);
-      document.getElementById('score').textContent = String(State.score.total);
-      document.getElementById('score-accuracy').textContent = Math.round(this.metrics.id*100)+'%';
-      document.getElementById('score-efficiency').textContent = Math.round(this.metrics.view*100)+'%';
-    }
-  };
-
-  const Steps = [
-    { id:'intro', type:'gaze', title:'Overview: Atrial perspective', hint:'Rotate so you are looking from the left atrium down toward the valve. We will guide you step by step.', voice:'Welcome. We will orient the atrial view, identify segments, trace the annulus, and click the papillary muscles.' },
-    { id:'view-atrial', type:'view-align', title:'Align the atrial view (top‑down)', hint:'Goal: camera above the annulus, slight posterior tilt. Watch the on‑screen compass and match the highlight.', goal:{ yawDeg: 200, pitchDeg: 62, tolYaw:14, tolPitch:8, holdMs: 900 }, voice:'Rotate until you are above the valve with a slight posterior tilt. Keep within the highlighted arc for one second.' },
-    { id:'id-a2', type:'landmark', title:'Identify A2 (anterior middle segment)', hint:'Click the center of A2 on the cyan annulus (top‑anterior). The label A2 is shown.', goal:{ target:'A2', tolMm:2.0 }, voice:'Place your marker on A2.' },
-    { id:'id-p2', type:'landmark', title:'Identify P2 (posterior middle segment)', hint:'Click the center of P2 on the cyan annulus (posterior).', goal:{ target:'P2', tolMm:2.0 }, voice:'Now mark P2.' },
-    { id:'id-a1', type:'landmark', title:'Identify A1 (anterolateral)', hint:'Click near the anterolateral commissure region labeled A1.', goal:{ target:'A1', tolMm:2.2 }, voice:'Mark A1.' },
-    { id:'id-p3', type:'landmark', title:'Identify P3 (posteromedial)', hint:'Click near the posteromedial commissure region labeled P3.', goal:{ target:'P3', tolMm:2.2 }, voice:'Mark P3.' },
-    { id:'trace', type:'trace-annulus', title:'Trace the annulus (≥ 70%)', hint:'Hold left mouse and follow the cyan ring clockwise until coverage reaches 70% or more.', goal:{ coverage:70 }, voice:'Trace the annulus by sliding along the cyan ring. Aim for at least seventy percent coverage.' },
-    { id:'pap-al', type:'landmark-3d', title:'Click the anterolateral papillary muscle (AL)', hint:'The AL papillary is anterolateral—click its dome apex in the ventricle.', goal:{ target:'AL', tolPx:18 }, voice:'Click the anterolateral papillary muscle.' },
-    { id:'pap-pm', type:'landmark-3d', title:'Click the posteromedial papillary muscle (PM)', hint:'The PM papillary is posteromedial—click its dome apex.', goal:{ target:'PM', tolPx:18 }, voice:'Click the posteromedial papillary muscle.' },
-    { id:'tee-lax', type:'tee-align', title:'TEE overlay: ME long‑axis (A2–P2)', hint:'Select “ME long‑axis” in the TEE menu (top bar). Align yaw/pitch until the plane overlays A2–P2 cleanly.', goal:{ yawDeg: 200, pitchDeg: 60, tolYaw:14, tolPitch:10, holdMs: 900, view:'me-lax' }, voice:'Turn on the ME long‑axis overlay and align your view until it sits across A2 to P2.' },
-    { id:'done', type:'gaze', title:'Complete — review & export', hint:'Great work. Open the scorecard with R, or export a PNG snapshot from the top bar.', voice:'Module complete. You can review results or proceed to the next module.' },
-  ];
-
-  function currentStep(){ return Steps[State.stepIndex]; }
-
-  const StepMachine = {
-    holdStart:0,
-    current(){ return currentStep(); },
-    goto(i){
-      State.stepIndex = Math.max(0, Math.min(i, Steps.length-1));
-      this.syncUI();
-      this.showHints();
-      this.prompt();
-    },
-    syncUI(){
-      const s=currentStep(); document.getElementById('step-idx').textContent=String(State.stepIndex+1); document.getElementById('step-total').textContent=String(Steps.length); document.getElementById('step-title').textContent=s.title;
-      const ol=document.getElementById('step-list'); ol.innerHTML=''; Steps.forEach((step,idx)=>{ const li=document.createElement('li'); li.textContent=step.title; if(idx===State.stepIndex) li.classList.add('active'); li.tabIndex=0; li.addEventListener('click',()=>this.goto(idx)); li.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault(); this.goto(idx);}}); ol.appendChild(li); });
-    },
-    prompt(){
-      const s=currentStep(); document.getElementById('copilot-summary').textContent=s.hint; if(State.flags.showHints) overlaysForStep(s); speak(s.voice||s.title);
-    },
-    onClick(p, ev){
-      const s=currentStep();
-      if(s.type==='landmark'){
-        const mmPerPx = annulusMmPerPx();
-        const target = Assets.mitral.landmarks.annulusMid[s.goal.target];
-        const t = Project.worldToScreen(target);
-        const dpx = Math.hypot(p.x - t.x, p.y - t.y);
-        const dmm = dpx * mmPerPx;
-        const ok = dmm <= (s.goal.tolMm||2.0);
-        Overlay.dot(p.x,p.y, ok?'ok': dmm<=s.goal.tolMm*1.8 ? 'warn':'bad');
-        addFeedback(\`\${s.goal.target}: \${ok?'OK':'off target'} — \${dmm.toFixed(1)} mm from center (≤ \${s.goal.tolMm} mm)\`, ok?'info':(dmm<=s.goal.tolMm*1.8?'warn':'bad'));
-        updateIDScore(ok, dmm, s.goal.tolMm);
-        if(ok) this.advance();
+      function carveLeafletCleft(leaf, xCenter=0.0){
+        const pos = leaf.geometry.attributes.position;
+        for(let i=0;i<pos.count;i++){
+          const x = pos.getX(i);
+          const d = Math.abs(x-xCenter);
+          if(d < 0.08){
+            pos.setY(i, pos.getY(i) - (0.05 - d*0.5));
+          }
+        }
+        pos.needsUpdate = true;
       }
-      if(s.type==='landmark-3d'){
-        // projected distance at screen level
-        const T = Assets.mitral.landmarks.papillary[s.goal.target];
-        const t = Project.worldToScreen(T);
-        const dpx = Math.hypot(p.x - t.x, p.y - t.y);
-        const ok = dpx <= (s.goal.tolPx||18);
-        Overlay.dot(p.x,p.y, ok?'ok': dpx<= (s.goal.tolPx||18)*1.5 ? 'warn':'bad');
-        addFeedback(\`\${s.goal.target}: \${ok?'OK':'off target'} — \${dpx.toFixed(0)} px from apex (≤ \${s.goal.tolPx||18} px)\`, ok?'info':(dpx<= (s.goal.tolPx||18)*1.5?'warn':'bad'));
-        updateIDScore(ok, dpx*annulusMmPerPx(), 2.0); // approximate mm
-        if(ok) this.advance();
+
+      function addAnnularCalcificationSegment(){
+        const seg = new THREE.Mesh(
+          new THREE.TorusGeometry(0.65, 0.055, 22, 80, Math.PI*0.35),
+          new THREE.MeshStandardMaterial({ color:0xdddddd, roughness:0.6, metalness:0.3, emissive:0x111111 })
+        );
+        seg.rotation.x = Math.PI/2;
+        seg.rotation.z = Math.PI*1.1;
+        seg.position.copy(g.annulus.position);
+        g.annulus.add(seg);
+        g.annulus.userData.calcMeshes = (g.annulus.userData.calcMeshes||[]).concat(seg);
       }
-    },
-    onFrame(coveragePct){
-      const s=currentStep();
-      if(s.type==='view-align'){
-        const yaw=((Camera.yaw*180/Math.PI)%360+360)%360, pitch=(Camera.pitch*180/Math.PI);
-        const dy = Math.min( Math.abs(((yaw - s.goal.yawDeg + 540)%360)-180), 180 ); // shortest wrap
-        const dp = Math.abs(pitch - s.goal.pitchDeg);
-        const within = dy <= s.goal.tolYaw && dp <= s.goal.tolPitch;
-        if (within){ if(!this.holdStart) this.holdStart=performance.now(); const held=performance.now()-this.holdStart; addFeedback(\`Hold steady… \${Math.min(100, Math.round(held/s.goal.holdMs*100))}%\`, 'info'); if(held>=s.goal.holdMs){ updateViewScore(true, dy, dp, s.goal); this.advance(); this.holdStart=0; } }
-        else { this.holdStart=0; if(State.mode!=='assessment') addFeedback('Adjust yaw/pitch to match the highlighted band.', 'warn'); }
+
+      function shortenChordae(factor){
+        state.groups.chordae.children.forEach(mesh=>{
+          mesh.scale.y = factor;
+          mesh.updateMatrix(); mesh.updateMatrixWorld();
+        });
       }
-      if(s.type==='trace-annulus'){
-        const need = s.goal.coverage||70;
-        updateTraceScore(coveragePct);
-        if(coveragePct>=need){ addFeedback('Annulus tracing achieved.','info'); this.advance(); }
+
+      function pulseMaterial(mat){
+        const base = mat.emissive.clone();
+        let t=0; const off = state.renderer.addTicker(dt=>{
+          t += dt; const k = Math.sin(t*6)*0.5+0.5;
+          mat.emissive.lerpColors(base, new THREE.Color(0x112200), k*0.25);
+          if(t>0.8){ state.renderer._tickers.delete(off); mat.emissive.copy(base); }
+        });
       }
-      if(s.type==='tee-align'){
-        // ensure overlay selected
-        const sel=document.getElementById('tee-planar'); if(sel.value!==s.goal.view){ if(State.mode!=='assessment') addFeedback('Select the requested TEE overlay from the top bar.', 'warn'); return; }
-        Overlay.teePlane(sel.value);
-        const yaw=((Camera.yaw*180/Math.PI)%360+360)%360, pitch=(Camera.pitch*180/Math.PI);
-        const dy=Math.min( Math.abs(((yaw - s.goal.yawDeg + 540)%360)-180), 180 ); const dp=Math.abs(pitch - s.goal.pitchDeg);
-        const within = dy <= s.goal.tolYaw && dp <= s.goal.tolPitch;
-        if (within){ if(!this.holdStart) this.holdStart=performance.now(); const held=performance.now()-this.holdStart; if(held>=s.goal.holdMs){ updateViewScore(true, dy, dp, s.goal); this.advance(); this.holdStart=0; } }
-        else { this.holdStart=0; }
+    }
+
+    function cycleVariation(){
+      const sel = document.getElementById('variationSel');
+      const idx = sel.selectedIndex;
+      const next = (idx+1) % sel.options.length;
+      sel.selectedIndex = next;
+      applyVariation(sel.value);
+    }
+
+    // ---------- Layers ----------
+    function toggleLayer(layer, visible){
+      const g = state.groups;
+      const setVis = (obj, v)=>{ if(!obj) return; obj.visible = v; if(obj.children) obj.children.forEach(c=>setVis(c,v)); };
+
+      switch(layer){
+        case 'leaflets': setVis(g.leaflets.A, visible); setVis(g.leaflets.P, visible); break;
+        case 'annulus': setVis(g.annulus, visible); break;
+        case 'papillary': setVis(g.pap.AL, visible); setVis(g.pap.PM, visible); break;
+        case 'chordae': setVis(g.chordae, visible); break;
+        case 'segments': g.segments.forEach(s=> setVis(s, visible)); break;
+        case 'zones': g.zones.safe.forEach(z=> setVis(z, visible)); g.zones.danger.forEach(z=> setVis(z, visible)); break;
+        case 'coronaries': setVis(state.groups.coronaries.LAD, visible); setVis(state.groups.coronaries.Cx, visible); break;
+        case 'lvot': setVis(state.groups.aorta, visible); break;
+        case 'labels': state.labelVisible = visible; updateLabelVisibility(); break;
       }
-    },
-    advance(){
-      const auto = State.flags.autoAdvance || document.getElementById('auto-advance')?.checked || State.mode==='assessment';
-      if (State.stepIndex < Steps.length-1){
-        if(auto){ this.goto(State.stepIndex+1); } else { addFeedback('Step completed ✅ Click Next to continue.','info'); }
+    }
+
+    function updateLabelVisibility(){
+      const any = state.labelVisible;
+      if(!Overlay.el) return;
+      Overlay.clear();
+      // Re-render static anchors only when visible (dynamic click labels spawn on click regardless)
+      if(!any) return;
+      state.groups.labels.forEach(dot=>{
+        const {x,y} = state.renderer.worldToScreen(dot.position);
+        const d = document.createElement('div');
+        d.className = 'overlay-label';
+        d.textContent = dot.userData.label;
+        d.style.left = (x|0)+'px';
+        d.style.top  = (y|0)+'px';
+        Overlay.el.appendChild(d);
+      });
+    }
+
+    // ---------- Camera focuses ----------
+    function focusView(where){
+      const cam = state.renderer.camera;
+      const ctr = state.renderer.controls;
+      const tween = (from, to, dur=0.45)=> {
+        let t=0; const start=from.clone();
+        const off = state.renderer.addTicker(dt=>{
+          t += dt; const k = Math.min(1, t/dur);
+          from.lerpVectors(start, to, k);
+          if(k>=1){ state.renderer._tickers.delete(off); }
+        });
+      };
+      const focus = {
+        annulus: new THREE.Vector3(0,0.22,0),
+        aorta:   new THREE.Vector3(0.15,0.27,0.06),
+        pap_al:  state.groups.pap.AL.position.clone(),
+        pap_pm:  state.groups.pap.PM.position.clone(),
+        reset:   new THREE.Vector3(0,0,0)
+      }[where] || new THREE.Vector3(0,0,0);
+
+      tween(ctr.target, focus, 0.4);
+      if(where==='reset'){
+        tween(cam.position, new THREE.Vector3(0.8,0.9,3.2), 0.6);
+      }else{
+        const dir = focus.clone().add(new THREE.Vector3(0.6,0.5,1.2));
+        tween(cam.position, dir, 0.6);
       }
-    },
-    showHints(){
-      Overlay.clear(); Overlay.ensureViewBox(); Overlay.drawRingLabels();
-      const s=currentStep(); overlaysForStep(s);
     }
-  };
 
-  function overlaysForStep(s){
-    if(!State.flags.showHints || State.mode==='assessment') return;
-    // General: aim at target
-    if(s.type==='landmark'){
-      const target=Assets.mitral.landmarks.annulusMid[s.goal.target]; const t=Project.worldToScreen(target);
-      Overlay.aim(t.x,t.y);
-      speak(\`Aim at \${s.goal.target} and click within \${s.goal.tolMm} mm.\`);
+    // ---------- AI Copilot (Training steps) ----------
+    let engine = null; let lastClickKey = null;
+    function setMode(m){
+      state.mode = m;
+      Util.toast('Mode: ' + m);
+      Overlay.clear();
+      if(m==='training'){ setupTraining(); state.ui.task.textContent = 'Follow copilot instructions'; }
+      if(m==='practice'){ startPracticeRound(); }
+      if(m==='quiz'){ startQuiz(); }
     }
-    if(s.type==='landmark-3d'){
-      const target=Assets.mitral.landmarks.papillary[s.goal.target]; const t=Project.worldToScreen(target);
-      Overlay.aim(t.x,t.y,'rgba(255,255,255,0.95)');
-      speak(\`Aim at \${s.goal.target} apex and click.\`);
+
+    function setupTraining(){
+      engine = new StepEngine([
+        {
+          id:'orient', title:'Orientation',
+          details:'Orbit around the heart. Press F to focus on the annulus.',
+          goal: () => true,
+          onEnter: () => { Voice.speak('Welcome to Anatomical Mastery. Orbit to orient yourself. Press F to focus on the annulus.'); hintAnnulus(); }
+        },
+        {
+          id:'annulus', title:'Identify the Mitral Annulus',
+          details:'Click the green ring (mitral annulus).',
+          goal: () => lastClickKey === 'annulus',
+          onEnter: () => { Voice.speak('Click on the mitral annulus.'); highlightObject(state.groups.annulus); }
+        },
+        {
+          id:'leaflet_a', title:'Identify Anterior Leaflet',
+          details:'Click the anterior leaflet (toward LVOT/AMC).',
+          goal: () => lastClickKey === 'leaflet_A',
+          onEnter: () => { Voice.speak('Identify the anterior leaflet near the LVOT and AMC.'); highlightObject(state.groups.leaflets.A); }
+        },
+        {
+          id:'leaflet_p', title:'Identify Posterior Leaflet',
+          details:'Click the posterior leaflet (scalloped, near circumflex).',
+          goal: () => lastClickKey === 'leaflet_P',
+          onEnter: () => { Voice.speak('Identify the posterior leaflet.'); highlightObject(state.groups.leaflets.P); }
+        },
+        {
+          id:'segments', title:'Segments A2 and P2',
+          details:'Click A2, then P2 segment pads.',
+          goal: () => lastClickKey === 'p2', // step advances after P2
+          onEnter: () => { Voice.speak('Click A2 first, then P2.'); pulseSegment('A2'); },
+          onExit: () => clearSegmentPulse()
+        },
+        {
+          id:'pap', title:'Papillary Muscles',
+          details:'Click Anterolateral (AL), then Posteromedial (PM) papillary muscles.',
+          goal: () => lastClickKey === 'pap_pm',
+          onEnter: () => { Voice.speak('Click anterolateral, then posteromedial papillary muscles.'); highlightObject(state.groups.pap.AL); },
+        },
+        {
+          id:'chordae', title:'Chordae Tendineae',
+          details:'Click a yellow chordae strand.',
+          goal: () => lastClickKey === 'chordae',
+          onEnter: () => { Voice.speak('Click on the chordae.'); }
+        },
+        {
+          id:'conduction', title:'Conduction Proximity',
+          details:'Toggle Zones layer ON and click the AMC marker.',
+          goal: () => lastClickKey === 'amc',
+          onEnter: () => { Voice.speak('Toggle zones. Be aware of conduction tissue near the aorto-mitral continuity. Click AMC.'); ensureZonesOn(); }
+        },
+        {
+          id:'variation', title:'Variation Drill',
+          details:'Apply Annular Dilatation variation, then click the annulus again.',
+          goal: () => lastClickKey === 'annulus',
+          onEnter: () => { Voice.speak('Apply annular dilatation, then re-identify the annulus.'); document.getElementById('variationSel').value='annular_dilation'; }
+        }
+      ], state);
+
+      engine._enter();
+      Bus.on('coach:enter', ({step}) => renderCoach(step));
     }
-    if(s.type==='view-align'){
-      // Show a subtle compass hint: not drawing full compass for brevity; voice guides.
-      speak('Rotate to the atrial top‑down view. Keep the view steady briefly to pass.');
+
+    function hintAnnulus(){
+      const ann = state.groups.annulus;
+      const p = state.renderer.worldToScreen(ann.position.clone().add(new THREE.Vector3(0,0.16,0)));
+      Overlay.addHint(p.x, p.y, 'Mitral Annulus');
     }
-    if(s.type==='trace-annulus'){
-      speak('Hold the left mouse button and glide along the cyan annulus to accumulate coverage.');
+
+    function highlightObject(obj){
+      if(!obj || !obj.material) return;
+      const mat = obj.material;
+      const base = mat.emissive ? mat.emissive.clone() : new THREE.Color(0,0,0);
+      let t=0; const off = state.renderer.addTicker(dt=>{
+        t += dt; const k = Math.sin(t*6)*0.5+0.5;
+        if(mat.emissive) mat.emissive.setRGB(0.05 + 0.15*k, 0.08 + 0.1*k, 0.05);
+        if(t>1.2){ state.renderer._tickers.delete(off); if(mat.emissive) mat.emissive.copy(base); }
+      });
     }
-    if(s.type==='tee-align'){
-      Overlay.teePlane(s.goal.view);
-      speak('Select the requested TEE overlay and align the plane with the annulus labels.');
+
+    let segPulse = null;
+    function pulseSegment(name='A2'){
+      const pad = state.groups.segments.find(x => x.name===name);
+      if(!pad) return;
+      pad.material.opacity = 0.45; pad.material.needsUpdate = true;
+      segPulse = pad;
     }
-  }
-
-  function annulusMmPerPx(){
-    // approximate: use screen scale at target depth (like pan math)
-    const h=Math.max(1, gl.canvas.clientHeight); const v=Math.tan(Camera.fov/2)*Camera.dist; return v/(h/2);
-  }
-
-  function updateIDScore(ok, distMm, tolMm){
-    // reward precise hits; penalize misses gently
-    const contrib = ok ? 1.0 : Math.max(0, 1.0 - (distMm / (tolMm*2.5)));
-    Scoring.metrics.id = Math.max(Scoring.metrics.id*0.7, contrib*0.9); // monotonic up with memory
-    Scoring.computeTotal();
-  }
-  function updateViewScore(ok, dy, dp, goal){
-    const yawScore = Math.max(0, 1 - (dy/(goal.tolYaw*2)));
-    const pitScore = Math.max(0, 1 - (dp/(goal.tolPitch*2)));
-    const v = ok ? (0.5*yawScore + 0.5*pitScore) : 0;
-    Scoring.metrics.view = Math.max(Scoring.metrics.view*0.6, v);
-    Scoring.computeTotal();
-  }
-  function updateTraceScore(coveragePct){
-    Scoring.metrics.trace = Math.max(Scoring.metrics.trace, Math.min(1, coveragePct/100));
-    Scoring.computeTotal();
-  }
-
-  // ---------- Cues (audio/haptics) ----------
-  const Cues = {
-    manifest:null, haptics:null, ctx:null, unlocked:false,
-    init(){
-      try{ this.manifest = JSON.parse(document.getElementById('audio-manifest').textContent); }catch(e){ this.manifest={events:{}}; }
-      try{ this.haptics  = JSON.parse(document.getElementById('haptics-presets').textContent); }catch(e){ this.haptics={}; }
-      const unlock = () => { if(this.unlocked) return; this.unlocked=true; try{ this.ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} };
-      window.addEventListener('pointerdown', unlock, {once:true});
-      window.addEventListener('keydown', unlock, {once:true});
-    },
-    play(name){
-      const ev=this.manifest?.events?.[name]; const fallback=()=>this.beep(name);
-      if(ev){
-        const el=document.getElementById(ev.el);
-        if(el && typeof el.play==='function'){
-          try{ el.volume=Math.max(0,Math.min(1,ev.volume??0.2)); if('playbackRate' in el) el.playbackRate=ev.rate??1.0; el.currentTime=0; const p=el.play(); if(p?.catch) p.catch(fallback);}catch(_){fallback();}
-        } else fallback();
-      } else fallback();
-      // vibrate
-      try{ const pat=this.haptics?.[name]; if(navigator.vibrate && Array.isArray(pat)) navigator.vibrate(pat); }catch(_){}
-    },
-    beep(name){
-      if(!this.ctx) return; const ctx=this.ctx; const o=ctx.createOscillator(); const g=ctx.createGain(); const now=ctx.currentTime;
-      let f=520; if(name==='warn') f=340; if(name==='bad') f=240; if(name==='step-advance') f=600;
-      o.frequency.setValueAtTime(f, now); g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.08, now+0.01); g.gain.exponentialRampToValueAtTime(0.0001, now+0.14); o.connect(g).connect(ctx.destination); o.start(now); o.stop(now+0.15);
+    function clearSegmentPulse(){ if(segPulse){ segPulse.material.opacity=0.15; segPulse=null; } }
+    function ensureZonesOn(){
+      const zonesBox = document.querySelector('input[data-layer="zones"]');
+      if(zonesBox && !zonesBox.checked){ zonesBox.checked = true; toggleLayer('zones', true); }
     }
-  };
-  Cues.init();
 
-  // ---------- Top bar, preferences, tee overlay ----------
-  function wireUI(){
-    document.getElementById('btn-start')?.addEventListener('click', ()=>{ startTimer(); Cues.play('ok'); speak('Session started.'); });
-    document.getElementById('btn-pause')?.addEventListener('click', ()=>{ pauseTimer(); Cues.play('ui-click'); speak('Paused.'); });
-    document.getElementById('btn-reset')?.addEventListener('click', ()=>{ location.reload(); });
+    function renderCoach(step){
+      const el = document.getElementById('coachUI');
+      el.innerHTML = '';
+      const h = document.createElement('div'); h.textContent = step.title; el.appendChild(h);
+      const d = document.createElement('div'); d.textContent = step.details; d.className = 'small'; el.appendChild(d);
+    }
 
-    document.getElementById('open-onboarding')?.addEventListener('click', ()=> document.getElementById('dlg-onboarding').showModal());
-    document.getElementById('ob-ok')?.addEventListener('click', ()=> document.getElementById('dlg-onboarding').close());
+    // ---------- Practice / Quiz ----------
+    const ALL_TASKS = [
+      { key:'annulus', text:'Click the Mitral Annulus' },
+      { key:'leaflet_A', text:'Click the Anterior Leaflet' },
+      { key:'leaflet_P', text:'Click the Posterior Leaflet' },
+      { key:'aorta', text:'Click the Aortic Root (LVOT vicinity)' },
+      { key:'lvot', text:'Click the LVOT marker' },
+      { key:'amc', text:'Click the Aorto‑Mitral Continuity (AMC)' },
+      { key:'pap_al', text:'Click the Anterolateral Papillary Muscle' },
+      { key:'pap_pm', text:'Click the Posteromedial Papillary Muscle' },
+      { key:'chordae', text:'Click a Chordae strand' },
+      { key:'a1', text:'Click segment A1' },
+      { key:'a2', text:'Click segment A2' },
+      { key:'a3', text:'Click segment A3' },
+      { key:'p1', text:'Click segment P1' },
+      { key:'p2', text:'Click segment P2' },
+      { key:'p3', text:'Click segment P3' },
+      { key:'lad', text:'Click the LAD (surrogate)' },
+      { key:'cx', text:'Click the Circumflex (surrogate)' }
+    ];
 
-    document.getElementById('take-screenshot')?.addEventListener('click', exportSnapshot);
+    function startPracticeRound(){
+      state.practice = { asked:0, correct:0, streak:0, rt:[], score:0 };
+      nextTask();
+    }
 
-    const modeSel=document.getElementById('mode');
-    modeSel.addEventListener('change', e=>{
-      State.mode=e.target.value;
-      const icon=document.getElementById('mode-icon');
-      icon.setAttribute('href', State.mode==='training'?'#i-training':State.mode==='practice'?'#i-practice':'#i-assessment');
-      speak('Mode: '+State.mode);
-      StepMachine.showHints();
-    });
+    function startQuiz(){
+      state.quiz = { total:10, asked:0, correct:0, rt:[], score:0 };
+      nextTask(true);
+    }
 
-    document.getElementById('voice-on')?.addEventListener('change', e=> State.flags.voice=e.target.checked);
-    document.getElementById('auto-advance')?.addEventListener('change', e=> State.flags.autoAdvance=e.target.checked);
-    document.getElementById('show-hints')?.addEventListener('change', e=> { State.flags.showHints=e.target.checked; StepMachine.showHints(); });
+    function nextTask(quiz=false){
+      const choices = ALL_TASKS;
+      const t = choices[Math.floor(Math.random()*choices.length)];
+      state.task = t; state.expectKey = t.key;
+      state.ui.task.textContent = t.text;
+      state.ui.feedback.textContent = '—';
+      state.timers.t0 = performance.now();
+      if(quiz){
+        state.quiz.asked++;
+      }else{
+        state.practice.asked++;
+      }
+    }
 
-    const contrast=document.getElementById('toggle-contrast');
-    contrast.addEventListener('change', e=>{ document.getElementById('app').classList.toggle('high-contrast', e.target.checked); State.flags.highContrast=e.target.checked; });
-    document.getElementById('app').classList.toggle('high-contrast', contrast.checked);
+    function evaluateSelection(key, label){
+      const dt = (performance.now() - state.timers.t0)/1000;
+      const quiz = (state.mode==='quiz');
+      const correct = (key === state.expectKey);
+      const ctx = quiz ? state.quiz : state.practice;
 
-    document.getElementById('btn-prev-step')?.addEventListener('click', ()=> StepMachine.goto(State.stepIndex-1));
-    document.getElementById('btn-next-step')?.addEventListener('click', ()=> StepMachine.goto(State.stepIndex+1));
+      if(correct){
+        ctx.correct++; ctx.streak = (ctx.streak||0) + 1;
+        state.ui.feedback.textContent = 'Correct: ' + (label || key);
+        state.ui.feedback.classList.remove('score-bad'); state.ui.feedback.classList.add('score-good');
+        Voice.speak('Correct');
+      }else{
+        ctx.streak = 0;
+        state.ui.feedback.textContent = 'Incorrect (selected ' + (label||key) + '). Expected ' + state.task.text.replace('Click ','');
+        state.ui.feedback.classList.remove('score-good'); state.ui.feedback.classList.add('score-bad');
+        Voice.speak('Incorrect');
+      }
 
-    const teeSel=document.getElementById('tee-planar');
-    teeSel.addEventListener('change', ()=> Overlay.teePlane(teeSel.value));
-  }
+      // Scoring model: base 10 per question; speed bonus up to +3; wrong −5
+      let delta = correct ? 10 : -5;
+      const speedBonus = Math.max(0, 3 - Math.min(3, dt)); // up to 3 points if <1s
+      if(correct) delta += speedBonus;
+      ctx.score = Math.max(0, (ctx.score||0) + delta);
+      ctx.rt = ctx.rt || []; ctx.rt.push(dt);
 
-  // ---------- Export helpers ----------
-  async function exportSnapshot(){
-    try{
-      Overlay.ensureViewBox();
-      const W=gl.drawingBufferWidth, H=gl.drawingBufferHeight;
-      const off=document.createElement('canvas'); off.width=W; off.height=H; const ctx=off.getContext('2d');
-      ctx.drawImage(gl.canvas, 0, 0, W, H);
-      const svgOrig=document.getElementById('overlay'); const svgClone=svgOrig.cloneNode(true); svgClone.setAttribute('width',W); svgClone.setAttribute('height',H);
-      const svgStr=new XMLSerializer().serializeToString(svgClone); const blob=new Blob([svgStr], {type:'image/svg+xml;charset=utf-8'}); const url=URL.createObjectURL(blob);
-      await new Promise((res,rej)=>{ const img=new Image(); img.onload=()=>{ ctx.drawImage(img,0,0,W,H); URL.revokeObjectURL(url); res(); }; img.onerror=rej; img.src=url; });
-      const png=await new Promise(res=>off.toBlob(res, 'image/png', 0.96)); const a=document.createElement('a'); const t=new Date().toISOString().replace(/[:.]/g,'-'); const u=URL.createObjectURL(png); a.href=u; a.download=\`MitralSim_A01_\${t}.png\`; a.click(); URL.revokeObjectURL(u);
-      addFeedback('Snapshot exported.','info'); Cues.play('ui-click');
-    }catch(e){ console.error(e); addFeedback('Snapshot export failed.','bad'); }
-  }
+      updateKPIs();
 
-  // ---------- Context loss handling ----------
-  function bindContextLoss(){
-    const canvas=gl.canvas;
-    canvas.addEventListener('webglcontextlost', (e)=>{ e.preventDefault();
-      const note=document.createElement('div'); note.id='ctx-lost'; note.style.cssText='position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.6);color:#fff;font:14px var(--font-ui);z-index:99';
-      note.innerHTML='<div class="panel" style="padding:12px;"><strong>Renderer paused</strong><br/>Graphics context lost. Attempting to restore…</div>'; document.querySelector('.stage').appendChild(note);
-    }, { once:true });
-    canvas.addEventListener('webglcontextrestored', ()=>{ document.getElementById('ctx-lost')?.remove();
-      try{ initRenderer(); onResize(); Overlay.ensureViewBox(); Overlay.drawRingLabels(); Overlay.teePlane(document.getElementById('tee-planar').value); StepMachine.goto(State.stepIndex||0); requestAnimationFrame(renderFrame); speak('Graphics restored.'); }catch(e){ console.error('Context restore failed:',e); speak('Could not restore graphics.'); }
-    }, { once:true });
-  }
+      // Continue
+      if(quiz){
+        if(state.quiz.asked >= state.quiz.total){
+          finishQuiz();
+        }else{
+          nextTask(true);
+        }
+      }else{
+        nextTask(false);
+      }
+    }
 
-  // ---------- Boot ----------
-  function boot(){
-    initRenderer();
-    bindInteraction();
-    bindContextLoss();
-    wireUI();
-    Overlay.ensureViewBox();
-    Overlay.drawRingLabels();
-    StepMachine.goto(0);
-    requestAnimationFrame(renderFrame);
-    document.getElementById('dlg-onboarding').showModal();
-  }
+    function updateKPIs(){
+      const quiz = (state.mode==='quiz');
+      const ctx = quiz ? state.quiz : state.practice;
+      const acc = (ctx.correct / Math.max(1, ctx.asked)) * 100;
+      const avg = (ctx.rt.length ? ctx.rt.reduce((a,b)=>a+b,0)/ctx.rt.length : 0);
+      state.metricsEls.acc.textContent   = (acc||0).toFixed(0) + '%';
+      state.metricsEls.rt.textContent    = (avg?avg.toFixed(2)+' s':'— s');
+      state.metricsEls.streak.textContent= (ctx.streak||0);
+      state.metricsEls.score.textContent = (ctx.score||0).toFixed(0);
+      // colorize score
+      const cls = (acc>=90)?'score-good':(acc>=70)?'score-warn':'score-bad';
+      state.metricsEls.acc.className = 'value ' + cls;
+    }
 
-  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', boot, {once:true}); } else { boot(); }
+    function finishQuiz(){
+      const acc = (state.quiz.correct / Math.max(1, state.quiz.asked)) * 100;
+      const score = state.quiz.score;
+      const grade = letterFor(score, acc);
+      state.ui.task.textContent = 'Quiz finished.';
+      state.ui.feedback.textContent = `Summary — Correct: ${state.quiz.correct}/${state.quiz.asked}, Accuracy: ${acc.toFixed(0)}%, Score: ${score.toFixed(0)} (${grade})`;
+      Voice.speak('Quiz complete.');
+    }
+
+    function letterFor(score, acc){
+      if(score>=95 && acc>=90) return 'A+';
+      if(score>=90) return 'A';
+      if(score>=85) return 'A-';
+      if(score>=80) return 'B+';
+      if(score>=75) return 'B';
+      if(score>=70) return 'B-';
+      if(score>=60) return 'C';
+      if(score>=50) return 'D';
+      return 'F';
+    }
+
+    // ---------- Finish & Save ----------
+    function saveProgress(){
+      // Choose best of practice/quiz score; convert to 0..100
+      const q = state.quiz?.score||0, p = state.practice?.score||0;
+      const s = Math.max(q, p);
+      const norm = Math.max(0, Math.min(100, s));
+      const saved = Progress.load();
+      saved['anatomy-recognition'] = { completed: true, score: norm };
+      Progress.save(saved);
+      state.ui.finishNote.innerHTML = 'Status: <b>Saved</b> (score ' + norm.toFixed(0) + ')';
+      Util.toast('Saved to dashboard.');
+    }
+
+    // ---------- Utils for training ----------
+    function feedback(msg){ state.ui.feedback.textContent = msg; }
+    function renderCoachStep(title, details){
+      const el = document.getElementById('coachUI');
+      el.innerHTML = '';
+      const h = document.createElement('div'); h.textContent = title; el.appendChild(h);
+      const p = document.createElement('div'); p.textContent = details; p.className='small'; el.appendChild(p);
+    }
+
+    // ---------- Initial setup ----------
+    setMode('training');
+    updateLabelVisibility();
+
+    // ---------- Window resize: update overlay labels ----------
+    window.addEventListener('resize', ()=> { updateLabelVisibility(); });
+
   </script>
 </body>
 </html>
