@@ -27,7 +27,7 @@
   <meta name="apple-mobile-web-app-title" content="MitralSim" />
   <meta name="format-detection" content="telephone=no" />
 
-  <!-- Canonical & social (replace URL after you publish to GitHub Pages) -->
+  <!-- Canonical & social (replace URL after you publish) -->
   <link rel="canonical" href="https://example.com/mitralsim/" />
   <meta property="og:url" content="https://example.com/mitralsim/" />
   <meta property="og:type" content="website" />
@@ -46,7 +46,7 @@
         href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M16 32c5-8 11-12 16-12s11 4 16 12c-5 8-11 12-16 12s-11-4-16-12z' fill='%23000'/%3E%3Ccircle cx='32' cy='32' r='30' fill='none' stroke='%23000'/%3E%3C/svg%3E"
         color="#00d1ff" />
 
-  <!-- Structured data (SoftwareApplication + HowTo) -->
+  <!-- Structured data -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -88,113 +88,61 @@
        SECTION 02: HEAD • DESIGN TOKENS & GLOBAL CSS
        ========================= -->
   <style>
-    /* ---------- Design Tokens ---------- */
     :root {
-      /* Color system (dark by default) */
-      --bg-0: #05070c;   /* page background (deep) */
-      --bg-1: #0b1220;   /* app background */
-      --bg-2: #111a2e;   /* bars & panels base */
-      --surface-1: #0f1830;
-      --surface-2: #14213d;
-      --surface-3: #1a2a4f;
+      --bg-0: #05070c;   --bg-1: #0b1220;   --bg-2: #111a2e;
+      --surface-1: #0f1830; --surface-2: #14213d; --surface-3: #1a2a4f;
 
-      --fg-0: #ffffff;   /* primary text */
-      --fg-1: #cbd5e1;   /* secondary text */
-      --fg-2: #9fb0c9;   /* tertiary text */
-      --muted: #8b9bb3;
+      --fg-0: #ffffff; --fg-1: #cbd5e1; --fg-2: #9fb0c9; --muted: #8b9bb3;
 
-      --accent:   #00d1ff;  /* cyan */
-      --accent-2: #ff2d55;  /* rose */
-      --ok:   #2ecc71;
-      --warn: #ffb020;
-      --bad:  #ff4d4f;
+      --accent:#00d1ff; --accent-2:#ff2d55; --ok:#2ecc71; --warn:#ffb020; --bad:#ff4d4f;
 
-      /* FX / outlines */
       --focus: color-mix(in oklab, var(--accent) 80%, white);
       --glow: 0 0 0 2px color-mix(in oklab, var(--accent) 40%, transparent),
                0 0 0 6px color-mix(in oklab, var(--accent) 20%, transparent);
 
-      /* Spacing scale */
-      --space-1: 4px;
-      --space-2: 8px;
-      --space-3: 12px;
-      --space-4: 16px;
-      --space-5: 20px;
-      --space-6: 24px;
+      --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 20px; --space-6: 24px;
 
-      /* Radii */
-      --r-xs: 8px;
-      --r-sm: 10px;
-      --r:    12px;
-      --r-lg: 18px;
+      --r-xs: 8px; --r-sm: 10px; --r:12px; --r-lg:18px;
 
-      /* Shadows (elevation) */
       --shadow-1: 0 6px 16px rgba(0,0,0,.28);
       --shadow-2: 0 10px 30px rgba(0,0,0,.32);
       --shadow-3: 0 14px 42px rgba(0,0,0,.40);
 
-      /* Typography */
       --font-ui: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
       --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
 
-      /* Fluid type scale */
       --fs-xs: clamp(12px, .78rem, 13px);
       --fs-sm: clamp(13px, .88rem, 14px);
       --fs-md: clamp(14px, .95rem + .1vw, 16px);
       --fs-lg: clamp(16px, 1rem + .4vw, 18px);
       --fs-xl: clamp(18px, 1.05rem + .8vw, 22px);
 
-      /* Motion & timing */
-      --dur-1: 120ms;
-      --dur-2: 200ms;
-      --dur-3: 320ms;
-      --ease: cubic-bezier(.2, .8, .2, 1);
+      --dur-1: 120ms; --dur-2: 200ms; --dur-3: 320ms; --ease: cubic-bezier(.2, .8, .2, 1);
 
-      /* Layout */
-      --rail-left-min: 260px;
-      --rail-left-max: 360px;
-      --rail-right-min: 300px;
-      --rail-right-max: 420px;
+      --rail-left-min: 260px; --rail-left-max: 360px;
+      --rail-right-min: 300px; --rail-right-max: 420px;
     }
 
-    /* Light theme overrides (auto if user prefers light) */
     @media (prefers-color-scheme: light) {
       :root {
-        --bg-1: #f8fafc;
-        --bg-2: #eef2f7;
-        --surface-1: #ffffff;
-        --surface-2: #f3f6fb;
-        --surface-3: #e9eef7;
-
-        --fg-0: #0b1220;
-        --fg-1: #182338;
-        --fg-2: #3a4a65;
-        --muted: #5d6f8d;
-
-        --accent: #007aff;
-        --accent-2: #ff2d55;
-
+        --bg-1: #f8fafc; --bg-2: #eef2f7; --surface-1: #ffffff; --surface-2: #f3f6fb; --surface-3: #e9eef7;
+        --fg-0: #0b1220; --fg-1: #182338; --fg-2: #3a4a65; --muted: #5d6f8d;
+        --accent: #007aff; --accent-2: #ff2d55;
         --shadow-1: 0 4px 14px rgba(12,20,40,.14);
         --shadow-2: 0 8px 24px rgba(12,20,40,.18);
         --shadow-3: 0 14px 42px rgba(12,20,40,.22);
       }
     }
 
-    /* High-contrast helper */
     #app.high-contrast { filter: contrast(1.15) saturate(1.08); }
 
-    /* ---------- Base / Reset ---------- */
     *, *::before, *::after { box-sizing: border-box; }
     html, body { height: 100%; }
     html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     body {
-      margin: 0;
-      background: var(--bg-1);
-      color: var(--fg-1);
-      font: 14px/1.5 var(--font-ui);
-      accent-color: var(--accent);
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
+      margin: 0; background: var(--bg-1); color: var(--fg-1);
+      font: 14px/1.5 var(--font-ui); accent-color: var(--accent);
+      -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
       overscroll-behavior: contain;
     }
     ::selection { background: color-mix(in oklab, var(--accent) 30%, transparent); color: var(--fg-0); }
@@ -202,80 +150,46 @@
     a { color: var(--accent); text-decoration: none; }
     a:hover { text-decoration: underline; }
 
-    .visually-hidden {
-      position: absolute !important;
-      height: 1px; width: 1px;
-      overflow: hidden; clip: rect(1px,1px,1px,1px);
-      white-space: nowrap;
-    }
+    .visually-hidden { position: absolute !important; height: 1px; width: 1px; overflow: hidden; clip: rect(1px,1px,1px,1px); white-space: nowrap; }
 
-    /* ---------- Layout Shell ---------- */
-    #app {
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      height: 100vh;
-      background: linear-gradient(180deg, var(--bg-1), var(--bg-0));
-    }
+    #app { display: grid; grid-template-rows: auto 1fr auto; height: 100vh;
+           background: linear-gradient(180deg, var(--bg-1), var(--bg-0)); }
     .topbar, .bottombar {
-      display: flex;
-      align-items: center;
-      gap: var(--space-3);
-      padding: var(--space-4);
+      display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4);
       background: linear-gradient(180deg, color-mix(in oklab, var(--bg-2) 90%, transparent), var(--surface-1));
       border-bottom: 1px solid color-mix(in oklab, var(--fg-2) 10%, transparent);
-      box-shadow: var(--shadow-2);
-      z-index: 20;
+      box-shadow: var(--shadow-2); z-index: 20;
     }
     .bottombar { border-top: 1px solid color-mix(in oklab, var(--fg-2) 10%, transparent); border-bottom: none; }
 
     .main {
-      min-height: 0;
-      display: grid;
-      grid-template-columns:
-        clamp(var(--rail-left-min), 26vw, var(--rail-left-max))
-        1fr
-        clamp(var(--rail-right-min), 28vw, var(--rail-right-max));
-      gap: var(--space-3);
-      padding: var(--space-3);
+      min-height: 0; display: grid;
+      grid-template-columns: clamp(var(--rail-left-min), 26vw, var(--rail-left-max)) 1fr clamp(var(--rail-right-min), 28vw, var(--rail-right-max));
+      gap: var(--space-3); padding: var(--space-3);
     }
     @media (max-width: 1200px) {
       .main { grid-template-columns: 1fr; }
-      .main > aside[aria-label="Instruments"],
-      .main > aside[aria-label="AI Co‑Pilot"] { order: 1; }
+      .main > aside[aria-label="Instruments"], .main > aside[aria-label="AI Co‑Pilot"] { order: 1; }
       .main > .stage { order: 0; }
     }
 
-    /* ---------- Panels & Common UI ---------- */
     .panel {
       background: linear-gradient(180deg, color-mix(in oklab, var(--surface-1) 86%, transparent), color-mix(in oklab, var(--surface-2) 80%, transparent));
       border: 1px solid color-mix(in oklab, var(--fg-2) 12%, transparent);
-      border-radius: var(--r);
-      padding: var(--space-4);
-      box-shadow: var(--shadow-1);
+      border-radius: var(--r); padding: var(--space-4); box-shadow: var(--shadow-1);
       backdrop-filter: blur(6px) saturate(1.02);
     }
 
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 10px;
-      background: color-mix(in oklab, var(--surface-3) 65%, transparent);
-      border: 1px solid color-mix(in oklab, var(--fg-2) 14%, transparent);
-      color: var(--fg-1);
-      border-radius: 999px;
-      font-size: var(--fs-sm);
-      line-height: 1;
-    }
+    .chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px;
+            background: color-mix(in oklab, var(--surface-3) 65%, transparent);
+            border: 1px solid color-mix(in oklab, var(--fg-2) 14%, transparent);
+            color: var(--fg-1); border-radius: 999px; font-size: var(--fs-sm); line-height: 1; }
 
     button, select {
       font: 600 14px/1 var(--font-ui);
-      color: var(--fg-0);
-      background: var(--surface-2);
+      color: var(--fg-0); background: var(--surface-2);
       border: 1px solid color-mix(in oklab, var(--fg-2) 18%, transparent);
-      border-radius: var(--r-sm);
-      padding: 10px 14px;
-      cursor: pointer;
+      border-radius: var(--r-sm); padding: 10px 14px; cursor: pointer;
       transition: transform var(--dur-1) var(--ease), background var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease);
     }
     button:hover, select:hover { background: color-mix(in oklab, var(--surface-2) 80%, var(--accent) 20%); }
@@ -283,100 +197,60 @@
     button:disabled { opacity: .6; cursor: not-allowed; }
 
     button.primary {
-      background: var(--accent);
-      color: #001018;
-      border-color: color-mix(in oklab, var(--accent) 70%, #000);
+      background: var(--accent); color: #001018; border-color: color-mix(in oklab, var(--accent) 70%, #000);
       box-shadow: 0 4px 16px color-mix(in oklab, var(--accent) 28%, transparent);
     }
     button.primary:hover { box-shadow: 0 6px 20px color-mix(in oklab, var(--accent) 36%, transparent); }
 
-    button.ghost {
-      background: transparent;
-      color: var(--fg-1);
-      border-color: color-mix(in oklab, var(--fg-2) 24%, transparent);
-    }
+    button.ghost { background: transparent; color: var(--fg-1); border-color: color-mix(in oklab, var(--fg-2) 24%, transparent); }
 
-    :focus-visible {
-      outline: 2px solid var(--focus);
-      outline-offset: 2px;
-      box-shadow: var(--glow);
-    }
+    :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; box-shadow: var(--glow); }
 
-    /* ---------- Stage ---------- */
     .stage {
-      position: relative;
-      background: radial-gradient(120% 100% at 50% 0%, #0a0f1e, #04070f);
-      border-radius: var(--r);
-      overflow: hidden;
-      min-height: 380px;
-      box-shadow: var(--shadow-3);
-      isolation: isolate;
+      position: relative; background: radial-gradient(120% 100% at 50% 0%, #0a0f1e, #04070f);
+      border-radius: var(--r); overflow: hidden; min-height: 380px; box-shadow: var(--shadow-3); isolation: isolate;
     }
     #gl { width: 100%; height: 100%; display: block; touch-action: none; user-select: none; }
     .overlay { position: absolute; inset: 0; pointer-events: none; }
     .legend { position: absolute; right: 16px; top: 16px; backdrop-filter: blur(8px); }
     .hud { position: absolute; left: 16px; bottom: 16px; }
-    .tooltip {
-      position: fixed; inset: auto auto 20px 20px; max-width: 360px;
-      pointer-events: none;
+    .tooltip { position: fixed; inset: auto auto 20px 20px; max-width: 360px; pointer-events: none;
       background: color-mix(in oklab, var(--surface-1) 92%, transparent);
       border: 1px solid color-mix(in oklab, var(--fg-2) 16%, transparent);
-      border-radius: var(--r);
-      padding: var(--space-4);
-      box-shadow: var(--shadow-2);
-      color: var(--fg-1);
-      font-size: var(--fs-sm);
-    }
+      border-radius: var(--r); padding: var(--space-4); box-shadow: var(--shadow-2); color: var(--fg-1); font-size: var(--fs-sm); }
 
-    /* Lists / Steps */
     .steps { margin: 0; padding-left: 0; counter-reset: step; }
-    .steps li {
-      list-style: none;
-      margin: 0 0 var(--space-3);
-      padding: var(--space-3);
-      border-radius: var(--r-sm);
+    .steps li { list-style: none; margin: 0 0 var(--space-3); padding: var(--space-3); border-radius: var(--r-sm);
       background: color-mix(in oklab, var(--surface-3) 50%, transparent);
-      border: 1px solid color-mix(in oklab, var(--fg-2) 14%, transparent);
-      position: relative;
-    }
+      border: 1px solid color-mix(in oklab, var(--fg-2) 14%, transparent); position: relative; }
     .steps li::before {
-      counter-increment: step;
-      content: counter(step);
-      position: absolute;
-      left: -10px; top: -10px;
-      width: 28px; height: 28px; border-radius: 50%;
-      display: grid; place-items: center;
-      font-weight: 700; font-size: 12px;
-      color: #001018;
-      background: var(--accent);
-      border: 2px solid color-mix(in oklab, var(--accent) 70%, #000);
-      box-shadow: 0 6px 18px color-mix(in oklab, var(--accent) 30%, transparent);
+      counter-increment: step; content: counter(step); position: absolute; left: -10px; top: -10px;
+      width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+      font-weight: 700; font-size: 12px; color: #001018; background: var(--accent);
+      border: 2px solid color-mix(in oklab, var(--accent) 70%, #000); box-shadow: 0 6px 18px color-mix(in oklab, var(--accent) 30%, transparent);
     }
-    .steps li.active {
-      outline: 2px solid var(--accent);
-      background: color-mix(in oklab, var(--accent) 12%, var(--surface-3));
-    }
+    .steps li.active { outline: 2px solid var(--accent); background: color-mix(in oklab, var(--accent) 12%, var(--surface-3)); }
 
-    /* Score & Telemetry */
     .score-grid { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
     progress { width: 100%; height: 8px; border: none; background: color-mix(in oklab, var(--surface-3) 60%, transparent); border-radius: 999px; overflow: hidden; }
     progress::-webkit-progress-bar { background: transparent; }
     progress::-webkit-progress-value { background: var(--accent); }
     progress::-moz-progress-bar { background: var(--accent); }
 
-    /* Dialog */
     dialog.panel { border: none; padding: 0; max-width: min(720px, 92vw); }
     dialog::backdrop { background: rgba(2, 8, 24, .6); backdrop-filter: blur(3px); }
 
-    /* Micro-animations */
-    @keyframes pulse { 0%{ transform:scale(1); opacity:.8 } 70%{ transform:scale(1.06); opacity:.2 } 100%{ transform:scale(1.08); opacity:0 } }
+    @keyframes pulse {
+      0%   { transform: scale(1);   opacity: .8; }
+      70%  { transform: scale(1.06); opacity: .2; }
+      100% { transform: scale(1.08); opacity: 0; }
+    }
     .pulse { animation: pulse 1200ms var(--ease) infinite; }
 
     @media (prefers-reduced-motion: reduce) {
-      * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+      * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
     }
 
-    /* Scrollbars */
     *::-webkit-scrollbar { width: 10px; height: 10px; }
     *::-webkit-scrollbar-thumb {
       background: color-mix(in oklab, var(--surface-3) 80%, transparent);
@@ -384,217 +258,72 @@
     }
     *::-webkit-scrollbar-thumb:hover { background: color-mix(in oklab, var(--accent) 24%, var(--surface-3)); }
 
-    /* Typography helpers */
     h1, h2, h3, h4 { color: var(--fg-0); margin: 0 0 var(--space-3); line-height: 1.2; }
-    h1 { font-size: var(--fs-xl); }
-    h2 { font-size: var(--fs-lg); }
-    h3 { font-size: var(--fs-md); }
-    h4 { font-size: var(--fs-sm); }
+    h1 { font-size: var(--fs-xl); } h2 { font-size: var(--fs-lg); } h3 { font-size: var(--fs-md); } h4 { font-size: var(--fs-sm); }
     small { font-size: var(--fs-xs); color: var(--fg-2); }
 
-    /* Utility classes */
     .grid { display: grid; gap: var(--space-3); }
     .row { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
-    .mt-0 { margin-top: 0 !important; }
-    .mb-0 { margin-bottom: 0 !important; }
-    .w-100 { width: 100% !important; }
-
-    /* Skip links (visible on focus) */
-    .skip-nav { position: absolute; top: 0; left: 0; z-index: 9999; }
-    .skip-nav a { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; }
-    .skip-nav a:focus {
-      left: 16px; top: 16px; width: auto; height: auto;
-      padding: 10px 14px; border-radius: var(--r-sm);
-      background: var(--accent); color: #001018;
-      box-shadow: var(--shadow-2); text-decoration: none;
-      font: 600 14px/1 var(--font-ui);
-    }
-    .skip-nav a:nth-child(2):focus { top: 56px; }
-    .skip-nav a:nth-child(3):focus { top: 96px; }
-    .skip-nav a:nth-child(4):focus { top: 136px; }
-    .skip-nav a:nth-child(5):focus { top: 176px; }
+    .mt-0 { margin-top: 0 !important; } .mb-0 { margin-bottom: 0 !important; } .w-100 { width: 100% !important; }
   </style>
-</head>
 
-<body>
   <!-- =========================
-       SECTION 03: BODY • EMBEDDED SVG ICON SPRITE
+       SECTION 03: HEAD • SVG ICON SPRITE
        ========================= -->
   <svg width="0" height="0" class="visually-hidden" aria-hidden="true">
-    <!-- Icon sprite (viewBox=0 0 24 24) -->
     <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z"/></symbol>
     <symbol id="i-pause" viewBox="0 0 24 24"><path fill="currentColor" d="M6 5h4v14H6zM14 5h4v14h-4z"/></symbol>
     <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/></symbol>
-    <symbol id="i-reset" viewBox="0 0 24 24">
-      <path d="M21 12a9 9 0 1 1-3-6.7" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
-      <path d="M18 2v5h-5" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/>
-    </symbol>
-    <symbol id="i-undo" viewBox="0 0 24 24">
-      <path d="M8 7 4 11l4 4" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M20 17a7 7 0 0 0-7-7H4" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
-    </symbol>
-    <symbol id="i-redo" viewBox="0 0 24 24">
-      <path d="M16 7 20 11l-4 4" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M4 17a7 7 0 0 1 7-7h9" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
-    </symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/><path d="M18 2v5h-5" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-undo" viewBox="0 0 24 24"><path d="M8 7 4 11l4 4" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 17a7 7 0 0 0-7-7H4" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/></symbol>
+    <symbol id="i-redo" viewBox="0 0 24 24"><path d="M16 7 20 11l-4 4" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17a7 7 0 0 1 7-7h9" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/></symbol>
 
-    <!-- Help / status -->
     <symbol id="i-warning" viewBox="0 0 24 24"><path fill="currentColor" d="M1 21h22L12 2 1 21zm11-3h-2v-2h2v2zm0-4h-2V9h2v5z"/></symbol>
-    <symbol id="i-info" viewBox="0 0 24 24">
-      <circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-      <path d="M12 10v7M12 7h.01" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
-    </symbol>
-    <symbol id="i-help" viewBox="0 0 24 24">
-      <circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-      <path d="M9.5 9a3 3 0 1 1 5 2.5c-.8.5-1.5 1.2-1.5 2.5M12 17h.01" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
-    </symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M12 10v7M12 7h.01" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M9.5 9a3 3 0 1 1 5 2.5c-.8.5-1.5 1.2-1.5 2.5M12 17h.01" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/></symbol>
 
-    <!-- View / camera / zoom -->
     <symbol id="i-camera" viewBox="0 0 24 24"><path fill="currentColor" d="M4 7h4l2-2h4l2 2h4v12H4zM12 10a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/></symbol>
-    <symbol id="i-zoom-in" viewBox="0 0 24 24">
-      <circle cx="11" cy="11" r="6" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-      <path d="M21 21l-4.3-4.3M11 8v6M8 11h6" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
-    </symbol>
-    <symbol id="i-zoom-out" viewBox="0 0 24 24">
-      <circle cx="11" cy="11" r="6" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-      <path d="M21 21l-4.3-4.3M8 11h6" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
-    </symbol>
-    <symbol id="i-rotate-3d" viewBox="0 0 24 24">
-      <path d="M4 7c2-2 6-3 8-3s6 1 8 3-2 5-8 5-10-3-8-5z" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-      <path d="M12 12v9" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
-      <path d="M3 12l-1 2 1 2M21 12l1 2-1 2" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
-    </symbol>
+    <symbol id="i-zoom-in" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M21 21l-4.3-4.3M11 8v6M8 11h6" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/></symbol>
+    <symbol id="i-zoom-out" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M21 21l-4.3-4.3M8 11h6" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/></symbol>
+    <symbol id="i-rotate-3d" viewBox="0 0 24 24"><path d="M4 7c2-2 6-3 8-3s6 1 8 3-2 5-8 5-10-3-8-5z" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M12 12v9" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/><path d="M3 12l-1 2 1 2M21 12l1 2-1 2" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/></symbol>
     <symbol id="i-hand" viewBox="0 0 24 24"><path fill="currentColor" d="M5 8l2-2 4 4 6-6 2 2-8 8z"/></symbol>
-    <symbol id="i-axis-3d" viewBox="0 0 24 24">
-      <path d="M12 3v18M3 12h18" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
-      <path d="M12 3l-2 2h4l-2-2zM21 12l-2-2v4l2-2zM12 21l2-2h-4l2 2zM3 12l2 2v-4l-2 2z" fill="currentColor"/>
-    </symbol>
+    <symbol id="i-axis-3d" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M12 3l-2 2h4l-2-2zM21 12l-2-2v4l2-2zM12 21l2-2h-4l2 2zM3 12l2 2v-4l-2 2z" fill="currentColor"/></symbol>
 
-    <!-- Audio / visibility -->
-    <symbol id="i-speaker" viewBox="0 0 24 24">
-      <path d="M4 10h4l6-5v14l-6-5H4z" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>
-      <path d="M18 9a3 3 0 0 1 0 6M20 7a6 6 0 0 1 0 10" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
-    </symbol>
-    <symbol id="i-speaker-off" viewBox="0 0 24 24">
-      <path d="M4 10h4l6-5v14l-6-5H4z" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>
-      <path d="M20 4L4 20" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
-    </symbol>
-    <symbol id="i-eye" viewBox="0 0 24 24">
-      <path d="M1.5 12S6 5 12 5s10.5 7 10.5 7-4.5 7-10.5 7S1.5 12 1.5 12z" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-      <circle cx="12" cy="12" r="3" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-    </symbol>
-    <symbol id="i-eye-off" viewBox="0 0 24 24">
-      <path d="M3 3l18 18" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
-      <path d="M1.5 12S6 5 12 5c2.2 0 4.2.7 5.9 1.7M22.5 12S18 19 12 19c-2.2 0-4.2-.7-5.9-1.7" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-      <circle cx="12" cy="12" r="3" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-    </symbol>
+    <symbol id="i-speaker" viewBox="0 0 24 24"><path d="M4 10h4l6-5v14l-6-5H4z" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/><path d="M18 9a3 3 0 0 1 0 6M20 7a6 6 0 0 1 0 10" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/></symbol>
+    <symbol id="i-speaker-off" viewBox="0 0 24 24"><path d="M4 10h4l6-5v14l-6-5H4z" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/><path d="M20 4L4 20" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M1.5 12S6 5 12 5s10.5 7 10.5 7-4.5 7-10.5 7S1.5 12 1.5 12z" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/><circle cx="12" cy="12" r="3" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/></symbol>
+    <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M3 3l18 18" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/><path d="M1.5 12S6 5 12 5c2.2 0 4.2.7 5.9 1.7M22.5 12S18 19 12 19c-2.2 0-4.2-.7-5.9-1.7" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/><circle cx="12" cy="12" r="3" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/></symbol>
 
-    <!-- Time / save / export -->
-    <symbol id="i-clock" viewBox="0 0 24 24">
-      <circle cx="12" cy="12" r="9" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-      <path d="M12 7v6l4 2" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
-    </symbol>
-    <symbol id="i-save" viewBox="0 0 24 24">
-      <path d="M5 5h14v14H5z" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-      <path d="M7 5h10v5H7z" fill="currentColor"/>
-      <path d="M9 13h6v6H9z" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-    </symbol>
-    <symbol id="i-download" viewBox="0 0 24 24">
-      <path d="M12 3v12M8 11l4 4 4-4" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M4 19h16" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
-    </symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M12 7v6l4 2" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/></symbol>
+    <symbol id="i-save" viewBox="0 0 24 24"><path d="M5 5h14v14H5z" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M7 5h10v5H7z" fill="currentColor"/><path d="M9 13h6v6H9z" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12M8 11l4 4 4-4" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 19h16" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/></symbol>
 
-    <!-- Modes & AI -->
-    <symbol id="i-training" viewBox="0 0 24 24">
-      <path d="M3 9l9-4 9 4-9 4-9-4z" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-      <path d="M12 13v5" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
-      <path d="M12 18l4 2 4-2" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-    </symbol>
-    <symbol id="i-practice" viewBox="0 0 24 24">
-      <circle cx="12" cy="12" r="8" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-      <circle cx="12" cy="12" r="4" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-      <path d="M12 6v12M6 12h12" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
-    </symbol>
-    <symbol id="i-assessment" viewBox="0 0 24 24">
-      <path d="M7 4h10a2 2 0 0 1 2 2v14H5V6a2 2 0 0 1 2-2z" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-      <path d="M9 4h6v3H9z" fill="currentColor"/>
-      <path d="M8 11h8M8 15h8" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
-      <path d="M8 19l2.5-3 2 2.4 3.5-4.4" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/>
-    </symbol>
-    <symbol id="i-ai" viewBox="0 0 24 24">
-      <path d="M12 2l2 3 3 .5-2 2 .5 3-3-1.5L9 10.5 9.5 7 7 5.5l3-.5 2-3z" fill="currentColor" opacity=".9"/>
-      <circle cx="12" cy="14.5" r="6.5" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-      <path d="M9 15h6M12 12v6" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
-    </symbol>
+    <symbol id="i-training" viewBox="0 0 24 24"><path d="M3 9l9-4 9 4-9 4-9-4z" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M12 13v5" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/><path d="M12 18l4 2 4-2" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/></symbol>
+    <symbol id="i-practice" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/><circle cx="12" cy="12" r="4" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M12 6v12M6 12h12" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/></symbol>
+    <symbol id="i-assessment" viewBox="0 0 24 24"><path d="M7 4h10a2 2 0 0 1 2 2v14H5V6a2 2 0 0 1 2-2z" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M9 4h6v3H9z" fill="currentColor"/><path d="M8 11h8M8 15h8" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/><path d="M8 19l2.5-3 2 2.4 3.5-4.4" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-ai" viewBox="0 0 24 24"><path d="M12 2l2 3 3 .5-2 2 .5 3-3-1.5L9 10.5 9.5 7 7 5.5l3-.5 2-3z" fill="currentColor" opacity=".9"/><circle cx="12" cy="14.5" r="6.5" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M9 15h6M12 12v6" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/></symbol>
 
-    <!-- Instruments -->
-    <symbol id="i-needle-driver" viewBox="0 0 24 24">
-      <circle cx="9" cy="12" r="1.2" fill="currentColor"/>
-      <path d="M3 7l8 8M11 7L3 15" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
-      <path d="M13 9c3 0 6 2 8 5" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-    </symbol>
-    <symbol id="i-forceps" viewBox="0 0 24 24">
-      <path d="M3 6l8 8M13 6l-8 8" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
-      <circle cx="3" cy="6" r="1.6" fill="currentColor"/>
-      <circle cx="13" cy="6" r="1.6" fill="currentColor"/>
-    </symbol>
-    <symbol id="i-scissors" viewBox="0 0 24 24">
-      <circle cx="6.5" cy="6.5" r="2" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-      <circle cx="6.5" cy="17.5" r="2" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-      <path d="M8 8l12 8M8 16l7-4" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
-    </symbol>
-    <symbol id="i-suction" viewBox="0 0 24 24">
-      <path d="M4 18c7-5 9-10 8-14" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
-      <path d="M12 4l6 2-2 6" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>
-    </symbol>
-    <symbol id="i-ring-sizer" viewBox="0 0 24 24">
-      <ellipse cx="12" cy="12" rx="8" ry="6" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-      <ellipse cx="12" cy="12" rx="4.5" ry="3.2" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" opacity=".7"/>
-    </symbol>
-    <symbol id="i-needle" viewBox="0 0 24 24">
-      <path d="M4 18c4-4 8-6 12-6 2.5 0 3.5 1 4 2" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-      <circle cx="17" cy="11.5" r="0.8" fill="currentColor"/>
-    </symbol>
+    <symbol id="i-needle-driver" viewBox="0 0 24 24"><circle cx="9" cy="12" r="1.2" fill="currentColor"/><path d="M3 7l8 8M11 7L3 15" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/><path d="M13 9c3 0 6 2 8 5" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/></symbol>
+    <symbol id="i-forceps" viewBox="0 0 24 24"><path d="M3 6l8 8M13 6l-8 8" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/><circle cx="3" cy="6" r="1.6" fill="currentColor"/><circle cx="13" cy="6" r="1.6" fill="currentColor"/></symbol>
+    <symbol id="i-scissors" viewBox="0 0 24 24"><circle cx="6.5" cy="6.5" r="2" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/><circle cx="6.5" cy="17.5" r="2" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M8 8l12 8M8 16l7-4" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/></symbol>
+    <symbol id="i-suction" viewBox="0 0 24 24"><path d="M4 18c7-5 9-10 8-14" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/><path d="M12 4l6 2-2 6" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></symbol>
+    <symbol id="i-ring-sizer" viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="8" ry="6" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/><ellipse cx="12" cy="12" rx="4.5" ry="3.2" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" opacity=".7"/></symbol>
+    <symbol id="i-needle" viewBox="0 0 24 24"><path d="M4 18c4-4 8-6 12-6 2.5 0 3.5 1 4 2" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/><circle cx="17" cy="11.5" r="0.8" fill="currentColor"/></symbol>
 
-    <!-- Annotations / measurement -->
-    <symbol id="i-target" viewBox="0 0 24 24">
-      <circle cx="12" cy="12" r="8" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-      <circle cx="12" cy="12" r="2" fill="currentColor"/>
-      <path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
-    </symbol>
-    <symbol id="i-ruler" viewBox="0 0 24 24">
-      <rect x="3" y="7" width="18" height="10" rx="2" ry="2" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-      <path d="M7 9v3M10 9v5M13 9v3M16 9v5M19 9v3" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-    </symbol>
-    <symbol id="i-hotspot" viewBox="0 0 24 24">
-      <circle cx="12" cy="12" r="3" fill="currentColor"/>
-      <circle cx="12" cy="12" r="6" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" opacity=".6"/>
-      <circle cx="12" cy="12" r="9" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" opacity=".3"/>
-    </symbol>
-    <symbol id="i-measure-angle" viewBox="0 0 24 24">
-      <path d="M3 21h18L3 3v18z" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-      <path d="M6 21a9 9 0 0 1 9-9" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-      <path d="M6 21l6-6" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-    </symbol>
+    <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/></symbol>
+    <symbol id="i-ruler" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="2" ry="2" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M7 9v3M10 9v5M13 9v3M16 9v5M19 9v3" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/></symbol>
+    <symbol id="i-hotspot" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="currentColor"/><circle cx="12" cy="12" r="6" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" opacity=".6"/><circle cx="12" cy="12" r="9" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" opacity=".3"/></symbol>
+    <symbol id="i-measure-angle" viewBox="0 0 24 24"><path d="M3 21h18L3 3v18z" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M6 21a9 9 0 0 1 9-9" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M6 21l6-6" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/></symbol>
 
-    <!-- Scoring -->
-    <symbol id="i-accuracy" viewBox="0 0 24 24">
-      <circle cx="12" cy="12" r="9" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-      <path d="M12 3v9l6 3" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/>
-    </symbol>
-    <symbol id="i-safety" viewBox="0 0 24 24">
-      <path d="M12 3l8 3v6c0 5-4 8-8 9-4-1-8-4-8-9V6l8-3z" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>
-      <path d="M9 12l2 2 4-4" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/>
-    </symbol>
-    <symbol id="i-efficiency" viewBox="0 0 24 24">
-      <path d="M3 17h4V7H3v10zm7 0h4V4h-4v13zm7 0h4v-8h-4v8z" fill="currentColor"/>
-    </symbol>
+    <symbol id="i-accuracy" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M12 3v9l6 3" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round"/></symbol>
+    <symbol id="i-safety" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-4 8-8 9-4-1-8-4-8-9V6l8-3z" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M9 12l2 2 4-4" stroke="currentColor" fill="none" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-efficiency" viewBox="0 0 24 24"><path d="M3 17h4V7H3v10zm7 0h4V4h-4v13zm7 0h4v-8h-4v8z" fill="currentColor"/></symbol>
   </svg>
 
   <!-- =========================
-       SECTION 04: BODY • AUDIO & HAPTICS PLACEHOLDERS
+       SECTION 04: HEAD • AUDIO & HAPTICS PLACEHOLDERS
        ========================= -->
   <audio id="snd-ok"    preload="auto" aria-hidden="true" data-role="positive"></audio>
   <audio id="snd-warn"  preload="auto" aria-hidden="true" data-role="warning"></audio>
@@ -602,22 +331,12 @@
   <audio id="snd-hover" preload="auto" aria-hidden="true" data-role="ui-hover"></audio>
   <audio id="snd-click" preload="auto" aria-hidden="true" data-role="ui-click"></audio>
 
-  <!-- Haptics presets -->
   <script type="application/json" id="haptics-presets">
-  {
-    "ok":            [12, 18],
-    "warn":          [14, 40, 14],
-    "bad":           [22, 70, 22, 70, 22],
-    "bite-valid":    [10, 35, 10],
-    "bite-risk":     [8, 24, 8],
-    "bite-error":    [26, 70, 26],
-    "collision":     [18, 50, 18],
-    "step-advance":  [10, 18],
-    "step-retry":    [14, 40, 14]
-  }
+  { "ok":[12,18], "warn":[14,40,14], "bad":[22,70,22,70,22], "bite-valid":[10,35,10],
+    "bite-risk":[8,24,8], "bite-error":[26,70,26], "collision":[18,50,18],
+    "step-advance":[10,18], "step-retry":[14,40,14] }
   </script>
 
-  <!-- Audio routing manifest -->
   <script type="application/json" id="audio-manifest">
   {
     "policy": { "autoplay": "gesture-required", "respectReducedMotion": true },
@@ -635,8 +354,20 @@
   </script>
 
   <!-- =========================
-       SECTION 05: APP SHELL & ACCESSIBILITY LANDMARKS
+       SECTION 05: APP SHELL & A11Y LANDMARKS
        ========================= -->
+  <style>
+    .skip-nav { position: absolute; top: 0; left: 0; z-index: 9999; }
+    .skip-nav a { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; }
+    .skip-nav a:focus {
+      left: 16px; top: 16px; width: auto; height: auto; padding: 10px 14px; border-radius: var(--r-sm);
+      background: var(--accent); color: #001018; box-shadow: var(--shadow-2); text-decoration: none; font: 600 14px/1 var(--font-ui);
+    }
+    .skip-nav a:nth-child(2):focus { top: 56px; } .skip-nav a:nth-child(3):focus { top: 96px; }
+    .skip-nav a:nth-child(4):focus { top: 136px; } .skip-nav a:nth-child(5):focus { top: 176px; }
+  </style>
+</head>
+<body>
   <nav class="skip-nav" aria-label="Skip links">
     <a class="skip-link" href="#main">Skip to simulation</a>
     <a class="skip-link" href="#tools">Skip to instruments</a>
@@ -651,7 +382,6 @@
     </div>
   </noscript>
 
-  <!-- App shell -->
   <div id="app" role="application" aria-label="Mitral Valve Simulator" aria-describedby="app-desc">
     <p id="app-desc" class="visually-hidden">
       MitralSim is an interactive surgical training environment. Use the Instruments panel on the left to choose tools,
@@ -659,20 +389,16 @@
       The bottom bar contains session controls. Use the skip links at the top to jump directly to any region.
     </p>
 
-    <!-- Live regions -->
     <div id="sr-live" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
     <div id="sr-assertive" class="visually-hidden" aria-live="assertive" aria-atomic="true"></div>
 
-    <!-- =========================
-         SECTION 06: UI • TOP BAR / MODE SWITCH
-         ========================= -->
+    <!-- TOP BAR -->
     <header class="topbar" aria-label="Top bar">
       <div class="chip" aria-label="App title">
         <svg width="16" height="16" aria-hidden="true"><use href="#i-ai"/></svg>
-        <strong>MitralSim</strong> <small>v0.1</small>
+        <strong>MitralSim</strong> <small>v0.2</small>
       </div>
 
-      <!-- Scenario picker -->
       <div class="chip" role="group" aria-label="Scenario selector">
         <svg width="16" height="16" aria-hidden="true"><use href="#i-target"/></svg>
         <label for="scenario" class="visually-hidden">Scenario</label>
@@ -684,7 +410,6 @@
       </div>
       <span id="scenario-help" class="visually-hidden">Choose the operative scenario to load.</span>
 
-      <!-- Mode switch -->
       <div class="chip" role="group" aria-label="Training mode">
         <svg id="mode-icon" width="16" height="16" aria-hidden="true"><use href="#i-training"/></svg>
         <label for="mode" class="visually-hidden">Mode</label>
@@ -698,7 +423,6 @@
         Training: stepwise with enforced sequence. Practice: guided with flexibility. Assessment: silent scoring.
       </span>
 
-      <!-- Actions -->
       <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
         <label class="chip" for="toggle-contrast" title="Increase UI contrast">
           <input id="toggle-contrast" type="checkbox" />
@@ -717,16 +441,10 @@
       </div>
     </header>
 
-    <!-- =========================
-         SECTION 07: UI • LEFT RAIL — INSTRUMENTS & TOOLS
-         ========================= -->
-    <main id="main" class="main" role="main">
+    <main id="main" class="main">
+      <!-- LEFT RAIL -->
       <aside class="panel" aria-label="Instruments">
-        <h3 class="row">
-          <svg width="18" height="18" aria-hidden="true"><use href="#i-needle-driver"/></svg>
-          Instruments
-        </h3>
-
+        <h3 class="row"><svg width="18" height="18" aria-hidden="true"><use href="#i-needle-driver"/></svg>Instruments</h3>
         <ul id="tools" class="grid" style="grid-template-columns: 1fr; margin:0; padding-left:0;">
           <li class="row" style="align-items:center;">
             <label class="row" style="gap:10px; cursor:pointer;">
@@ -779,38 +497,24 @@
 
         <h4 class="mt-0">Instrument Telemetry</h4>
         <div class="score-grid">
-          <span>Tip force</span>
-          <span id="tele-force" style="text-align:right">0.0 N</span>
-
-          <span>Grip angle</span>
-          <span id="tele-angle" style="text-align:right">0°</span>
-
-          <span>Collision</span>
-          <span id="tele-coll" style="text-align:right">None</span>
+          <span>Tip force</span><span id="tele-force" style="text-align:right">0.0 N</span>
+          <span>Grip angle</span><span id="tele-angle" style="text-align:right">0°</span>
+          <span>Collision</span><span id="tele-coll" style="text-align:right">None</span>
         </div>
 
         <div class="grid" style="margin-top:10px;">
-          <label class="row" style="justify-content:space-between;">
-            <small>Force</small><small id="tele-force-barv">0%</small>
-          </label>
+          <label class="row" style="justify-content:space-between;"><small>Force</small><small id="tele-force-barv">0%</small></label>
           <progress id="tele-force-bar" max="1" value="0"></progress>
-
-          <label class="row" style="justify-content:space-between;">
-            <small>Angle</small><small id="tele-angle-barv">0°</small>
-          </label>
+          <label class="row" style="justify-content:space-between;"><small>Angle</small><small id="tele-angle-barv">0°</small></label>
           <progress id="tele-angle-bar" max="90" value="0"></progress>
         </div>
       </aside>
 
-      <!-- =========================
-           SECTION 08: UI • CENTER STAGE — SIMULATION CANVAS
-           ========================= -->
+      <!-- CENTER STAGE -->
       <section class="stage panel" aria-label="Simulation Stage">
         <canvas id="gl" aria-label="3D mitral valve scene"></canvas>
 
-        <!-- =========================
-             SECTION 09: UI • OVERLAYS
-             ========================= -->
+        <!-- OVERLAYS -->
         <svg id="overlay" class="overlay" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <defs>
             <filter id="f-glow" x="-50%" y="-50%" width="200%" height="200%">
@@ -829,21 +533,13 @@
         </svg>
 
         <div class="legend panel" role="note" aria-label="Legend">
-          <h4 class="mt-0 row" style="gap:8px; align-items:center;">
-            <svg width="16" height="16" aria-hidden="true"><use href="#i-info"/></svg>
-            Legend
-          </h4>
+          <h4 class="mt-0 row" style="gap:8px;"><svg width="16" height="16" aria-hidden="true"><use href="#i-info"/></svg>Legend</h4>
           <ul style="margin:0; padding-left:18px;">
             <li><span style="color:var(--accent); font-weight:700;">Cyan</span> — Target bite zone</li>
             <li><span style="color:var(--ok); font-weight:700;">Green</span> — Valid stitch</li>
             <li><span style="color:var(--warn); font-weight:700;">Amber</span> — Shallow/steep angle</li>
             <li><span style="color:var(--bad); font-weight:700;">Red</span> — Chordal injury risk</li>
-            <li>
-              <span class="row" style="gap:6px; align-items:center;">
-                <svg width="16" height="16" aria-hidden="true"><use href="#i-ruler"/></svg>
-                Ruler lines show spacing (mm); arrows show bite direction
-              </span>
-            </li>
+            <li><span class="row" style="gap:6px; align-items:center;"><svg width="16" height="16" aria-hidden="true"><use href="#i-ruler"/></svg>Ruler lines show spacing (mm); arrows show bite direction</span></li>
           </ul>
         </div>
 
@@ -858,9 +554,7 @@
           </div>
         </div>
 
-        <div id="tooltip" class="tooltip panel" role="status" aria-live="polite">
-          Welcome. Press <b>?</b> for help.
-        </div>
+        <div id="tooltip" class="tooltip panel" role="status" aria-live="polite">Welcome. Press <b>?</b> for help.</div>
 
         <template id="tpl-callout">
           <div class="panel" style="position:absolute; transform:translate(-50%,-100%); pointer-events:auto;">
@@ -871,7 +565,6 @@
             <div style="margin-top:6px;" data-body>Maintain 35–55° needle angle.</div>
           </div>
         </template>
-
         <template id="tpl-label">
           <div class="chip" style="position:absolute; transform:translate(-50%,-50%);">
             <svg width="14" height="14" aria-hidden="true" style="margin-right:4px;"><use href="#i-ruler"/></svg>
@@ -880,57 +573,28 @@
         </template>
       </section>
 
-      <!-- =========================
-           SECTION 10: UI • RIGHT RAIL — AI CO-PILOT
-           ========================= -->
+      <!-- RIGHT RAIL -->
       <aside class="panel" aria-label="AI Co‑Pilot">
-        <h3 class="row" style="gap:8px; align-items:center;">
-          <svg width="18" height="18" aria-hidden="true"><use href="#i-ai"/></svg>
-          AI Co‑Pilot
-        </h3>
-
-        <p id="copilot-summary" class="mb-0">
-          Follow the highlighted path for your first posterior leaflet stitch.
-        </p>
+        <h3 class="row" style="gap:8px; align-items:center;"><svg width="18" height="18" aria-hidden="true"><use href="#i-ai"/></svg>AI Co‑Pilot</h3>
+        <p id="copilot-summary" class="mb-0">Follow the highlighted path for your first posterior leaflet stitch.</p>
 
         <div class="row" style="gap:8px; margin:10px 0 14px;">
-          <label class="chip" title="Narrate guidance with speech synthesis">
-            <input id="voice-on" type="checkbox" />
-            <svg width="14" height="14" aria-hidden="true"><use href="#i-speaker"/></svg>
-            Voice
-          </label>
-          <label class="chip" title="Automatically advance when a step meets its goal">
-            <input id="auto-advance" type="checkbox" />
-            Auto‑advance
-          </label>
-          <label class="chip" title="Show callouts and rulers for each step">
-            <input id="show-hints" type="checkbox" checked />
-            Hints
-          </label>
+          <label class="chip" title="Narrate guidance with speech synthesis"><input id="voice-on" type="checkbox" /><svg width="14" height="14" aria-hidden="true"><use href="#i-speaker"/></svg>Voice</label>
+          <label class="chip" title="Automatically advance when a step meets its goal"><input id="auto-advance" type="checkbox" />Auto‑advance</label>
+          <label class="chip" title="Show callouts and rulers for each step"><input id="show-hints" type="checkbox" checked />Hints</label>
         </div>
 
         <ol id="step-list" class="steps" aria-label="Step-by-step guidance"></ol>
 
         <div class="row" style="gap:8px; justify-content:flex-end; margin-top:6px;">
-          <button id="btn-prev-step" class="ghost" title="Previous step">
-            <svg width="16" height="16" aria-hidden="true"><use href="#i-undo"/></svg>
-            Prev
-          </button>
-          <button id="btn-next-step" class="ghost" title="Next step">
-            <svg width="16" height="16" aria-hidden="true"><use href="#i-redo"/></svg>
-            Next
-          </button>
+          <button id="btn-prev-step" class="ghost" title="Previous step"><svg width="16" height="16" aria-hidden="true"><use href="#i-undo"/></svg>Prev</button>
+          <button id="btn-next-step" class="ghost" title="Next step"><svg width="16" height="16" aria-hidden="true"><use href="#i-redo"/></svg>Next</button>
         </div>
 
         <hr/>
 
-        <h4 class="mt-0 row" style="gap:8px; align-items:center;">
-          <svg width="16" height="16" aria-hidden="true"><use href="#i-warning"/></svg>
-          Feedback
-        </h4>
-        <div id="feedback" aria-live="polite">
-          <p class="mb-0">Errors & suggestions will appear here.</p>
-        </div>
+        <h4 class="mt-0 row" style="gap:8px; align-items:center;"><svg width="16" height="16" aria-hidden="true"><use href="#i-warning"/></svg>Feedback</h4>
+        <div id="feedback" aria-live="polite"><p class="mb-0">Errors & suggestions will appear here.</p></div>
 
         <div class="grid" style="margin-top:12px;">
           <h4 class="mt-0">Targets</h4>
@@ -941,67 +605,29 @@
       </aside>
     </main>
 
-    <!-- =========================
-         SECTION 11: UI • BOTTOM BAR — CONTROLS
-         ========================= -->
+    <!-- BOTTOM BAR -->
     <footer class="bottombar" aria-label="Controls">
       <div class="row" style="gap:8px;">
-        <button id="btn-start" class="primary" title="Start / resume (Space)">
-          <svg width="18" height="18" aria-hidden="true"><use href="#i-play"/></svg>
-          Start
-        </button>
-        <button id="btn-pause" title="Pause (Space)">
-          <svg width="18" height="18" aria-hidden="true"><use href="#i-pause"/></svg>
-          Pause
-        </button>
-        <button id="btn-reset" class="ghost" title="Reset session">
-          <svg width="18" height="18" aria-hidden="true"><use href="#i-reset"/></svg>
-          Reset
-        </button>
-        <button id="btn-undo" class="ghost" title="Undo (Ctrl/Cmd+Z)">
-          <svg width="18" height="18" aria-hidden="true"><use href="#i-undo"/></svg>
-          Undo
-        </button>
-        <button id="btn-redo" class="ghost" title="Redo (Ctrl/Cmd+Y)">
-          <svg width="18" height="18" aria-hidden="true"><use href="#i-redo"/></svg>
-          Redo
-        </button>
+        <button id="btn-start" class="primary" title="Start / resume (Space)"><svg width="18" height="18" aria-hidden="true"><use href="#i-play"/></svg>Start</button>
+        <button id="btn-pause" title="Pause (Space)"><svg width="18" height="18" aria-hidden="true"><use href="#i-pause"/></svg>Pause</button>
+        <button id="btn-reset" class="ghost" title="Reset session"><svg width="18" height="18" aria-hidden="true"><use href="#i-reset"/></svg>Reset</button>
+        <button id="btn-undo" class="ghost" title="Undo (Ctrl/Cmd+Z)"><svg width="18" height="18" aria-hidden="true"><use href="#i-undo"/></svg>Undo</button>
+        <button id="btn-redo" class="ghost" title="Redo (Ctrl/Cmd+Y)"><svg width="18" height="18" aria-hidden="true"><use href="#i-redo"/></svg>Redo</button>
       </div>
 
       <div style="margin-left:auto; display:flex; gap:12px; align-items:center;">
-        <div class="chip" title="Overall grade">
-          <svg width="14" height="14" aria-hidden="true"><use href="#i-assessment"/></svg>
-          Score: <b id="score" style="margin-left:6px;">0</b>
-        </div>
-        <div class="chip" title="Safety score (collisions, strain, red zones)">
-          <svg width="14" height="14" aria-hidden="true"><use href="#i-safety"/></svg>
-          Safety: <b id="score-safety" style="margin-left:6px;">100%</b>
-        </div>
-        <div class="chip" title="Accuracy score (entry error, angle, depth, spacing)">
-          <svg width="14" height="14" aria-hidden="true"><use href="#i-accuracy"/></svg>
-          Accuracy: <b id="score-accuracy" style="margin-left:6px;">0%</b>
-        </div>
-        <div class="chip" title="Efficiency vs. benchmark">
-          <svg width="14" height="14" aria-hidden="true"><use href="#i-efficiency"/></svg>
-          Efficiency: <b id="score-efficiency" style="margin-left:6px;">—</b>
-        </div>
+        <div class="chip" title="Overall grade"><svg width="14" height="14" aria-hidden="true"><use href="#i-assessment"/></svg>Score: <b id="score" style="margin-left:6px;">0</b></div>
+        <div class="chip" title="Safety score (collisions, strain, red zones)"><svg width="14" height="14" aria-hidden="true"><use href="#i-safety"/></svg>Safety: <b id="score-safety" style="margin-left:6px;">100%</b></div>
+        <div class="chip" title="Accuracy score (entry error, angle, depth, spacing)"><svg width="14" height="14" aria-hidden="true"><use href="#i-accuracy"/></svg>Accuracy: <b id="score-accuracy" style="margin-left:6px;">0%</b></div>
+        <div class="chip" title="Efficiency vs. benchmark"><svg width="14" height="14" aria-hidden="true"><use href="#i-efficiency"/></svg>Efficiency: <b id="score-efficiency" style="margin-left:6px;">—</b></div>
       </div>
     </footer>
 
-    <!-- =========================
-         SECTION 12: UI • DIALOGS & SHEETS
-         ========================= -->
+    <!-- DIALOGS -->
     <dialog id="dlg-onboarding" class="panel" aria-label="Welcome to MitralSim">
       <form method="dialog" class="grid">
-        <header class="row" style="gap:8px; align-items:center;">
-          <svg width="18" height="18" aria-hidden="true"><use href="#i-training"/></svg>
-          <h3 class="mt-0 mb-0">Welcome</h3>
-        </header>
-
-        <p class="mb-0">
-          This simulator teaches mitral valve suturing with <strong>stepwise highlights</strong>, <strong>AI guidance</strong>, and <strong>objective scoring</strong>.
-        </p>
-
+        <header class="row" style="gap:8px; align-items:center;"><svg width="18" height="18" aria-hidden="true"><use href="#i-training"/></svg><h3 class="mt-0 mb-0">Welcome</h3></header>
+        <p class="mb-0">This simulator teaches mitral valve suturing with <b>stepwise highlights</b>, <b>AI guidance</b>, and <b>objective scoring</b>.</p>
         <div class="grid" style="gap:8px;">
           <h4 class="mt-0">Modes</h4>
           <ul style="margin:0; padding-left:18px;">
@@ -1010,7 +636,6 @@
             <li><b>Assessment</b> — silent mode; full scoring & report.</li>
           </ul>
         </div>
-
         <div class="grid" style="gap:8px;">
           <h4 class="mt-0">Targets (Posterior leaflet P2)</h4>
           <div class="row" style="gap:10px; flex-wrap:wrap;">
@@ -1019,31 +644,22 @@
             <span class="chip"><svg width="14" height="14"><use href="#i-ruler"/></svg> Spacing 2.0–3.0 mm</span>
           </div>
         </div>
-
         <div class="row" style="gap:8px; justify-content:flex-end;">
           <button value="cancel" class="ghost">Close</button>
-          <button id="ob-ok" value="default" class="primary">
-            <svg width="16" height="16" aria-hidden="true"><use href="#i-play"/></svg>
-            Let’s begin
-          </button>
+          <button id="ob-ok" value="default" class="primary"><svg width="16" height="16" aria-hidden="true"><use href="#i-play"/></svg>Let’s begin</button>
         </div>
       </form>
     </dialog>
 
     <dialog id="dlg-preferences" class="panel" aria-label="Preferences">
       <form method="dialog" class="grid">
-        <header class="row" style="gap:8px; align-items:center;">
-          <svg width="18" height="18" aria-hidden="true"><use href="#i-assessment"/></svg>
-          <h3 class="mt-0 mb-0">Preferences</h3>
-        </header>
-
+        <header class="row" style="gap:8px; align-items:center;"><svg width="18" height="18" aria-hidden="true"><use href="#i-assessment"/></svg><h3 class="mt-0 mb-0">Preferences</h3></header>
         <div class="grid" style="grid-template-columns: 1fr 1fr; gap:12px;">
           <fieldset class="panel" style="padding:12px;">
             <legend><strong>Handedness</strong></legend>
             <label class="row" style="gap:8px;"><input type="radio" name="handed" value="right" checked /> Right‑handed</label>
             <label class="row" style="gap:8px;"><input type="radio" name="handed" value="left" /> Left‑handed</label>
           </fieldset>
-
           <fieldset class="panel" style="padding:12px;">
             <legend><strong>Difficulty</strong></legend>
             <label class="row" style="gap:8px; align-items:center;">
@@ -1056,90 +672,57 @@
             </label>
             <small>Higher levels tighten tolerances (angle/depth/spacing) and reduce hint duration.</small>
           </fieldset>
-
           <fieldset class="panel" style="padding:12px;">
             <legend><strong>Guidance</strong></legend>
             <label class="row" style="gap:8px;"><input id="pref-voice" type="checkbox" /> Voice narration</label>
             <label class="row" style="gap:8px;"><input id="pref-auto-advance" type="checkbox" /> Auto‑advance on success</label>
             <label class="row" style="gap:8px;"><input id="pref-hints" type="checkbox" checked /> Show hints & rulers</label>
           </fieldset>
-
           <fieldset class="panel" style="padding:12px;">
             <legend><strong>Display</strong></legend>
             <label class="row" style="gap:8px;"><input id="pref-high-contrast" type="checkbox" /> High‑contrast UI</label>
             <label class="row" style="gap:8px;"><input id="pref-reduce-motion" type="checkbox" /> Reduce motion</label>
           </fieldset>
         </div>
-
         <div class="row" style="gap:8px; justify-content:flex-end;">
           <button value="cancel" class="ghost">Cancel</button>
-          <button id="pref-save" value="default" class="primary">
-            <svg width="16" height="16" aria-hidden="true"><use href="#i-check"/></svg>
-            Apply
-          </button>
+          <button id="pref-save" value="default" class="primary"><svg width="16" height="16" aria-hidden="true"><use href="#i-check"/></svg>Apply</button>
         </div>
       </form>
     </dialog>
 
     <dialog id="dlg-results" class="panel" aria-label="Results & Scorecard">
       <form method="dialog" class="grid">
-        <header class="row" style="gap:8px; align-items:center;">
-          <svg width="18" height="18" aria-hidden="true"><use href="#i-assessment"/></svg>
-          <h3 class="mt-0 mb-0">Scorecard</h3>
-        </header>
-
+        <header class="row" style="gap:8px; align-items:center;"><svg width="18" height="18" aria-hidden="true"><use href="#i-assessment"/></svg><h3 class="mt-0 mb-0">Scorecard</h3></header>
         <div class="grid" style="gap:12px;">
           <div class="row" style="gap:12px; flex-wrap:wrap;">
-            <div class="chip">
-              <svg width="14" height="14" aria-hidden="true"><use href="#i-assessment"/></svg>
-              Total: <b id="res-total" style="margin-left:6px;">0</b>
-            </div>
-            <div class="chip">
-              <svg width="14" height="14" aria-hidden="true"><use href="#i-accuracy"/></svg>
-              Accuracy: <b id="res-accuracy" style="margin-left:6px;">0%</b>
-            </div>
-            <div class="chip">
-              <svg width="14" height="14" aria-hidden="true"><use href="#i-safety"/></svg>
-              Safety: <b id="res-safety" style="margin-left:6px;">0%</b>
-            </div>
-            <div class="chip">
-              <svg width="14" height="14" aria-hidden="true"><use href="#i-efficiency"/></svg>
-              Efficiency: <b id="res-efficiency" style="margin-left:6px;">—</b>
-            </div>
+            <div class="chip"><svg width="14" height="14" aria-hidden="true"><use href="#i-assessment"/></svg>Total: <b id="res-total" style="margin-left:6px;">0</b></div>
+            <div class="chip"><svg width="14" height="14" aria-hidden="true"><use href="#i-accuracy"/></svg>Accuracy: <b id="res-accuracy" style="margin-left:6px;">0%</b></div>
+            <div class="chip"><svg width="14" height="14" aria-hidden="true"><use href="#i-safety"/></svg>Safety: <b id="res-safety" style="margin-left:6px;">0%</b></div>
+            <div class="chip"><svg width="14" height="14" aria-hidden="true"><use href="#i-efficiency"/></svg>Efficiency: <b id="res-efficiency" style="margin-left:6px;">—</b></div>
           </div>
-
           <div class="grid" style="grid-template-columns: 1fr; gap:8px;">
             <label class="row" style="justify-content:space-between;"><small>Accuracy</small><small id="res-accuracy-txt">0%</small></label>
             <progress id="res-accuracy-bar" max="100" value="0"></progress>
-
             <label class="row" style="justify-content:space-between;"><small>Safety</small><small id="res-safety-txt">0%</small></label>
             <progress id="res-safety-bar" max="100" value="0"></progress>
-
             <label class="row" style="justify-content:space-between;"><small>Efficiency</small><small id="res-efficiency-txt">0%</small></label>
             <progress id="res-efficiency-bar" max="100" value="0"></progress>
           </div>
-
           <div class="panel" style="padding:12px;">
             <h4 class="mt-0">Key Findings</h4>
             <ul id="res-issues" style="margin:0; padding-left:18px;"></ul>
           </div>
         </div>
-
         <div class="row" style="gap:8px; justify-content:flex-end;">
-          <button id="btn-export-json" class="ghost" value="extra">
-            <svg width="16" height="16" aria-hidden="true"><use href="#i-save"/></svg>
-            Export JSON
-          </button>
-          <button id="btn-export-png" class="ghost" value="extra">
-            <svg width="16" height="16" aria-hidden="true"><use href="#i-download"/></svg>
-            Snapshot PNG
-          </button>
+          <button id="btn-export-json" class="ghost" value="extra"><svg width="16" height="16" aria-hidden="true"><use href="#i-save"/></svg>Export JSON</button>
+          <button id="btn-export-png" class="ghost" value="extra"><svg width="16" height="16" aria-hidden="true"><use href="#i-download"/></svg>Snapshot PNG</button>
           <button value="cancel" class="ghost">Close</button>
           <button id="results-close" value="default" class="primary">Done</button>
         </div>
       </form>
     </dialog>
-  </div><!--/app-->
+  </div>
 
   <!-- =========================
        SECTION 13–28: SCRIPTS (MODULE)
@@ -1151,18 +734,16 @@
   const caps = (() => {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches || false;
-    const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)')?.matches || false;
 
     const probe = document.createElement('canvas');
     let gl2 = null, info = {};
     try { gl2 = probe.getContext('webgl2', { antialias: true, alpha: false }); } catch(e) {}
     const webgl2 = !!gl2;
 
-    let maxTexSize = 0, extFloatColor = false, extDerivatives = false;
+    let maxTexSize = 0, extFloatColor = false;
     if (gl2) {
       maxTexSize = gl2.getParameter(gl2.MAX_TEXTURE_SIZE) || 0;
       extFloatColor = !!gl2.getExtension('EXT_color_buffer_float');
-      extDerivatives = true;
       info = {
         vendor: gl2.getParameter(gl2.VENDOR),
         renderer: gl2.getParameter(gl2.RENDERER),
@@ -1170,32 +751,24 @@
       };
     }
 
-    const hasPointer = 'PointerEvent' in window;
-    const speech = 'speechSynthesis' in window;
-
-    const obj = { dpr, prefersReducedMotion, prefersDark, webgl2, maxTexSize, extFloatColor, extDerivatives, hasPointer, speech, info };
     document.documentElement.dataset.gl = webgl2 ? 'gl2' : 'none';
     document.documentElement.dataset.dpr = String(dpr);
-    return obj;
+    return { dpr, prefersReducedMotion, webgl2, maxTexSize, extFloatColor, info };
   })();
 
   if (!caps.webgl2) {
     document.body.innerHTML = `
       <div style="padding:32px;max-width:720px;margin:40px auto;font:16px/1.5 var(--font-ui);color:var(--fg-0);">
         <h2 style="margin:0 0 8px;">WebGL 2 not available</h2>
-        <p>This simulator requires a modern browser/GPU with WebGL 2.
-           Try the latest Chrome, Edge, Firefox, or Safari on desktop.</p>
-        <p><small>Tip: on some systems, enabling hardware acceleration in browser settings may help.</small></p>
+        <p>This simulator requires a modern browser/GPU with WebGL 2.</p>
         <hr style="border:none;border-top:1px solid rgba(255,255,255,.12);margin:16px 0;">
-        <pre style="white-space:pre-wrap;background:rgba(255,255,255,.04);padding:12px;border-radius:10px;">
-Caps: ${JSON.stringify(caps, null, 2)}
-        </pre>
+        <pre style="white-space:pre-wrap;background:rgba(255,255,255,.04);padding:12px;border-radius:10px;">Caps: ${JSON.stringify(caps, null, 2)}</pre>
       </div>`;
     throw new Error('WebGL2 required');
   }
 
   // =========================
-  // SECTION 14: STATE STORE & EVENT BUS
+  // SECTION 14: STATE & TIMER
   // =========================
   const Bus = new EventTarget();
   const emit = (type, detail) => Bus.dispatchEvent(new CustomEvent(type, { detail }));
@@ -1208,19 +781,10 @@ Caps: ${JSON.stringify(caps, null, 2)}
     mode: (qp('mode') || 'training'),
     scenario: (qp('scenario') || 'suturing-basic'),
     stepIndex: 0,
-    timerStart: 0,
-    timerElapsed: 0,
-    timerRunning: false,
-    _timerInterval: null,
+    timerStart: 0, timerElapsed: 0, timerRunning: false, _timerInterval: null,
     score: { total: 0, safety: 100, accuracy: 0, efficiency: null },
     telemetry: { forceN: 0, angleDeg: 0, collisions: 0 },
-    flags: {
-      highContrast: false,
-      voice: false,
-      autoAdvance: false,
-      showHints: true,
-      reducedMotion: caps.prefersReducedMotion
-    }
+    flags: { highContrast: false, voice: false, autoAdvance: false, showHints: true, reducedMotion: caps.prefersReducedMotion }
   };
 
   try {
@@ -1239,18 +803,12 @@ Caps: ${JSON.stringify(caps, null, 2)}
     if ($mode) $mode.value = State.mode;
     if ($scenario) $scenario.value = State.scenario;
     if (State.flags.highContrast) document.getElementById('app')?.classList.add('high-contrast');
-    const setChecked = (id, v) => { const el=document.getElementById(id); if (el) el.checked = !!v; };
-    setChecked('voice-on', State.flags.voice);
-    setChecked('auto-advance', State.flags.autoAdvance);
-    setChecked('show-hints', State.flags.showHints);
+    document.getElementById('voice-on')?.toggleAttribute('checked', !!State.flags.voice);
+    document.getElementById('auto-advance')?.toggleAttribute('checked', !!State.flags.autoAdvance);
+    document.getElementById('show-hints')?.toggleAttribute('checked', !!State.flags.showHints);
   })();
 
-  function _formatTime(ms){
-    const t = Math.max(0, Math.floor(ms/1000));
-    const m = String(Math.floor(t/60)).padStart(2,'0');
-    const s = String(t%60).padStart(2,'0');
-    return `${m}:${s}`;
-  }
+  function _formatTime(ms){ const t = Math.max(0, Math.floor(ms/1000)); const m = String(Math.floor(t/60)).padStart(2,'0'); const s = String(t%60).padStart(2,'0'); return `${m}:${s}`; }
   function startTimer(){
     if (State.timerRunning) return;
     State.timerRunning = true;
@@ -1259,76 +817,42 @@ Caps: ${JSON.stringify(caps, null, 2)}
       State._timerInterval = setInterval(()=>{
         const now = performance.now();
         const elapsed = State.timerRunning ? (now - State.timerStart) : State.timerElapsed;
-        const tEl = document.getElementById('timer'); if (tEl) tEl.textContent = _formatTime(elapsed);
+        document.getElementById('timer').textContent = _formatTime(elapsed);
       }, 200);
     }
     emit('timer:start', {});
   }
-  function pauseTimer(){
-    if (!State.timerRunning) return;
-    State.timerElapsed = performance.now() - State.timerStart;
-    State.timerRunning = false;
-    emit('timer:pause', {});
-  }
-  function resetTimer(){
-    State.timerStart = 0;
-    State.timerElapsed = 0;
-    State.timerRunning = false;
-    const tEl = document.getElementById('timer'); if (tEl) tEl.textContent = '00:00';
-    emit('timer:reset', {});
-  }
-
-  document.getElementById('btn-start')?.addEventListener('click', startTimer);
-  document.getElementById('btn-pause')?.addEventListener('click', pauseTimer);
-  document.getElementById('btn-reset')?.addEventListener('click', resetTimer);
+  function pauseTimer(){ if (!State.timerRunning) return; State.timerElapsed = performance.now() - State.timerStart; State.timerRunning = false; emit('timer:pause', {}); }
+  function resetTimer(){ State.timerStart = 0; State.timerElapsed = 0; State.timerRunning = false; document.getElementById('timer').textContent = '00:00'; emit('timer:reset', {}); }
 
   const _debounce = (fn, ms=300) => { let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; };
   const saveSession = _debounce(() => {
     try {
-      localStorage.setItem('mitralsim-session', JSON.stringify({ State: {
-        mode: State.mode, scenario: State.scenario, flags: State.flags
-      }}));
+      localStorage.setItem('mitralsim-session', JSON.stringify({ State: { mode: State.mode, scenario: State.scenario, flags: State.flags }}));
     } catch (e) {}
   }, 400);
-
-  on('mode', saveSession);
-  on('scenario', saveSession);
-  window.addEventListener('beforeunload', saveSession);
+  on('mode', saveSession); on('scenario', saveSession); window.addEventListener('beforeunload', saveSession);
 
   on('mode', e => { const live = document.getElementById('sr-live'); live && (live.textContent = `Mode set to ${e.detail}.`); });
   on('scenario', e => { const live = document.getElementById('sr-live'); live && (live.textContent = `Scenario: ${e.detail}.`); });
 
-  window.MitralSim = Object.assign(window.MitralSim || {}, {
-    caps, State, Bus, emit, startTimer, pauseTimer, resetTimer
-  });
+  window.MitralSim = Object.assign(window.MitralSim || {}, { caps, State, Bus, emit, startTimer, pauseTimer, resetTimer });
 
   // =========================
-  // SECTION 15: GEOMETRY & ASSETS
+  // SECTION 15: GEOMETRY (PARAMETRIC)
   // =========================
   const Assets = {};
+  const TAU = Math.PI * 2, DEG = Math.PI/180;
+  const vec3 = (x=0,y=0,z=0)=>[x,y,z]; const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]]; const sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
+  const mul=(a,s)=>[a[0]*s,a[1]*s,a[2]*s]; const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+  const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];
+  const len=(a)=>Math.hypot(a[0],a[1],a[2]); const norm=(a)=>{ const L=len(a)||1; return [a[0]/L,a[1]/L,a[2]/L]; };
 
-  const TAU = Math.PI * 2;
-  const DEG = Math.PI / 180;
-  const vec3 = (x=0,y=0,z=0)=>[x,y,z];
-  const add = (a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]];
-  const sub = (a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
-  const mul = (a,s)=>[a[0]*s,a[1]*s,a[2]*s];
-  const dot = (a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
-  const cross = (a,b)=>[a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];
-  const len = (a)=>Math.hypot(a[0],a[1],a[2]);
-  const norm = (a)=>{ const L=len(a)||1; return [a[0]/L,a[1]/L,a[2]/L]; };
+  function ellipsePoint(a,b,theta){ return [ a*Math.sin(theta), b*Math.cos(theta), 0 ]; }
+  function ellipseNormal(a,b,theta){ const tx=a*Math.cos(theta), ty=-b*Math.sin(theta); const outward=[-ty, tx, 0]; return norm(outward); }
 
-  function ellipsePoint(a, b, theta){ return [ a * Math.sin(theta), b * Math.cos(theta), 0 ]; }
-  function ellipseNormal(a, b, theta){
-    const tx =  a * Math.cos(theta);
-    const ty = -b * Math.sin(theta);
-    const outward = [-ty, tx, 0];
-    return norm(outward);
-  }
-
-  function buildLeafletPatch(a, b, theta0, theta1, radialLenMm, radialSteps=18, angularSteps=36, curvatureMm=1.6) {
-    const cols = angularSteps+1;
-    const rows = radialSteps+1;
+  function buildLeafletPatch(a,b,theta0,theta1, radialLenMm, radialSteps=18, angularSteps=36, curvatureMm=1.6) {
+    const cols = angularSteps+1, rows = radialSteps+1;
     const POS = new Float32Array(cols * rows * 3);
     const NRM = new Float32Array(cols * rows * 3);
     const IDX = new Uint32Array(angularSteps * radialSteps * 6);
@@ -1371,21 +895,16 @@ Caps: ${JSON.stringify(caps, null, 2)}
     return { positions: POS, normals: NRM, indices: IDX, dims:{rows, cols} };
   }
 
-  function sampleAnnulus(a, b, segments=192){
+  function sampleAnnulus(a,b,segments=192){
     const pts = new Float32Array((segments+1)*3);
-    for (let i=0; i<=segments; i++){
-      const t = (i/segments) * TAU;
-      const p = ellipsePoint(a, b, t);
+    for(let i=0;i<=segments;i++){ const t=(i/segments)*TAU; const p=ellipsePoint(a,b,t);
       pts[i*3+0]=p[0]; pts[i*3+1]=p[1]; pts[i*3+2]=0;
     }
     return { positions: pts, segments };
   }
 
-  const SEG = {
-    A1:[-60, -20], A2:[-20, 20], A3:[20, 60],
-    P1:[120,160],  P2:[160,200], P3:[200,240]
-  };
-  const PAP = { AL: vec3(+14, +8, -20), PM: vec3(-14, -8, -20) };
+  const SEG = { A1:[-60,-20], A2:[-20,20], A3:[20,60], P1:[120,160], P2:[160,200], P3:[200,240] };
+  const PAP = { AL: vec3(+14,+8,-20), PM: vec3(-14,-8,-20) };
 
   function buildChordae(a,b,theta0,theta1, radialLenMm, perSide=12, attach='AL'){
     const lines = new Float32Array(perSide*2*3);
@@ -1402,22 +921,14 @@ Caps: ${JSON.stringify(caps, null, 2)}
   }
 
   function buildP2Zone(a,b,radialLenMm, inner=0.65, outer=0.95, steps=48){
-    const [deg0,deg1] = SEG.P2;
-    const t0 = deg0*DEG, t1=deg1*DEG;
-    const ring = [];
-    for (let s=0;s<=steps;s++){
-      const u = s/steps, t = t0 + (t1-t0)*u;
-      const hinge = ellipsePoint(a,b,t);
-      const inward = norm(mul(ellipseNormal(a,b,t), -1));
-      const pOut = add(hinge, mul(inward, radialLenMm*outer));
-      ring.push(pOut);
+    const [deg0,deg1] = SEG.P2; const t0 = deg0*DEG, t1=deg1*DEG; const ring=[];
+    for(let s=0;s<=steps;s++){ const u=s/steps; const t=t0+(t1-t0)*u;
+      const hinge=ellipsePoint(a,b,t); const inward=norm(mul(ellipseNormal(a,b,t),-1));
+      ring.push(add(hinge, mul(inward, radialLenMm*outer)));
     }
-    for (let s=steps; s>=0; s--){
-      const u = s/steps, t = t0 + (t1-t0)*u;
-      const hinge = ellipsePoint(a,b,t);
-      const inward = norm(mul(ellipseNormal(a,b,t), -1));
-      const pIn = add(hinge, mul(inward, radialLenMm*inner));
-      ring.push(pIn);
+    for(let s=steps;s>=0;s--){ const u=s/steps; const t=t0+(t1-t0)*u;
+      const hinge=ellipsePoint(a,b,t); const inward=norm(mul(ellipseNormal(a,b,t),-1));
+      ring.push(add(hinge, mul(inward, radialLenMm*inner)));
     }
     const poly = new Float32Array(ring.length*3);
     ring.forEach((p,i)=>{ poly[i*3+0]=p[0]; poly[i*3+1]=p[1]; poly[i*3+2]=p[2]; });
@@ -1425,17 +936,14 @@ Caps: ${JSON.stringify(caps, null, 2)}
   }
 
   function buildMitralApparatus(params={}){
-    const a = params.aMajorMm ?? 17.5;
-    const b = params.bMinorMm ?? 15.0;
-    const anteriorLen = params.anteriorLenMm ?? 18;
-    const posteriorLen = params.posteriorLenMm ?? 12;
+    const a = params.aMajorMm ?? 17.5, b = params.bMinorMm ?? 15.0;
+    const anteriorLen = params.anteriorLenMm ?? 18, posteriorLen = params.posteriorLenMm ?? 12;
 
-    const annulus = sampleAnnulus(a, b, 192);
+    const annulus = sampleAnnulus(a,b,192);
 
     const A1 = buildLeafletPatch(a,b, SEG.A1[0]*DEG, SEG.A1[1]*DEG, anteriorLen, 18, 24, 2.2);
     const A2 = buildLeafletPatch(a,b, SEG.A2[0]*DEG, SEG.A2[1]*DEG, anteriorLen, 18, 28, 2.4);
     const A3 = buildLeafletPatch(a,b, SEG.A3[0]*DEG, SEG.A3[1]*DEG, anteriorLen, 18, 24, 2.2);
-
     const P1 = buildLeafletPatch(a,b, SEG.P1[0]*DEG, SEG.P1[1]*DEG, posteriorLen, 16, 20, 1.5);
     const P2 = buildLeafletPatch(a,b, SEG.P2[0]*DEG, SEG.P2[1]*DEG, posteriorLen, 16, 24, 1.6);
     const P3 = buildLeafletPatch(a,b, SEG.P3[0]*DEG, SEG.P3[1]*DEG, posteriorLen, 16, 20, 1.5);
@@ -1445,8 +953,8 @@ Caps: ${JSON.stringify(caps, null, 2)}
 
     const zoneP2 = buildP2Zone(a,b, posteriorLen, 0.65, 0.95, 48);
 
-    const R = Math.max(a, b) + Math.max(anteriorLen, posteriorLen);
-    const bounds = { min: vec3(-R, -R, -24), max: vec3(R, R, 24), center: vec3(0,0,0), radius: R };
+    const R = Math.max(a,b)+Math.max(anteriorLen, posteriorLen);
+    const bounds = { min: vec3(-R,-R,-24), max: vec3(R,R,24), center: vec3(0,0,0), radius: R };
 
     const thetaP2mid = ((SEG.P2[0]+SEG.P2[1])/2)*DEG;
     const annulusP2Mid = ellipsePoint(a,b,thetaP2mid);
@@ -1456,14 +964,13 @@ Caps: ${JSON.stringify(caps, null, 2)}
     const landmarks = {
       segments: { A1:{deg:SEG.A1}, A2:{deg:SEG.A2}, A3:{deg:SEG.A3}, P1:{deg:SEG.P1}, P2:{deg:SEG.P2}, P3:{deg:SEG.P3} },
       annulusMid: { P2: annulusP2Mid },
-      freeEdgeMid:{ P2: freeEdgeP2 },
+      freeEdgeMid: { P2: freeEdgeP2 },
       papillaryMuscles: { ...PAP },
       zones: { 'leaflet-P2': zoneP2 },
       ring: { a, b }
     };
 
-    const meshes = { annulus, leaflets: { A1, A2, A3, P1, P2, P3 }, chordae: { P2_AL: chordae_P2_AL, P2_PM: chordae_P2_PM } };
-
+    const meshes = { annulus, leaflets: {A1,A2,A3,P1,P2,P3}, chordae: { P2_AL: chordae_P2_AL, P2_PM: chordae_P2_PM } };
     return { meshes, bounds, landmarks, units:{ mmPerUnit: 1 } };
   }
 
@@ -1471,49 +978,21 @@ Caps: ${JSON.stringify(caps, null, 2)}
   window.MitralSim = Object.assign(window.MitralSim || {}, { Assets, buildMitralApparatus });
 
   // =========================
-  // SECTION 16: RENDERER & MATERIALS
+  // SECTION 16: RENDERER
   // =========================
   let gl;
   const M4 = {
-    ident: () => new Float32Array([1,0,0,0,  0,1,0,0,  0,0,1,0,  0,0,0,1]),
-    mul(a,b){ const o=new Float32Array(16);
-      for(let r=0;r<4;r++){ for(let c=0;c<4;c++){ o[c*4+r]=a[0*4+r]*b[c*4+0]+a[1*4+r]*b[c*4+1]+a[2*4+r]*b[c*4+2]+a[3*4+r]*b[c*4+3]; } }
-      return o;
-    },
+    ident: () => new Float32Array([1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]),
+    mul(a,b){ const o=new Float32Array(16); for(let r=0;r<4;r++){ for(let c=0;c<4;c++){ o[c*4+r]=a[0*4+r]*b[c*4+0]+a[1*4+r]*b[c*4+1]+a[2*4+r]*b[c*4+2]+a[3*4+r]*b[c*4+3]; } } return o; },
     translate(m,[x,y,z]){ const t=M4.ident(); t[12]=x; t[13]=y; t[14]=z; return M4.mul(m,t); },
-    perspective(fovy,aspect,near,far){ const f=1/Math.tan(fovy/2), nf=1/(near-far); const o=new Float32Array(16);
-      o[0]=f/aspect; o[5]=f; o[10]=(far+near)*nf; o[11]=-1; o[14]=2*far*near*nf; return o; },
-    lookAt(eye,center,up){
-      const z=norm([eye[0]-center[0], eye[1]-center[1], eye[2]-center[2]]);
-      let x=norm(cross(up,z)); let y=cross(z,x);
-      const o=M4.ident();
-      o[0]=x[0]; o[4]=x[1]; o[8]=x[2];
-      o[1]=y[0]; o[5]=y[1]; o[9]=y[2];
-      o[2]=z[0]; o[6]=z[1]; o[10]=z[2];
-      o[12]=-(x[0]*eye[0]+x[1]*eye[1]+x[2]*eye[2]);
-      o[13]=-(y[0]*eye[0]+y[1]*eye[1]+y[2]*eye[2]);
-      o[14]=-(z[0]*eye[0]+z[1]*eye[1]+z[2]*eye[2]);
-      return o;
-    }
+    perspective(fovy,aspect,near,far){ const f=1/Math.tan(fovy/2), nf=1/(near-far); const o=new Float32Array(16); o[0]=f/aspect; o[5]=f; o[10]=(far+near)*nf; o[11]=-1; o[14]=2*far*near*nf; return o; },
+    lookAt(eye,center,up){ const z=norm([eye[0]-center[0],eye[1]-center[1],eye[2]-center[2]]); let x=norm(cross(up,z)); let y=cross(z,x);
+      const o=M4.ident(); o[0]=x[0]; o[4]=x[1]; o[8]=x[2]; o[1]=y[0]; o[5]=y[1]; o[9]=y[2]; o[2]=z[0]; o[6]=z[1]; o[10]=z[2];
+      o[12]=-(x[0]*eye[0]+x[1]*eye[1]+x[2]*eye[2]); o[13]=-(y[0]*eye[0]+y[1]*eye[1]+y[2]*eye[2]); o[14]=-(z[0]*eye[0]+z[1]*eye[1]+z[2]*eye[2]); return o; }
   };
 
-  function compile(gl, type, src){
-    const s=gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
-    if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)){
-      console.error(gl.getShaderInfoLog(s)); throw new Error('Shader compile failed');
-    }
-    return s;
-  }
-  function makeProgram(gl, vs, fs){
-    const p=gl.createProgram();
-    gl.attachShader(p, compile(gl, gl.VERTEX_SHADER, vs));
-    gl.attachShader(p, compile(gl, gl.FRAGMENT_SHADER, fs));
-    gl.linkProgram(p);
-    if(!gl.getProgramParameter(p, gl.LINK_STATUS)){
-      console.error(gl.getProgramInfoLog(p)); throw new Error('Program link failed');
-    }
-    return p;
-  }
+  function compile(gl, type, src){ const s=gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)){ console.error(gl.getShaderInfoLog(s)); throw new Error('Shader compile failed'); } return s; }
+  function program(gl, vs, fs){ const p=gl.createProgram(); gl.attachShader(p, compile(gl, gl.VERTEX_SHADER, vs)); gl.attachShader(p, compile(gl, gl.FRAGMENT_SHADER, fs)); gl.linkProgram(p); if(!gl.getProgramParameter(p, gl.LINK_STATUS)){ console.error(gl.getProgramInfoLog(p)); throw new Error('Program link failed'); } return p; }
 
   const Shaders = {
     leafVS: `#version 300 es
@@ -1544,7 +1023,6 @@ Caps: ${JSON.stringify(caps, null, 2)}
       vec3 L = normalize(-uLightDir);
       vec3 V = normalize(uEye - vW);
       vec3 H = normalize(L + V);
-
       float wrap = 0.5;
       float diff = clamp((dot(N,L) + wrap)/(1.0 + wrap), 0.0, 1.0);
       float back = pow(max(dot(-N, L), 0.0), 0.7) * uTranslucency;
@@ -1567,76 +1045,35 @@ Caps: ${JSON.stringify(caps, null, 2)}
   };
 
   const Renderer = {
-    proj: M4.ident(),
-    view: M4.ident(),
-    model: M4.ident(),
-    programs: {},
-    uniforms: { leaf:{}, line:{} },
-    leafVAOs: [],
-    annulusVAO: null, annulusCount: 0,
-    chordVAO: null, chordCount: 0,
+    proj: M4.ident(), view: M4.ident(), model: M4.ident(),
+    programs: {}, leafVAOs: [], annulusVAO: null, annulusCount: 0, chordVAO: null, chordCount: 0,
     clearColor: [0.025, 0.04, 0.09, 1],
-    lightDir: norm([0.3, 0.4, 0.7]),
-    eye: [0, -1, 1]
+    lightDir: norm([0.3,0.4,0.7]), eye:[0,-1,1]
   };
 
   function createLeafletVAO(patch){
-    const vao = gl.createVertexArray();
-    gl.bindVertexArray(vao);
-
-    const vboPos = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vboPos);
-    gl.bufferData(gl.ARRAY_BUFFER, patch.positions, gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(0);
-    gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
-
-    const vboNrm = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vboNrm);
-    gl.bufferData(gl.ARRAY_BUFFER, patch.normals, gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(1);
-    gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
-
-    const ebo = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, patch.indices, gl.STATIC_DRAW);
-
-    gl.bindVertexArray(null);
-    return { vao, count: patch.indices.length };
+    const vao = gl.createVertexArray(); gl.bindVertexArray(vao);
+    const vboPos = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vboPos); gl.bufferData(gl.ARRAY_BUFFER, patch.positions, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+    const vboNrm = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vboNrm); gl.bufferData(gl.ARRAY_BUFFER, patch.normals, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
+    const ebo = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, patch.indices, gl.STATIC_DRAW);
+    gl.bindVertexArray(null); return { vao, count: patch.indices.length };
   }
-
   function createLineVAO(positionsFloat32){
-    const vao = gl.createVertexArray();
-    gl.bindVertexArray(vao);
-    const vbo = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-    gl.bufferData(gl.ARRAY_BUFFER, positionsFloat32, gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(0);
-    gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
-    gl.bindVertexArray(null);
-    return { vao, count: positionsFloat32.length/3 };
+    const vao = gl.createVertexArray(); gl.bindVertexArray(vao);
+    const vbo = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vbo); gl.bufferData(gl.ARRAY_BUFFER, positionsFloat32, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+    gl.bindVertexArray(null); return { vao, count: positionsFloat32.length/3 };
   }
 
-  const Camera = {
-    target: [0,0,0],
-    yaw: 0.0,
-    pitch: 0.35,
-    dist: 90,
-    fov: 45 * DEG,
-    near: 1, far: 500,
-    get eye(){
-      const cp = Math.cos(this.pitch), sp = Math.sin(this.pitch);
-      const cy = Math.cos(this.yaw),   sy = Math.sin(this.yaw);
-      const off = [ this.dist*cp*cy, this.dist*cp*sy, this.dist*sp ];
-      return [ this.target[0] + off[0], this.target[1] + off[1], this.target[2] + off[2] ];
-    }
-  };
+  const Camera = { target:[0,0,0], yaw:0.0, pitch:0.55, dist:90, fov:45*DEG, near:1, far:500,
+    get eye(){ const cp=Math.cos(this.pitch), sp=Math.sin(this.pitch), cy=Math.cos(this.yaw), sy=Math.sin(this.yaw);
+      const off=[this.dist*cp*cy, this.dist*cp*sy, this.dist*sp]; return [this.target[0]+off[0],this.target[1]+off[1],this.target[2]+off[2]]; } };
 
   function fitCameraToBounds(bounds){
     const diag = Math.hypot(bounds.max[0]-bounds.min[0], bounds.max[1]-bounds.min[1]);
-    Camera.dist = Math.max(70, diag*1.2);
-    Camera.target = bounds.center.slice();
-    Camera.pitch = 0.55;
-    Camera.yaw = Math.PI * 1.1;
+    Camera.dist = Math.max(70, diag*1.2); Camera.target = bounds.center.slice(); Camera.pitch=0.55; Camera.yaw = Math.PI*1.1;
   }
 
   function initRenderer(){
@@ -1644,231 +1081,133 @@ Caps: ${JSON.stringify(caps, null, 2)}
     gl = canvas.getContext('webgl2', { antialias:true, alpha:false, desynchronized:true });
     if (!gl) throw new Error('WebGL2 context lost');
 
-    gl.enable(gl.DEPTH_TEST);
-    gl.disable(gl.CULL_FACE);
-    gl.clearColor(...Renderer.clearColor);
+    gl.enable(gl.DEPTH_TEST); gl.disable(gl.CULL_FACE); gl.clearColor(...Renderer.clearColor);
 
-    Renderer.programs.leaf = makeProgram(gl, Shaders.leafVS, Shaders.leafFS);
-    Renderer.programs.line = makeProgram(gl, Shaders.lineVS, Shaders.lineFS);
-
-    // Cache uniform locations once
-    const leaf = Renderer.programs.leaf, line = Renderer.programs.line;
-    const U = Renderer.uniforms;
-    U.leaf = {
-      uProj: gl.getUniformLocation(leaf, 'uProj'),
-      uView: gl.getUniformLocation(leaf, 'uView'),
-      uModel: gl.getUniformLocation(leaf, 'uModel'),
-      uEye: gl.getUniformLocation(leaf, 'uEye'),
-      uLightDir: gl.getUniformLocation(leaf, 'uLightDir'),
-      uBase: gl.getUniformLocation(leaf, 'uBase'),
-      uBlood: gl.getUniformLocation(leaf, 'uBlood'),
-      uTranslucency: gl.getUniformLocation(leaf, 'uTranslucency'),
-      uGloss: gl.getUniformLocation(leaf, 'uGloss')
-    };
-    U.line = {
-      uProj: gl.getUniformLocation(line, 'uProj'),
-      uView: gl.getUniformLocation(line, 'uView'),
-      uModel: gl.getUniformLocation(line, 'uModel'),
-      uColor: gl.getUniformLocation(line, 'uColor')
-    };
+    Renderer.programs.leaf = program(gl, Shaders.leafVS, Shaders.leafFS);
+    Renderer.programs.line = program(gl, Shaders.lineVS, Shaders.lineFS);
 
     const L = Assets.mitral.meshes.leaflets;
-    Renderer.leafVAOs = [
-      createLeafletVAO(L.A1), createLeafletVAO(L.A2), createLeafletVAO(L.A3),
-      createLeafletVAO(L.P1), createLeafletVAO(L.P2), createLeafletVAO(L.P3)
-    ];
-
+    Renderer.leafVAOs = [createLeafletVAO(L.A1),createLeafletVAO(L.A2),createLeafletVAO(L.A3),createLeafletVAO(L.P1),createLeafletVAO(L.P2),createLeafletVAO(L.P3)];
     const ann = Assets.mitral.meshes.annulus.positions;
-    const chord = (() => {
-      const c1 = Assets.mitral.meshes.chordae.P2_AL;
-      const c2 = Assets.mitral.meshes.chordae.P2_PM;
-      const out = new Float32Array(c1.length + c2.length);
-      out.set(c1,0); out.set(c2,c1.length);
-      return out;
-    })();
-
-    const annVAO = createLineVAO(ann);
-    Renderer.annulusVAO = annVAO.vao; Renderer.annulusCount = annVAO.count;
-    const chVAO = createLineVAO(chord);
-    Renderer.chordVAO = chVAO.vao; Renderer.chordCount = chVAO.count;
+    const chord = (()=>{ const c1=Assets.mitral.meshes.chordae.P2_AL, c2=Assets.mitral.meshes.chordae.P2_PM; const out=new Float32Array(c1.length+c2.length); out.set(c1,0); out.set(c2,c1.length); return out; })();
+    const annVAO = createLineVAO(ann); Renderer.annulusVAO=annVAO.vao; Renderer.annulusCount=annVAO.count;
+    const chVAO = createLineVAO(chord); Renderer.chordVAO=chVAO.vao; Renderer.chordCount=chVAO.count;
 
     fitCameraToBounds(Assets.mitral.bounds);
     onResize();
-
     window.MitralSim = Object.assign(window.MitralSim||{}, { Camera, Renderer });
   }
 
   function onResize(){
     if (!gl) return;
-    const c = gl.canvas;
-    const dpr = Math.min(window.devicePixelRatio||1, 2);
-    const w = Math.max(1, Math.floor(c.clientWidth * dpr));
-    const h = Math.max(1, Math.floor(c.clientHeight * dpr));
-    if (c.width !== w || c.height !== h){ c.width = w; c.height = h; }
+    const c=gl.canvas, dpr=Math.min(window.devicePixelRatio||1,2);
+    const w = Math.max(1, Math.floor(c.clientWidth * dpr)), h=Math.max(1, Math.floor(c.clientHeight*dpr));
+    if (c.width!==w || c.height!==h){ c.width=w; c.height=h; }
     gl.viewport(0,0,gl.drawingBufferWidth, gl.drawingBufferHeight);
     const aspect = gl.drawingBufferWidth / Math.max(1, gl.drawingBufferHeight);
     Renderer.proj = M4.perspective(Camera.fov, aspect, Camera.near, Camera.far);
+    Overlay.ensureViewBox?.();
   }
-
-  const _colBase  = new Float32Array([0.95, 0.70, 0.72]);
-  const _colBlood = new Float32Array([0.75, 0.08, 0.12]);
 
   function renderFrame(t){
     Renderer.view = M4.lookAt(Camera.eye, Camera.target, [0,0,1]);
-    Renderer.model = M4.ident();
-    Renderer.eye = Camera.eye.slice();
+    Renderer.model = M4.ident(); Renderer.eye=Camera.eye.slice();
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    // leaflets
-    gl.enable(gl.BLEND);
-    gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-    gl.useProgram(Renderer.programs.leaf);
-    const UL = Renderer.uniforms.leaf;
-    gl.uniformMatrix4fv(UL.uProj, false, Renderer.proj);
-    gl.uniformMatrix4fv(UL.uView, false, Renderer.view);
-    gl.uniformMatrix4fv(UL.uModel, false, Renderer.model);
-    gl.uniform3fv(UL.uEye, Renderer.eye);
-    gl.uniform3fv(UL.uLightDir, Renderer.lightDir);
-    gl.uniform3fv(UL.uBase, _colBase);
-    gl.uniform3fv(UL.uBlood, _colBlood);
-    gl.uniform1f(UL.uTranslucency, 0.38);
-    gl.uniform1f(UL.uGloss, 0.65);
-    for (const d of Renderer.leafVAOs){
-      gl.bindVertexArray(d.vao);
-      gl.drawElements(gl.TRIANGLES, d.count, gl.UNSIGNED_INT, 0);
-    }
-    gl.bindVertexArray(null);
-    gl.disable(gl.BLEND);
+    gl.enable(gl.BLEND); gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    const Pleaf = Renderer.programs.leaf; gl.useProgram(Pleaf);
+    gl.uniformMatrix4fv(gl.getUniformLocation(Pleaf,'uProj'), false, Renderer.proj);
+    gl.uniformMatrix4fv(gl.getUniformLocation(Pleaf,'uView'), false, Renderer.view);
+    gl.uniformMatrix4fv(gl.getUniformLocation(Pleaf,'uModel'), false, Renderer.model);
+    gl.uniform3fv(gl.getUniformLocation(Pleaf,'uEye'), Renderer.eye);
+    gl.uniform3fv(gl.getUniformLocation(Pleaf,'uLightDir'), new Float32Array(Renderer.lightDir));
+    gl.uniform3fv(gl.getUniformLocation(Pleaf,'uBase'), new Float32Array([0.95, 0.70, 0.72]));
+    gl.uniform3fv(gl.getUniformLocation(Pleaf,'uBlood'), new Float32Array([0.75, 0.08, 0.12]));
+    gl.uniform1f(gl.getUniformLocation(Pleaf,'uTranslucency'), 0.38);
+    gl.uniform1f(gl.getUniformLocation(Pleaf,'uGloss'), 0.65);
+    for (const d of Renderer.leafVAOs){ gl.bindVertexArray(d.vao); gl.drawElements(gl.TRIANGLES, d.count, gl.UNSIGNED_INT, 0); }
+    gl.bindVertexArray(null); gl.disable(gl.BLEND);
 
-    // annulus
-    gl.useProgram(Renderer.programs.line);
-    const ULine = Renderer.uniforms.line;
-    gl.uniformMatrix4fv(ULine.uProj, false, Renderer.proj);
-    gl.uniformMatrix4fv(ULine.uView, false, Renderer.view);
-    gl.uniformMatrix4fv(ULine.uModel, false, Renderer.model);
-    gl.uniform4f(ULine.uColor, 0.0, 0.82, 1.0, 0.9);
-    gl.bindVertexArray(Renderer.annulusVAO);
-    gl.lineWidth(1);
-    gl.drawArrays(gl.LINE_STRIP, 0, Renderer.annulusCount);
-    gl.bindVertexArray(null);
+    const Pl = Renderer.programs.line; gl.useProgram(Pl);
+    gl.uniformMatrix4fv(gl.getUniformLocation(Pl,'uProj'), false, Renderer.proj);
+    gl.uniformMatrix4fv(gl.getUniformLocation(Pl,'uView'), false, Renderer.view);
+    gl.uniformMatrix4fv(gl.getUniformLocation(Pl,'uModel'), false, Renderer.model);
 
-    // chordae
-    gl.enable(gl.BLEND);
-    gl.uniform4f(ULine.uColor, 1.0, 1.0, 1.0, 0.32);
-    gl.bindVertexArray(Renderer.chordVAO);
-    gl.drawArrays(gl.LINES, 0, Renderer.chordCount);
-    gl.bindVertexArray(null);
-    gl.disable(gl.BLEND);
+    gl.uniform4f(gl.getUniformLocation(Pl,'uColor'), 0.0, 0.82, 1.0, 0.9);
+    gl.bindVertexArray(Renderer.annulusVAO); gl.lineWidth(1); gl.drawArrays(gl.LINE_STRIP, 0, Renderer.annulusCount); gl.bindVertexArray(null);
 
-    // physics
-    Physics.step( Math.min(0.033, (t - (renderFrame._pt||t))/1000) );
-    renderFrame._pt = t;
+    gl.enable(gl.BLEND); gl.useProgram(Pl);
+    gl.uniform4f(gl.getUniformLocation(Pl,'uColor'), 1.0, 1.0, 1.0, 0.32);
+    gl.bindVertexArray(Renderer.chordVAO); gl.drawArrays(gl.LINES, 0, Renderer.chordCount); gl.bindVertexArray(null); gl.disable(gl.BLEND);
 
+    Physics.step( Math.min(0.033, (t - (renderFrame._pt||t))/1000) ); renderFrame._pt = t;
     requestAnimationFrame(renderFrame);
   }
 
   // =========================
-  // SECTION 17: CAMERA & INTERACTION
+  // SECTION 17: CAMERA & INPUT
   // =========================
-  const Input = {
-    pointerId: null,
-    down: false,
-    lastX: 0, lastY: 0,
-    buttons: 0,
-    tool: 'needle-driver',
-    dragMode: 'orbit',
-    wheelAccum: 0
-  };
+  const Input = { pointerId:null, down:false, lastX:0,lastY:0, buttons:0, tool:'needle-driver', dragMode:'orbit', wheelAccum:0 };
 
-  function screenPanToWorld(dx, dy){
-    const c = gl.canvas;
-    const h = Math.max(1, c.clientHeight);
-    const v = Math.tan(Camera.fov/2) * Camera.dist;
-    const scale = v / (h/2);
-    const eye = Camera.eye; const tgt = Camera.target;
-    const fwd = norm([tgt[0]-eye[0], tgt[1]-eye[1], tgt[2]-eye[2]]);
-    let right = norm(cross(fwd, [0,0,1]));
-    let up = cross(right, fwd);
-    if (Math.abs(dot(fwd, [0,0,1])) > 0.98){
-      right = norm(cross(fwd, [0,1,0])); up = cross(right, fwd);
-    }
-    const pan = add( mul(right, -dx*scale), mul(up, dy*scale) );
-    return pan;
+  function screenPanToWorld(dx,dy){
+    const c=gl.canvas; const h=Math.max(1, c.clientHeight);
+    const v=Math.tan(Camera.fov/2)*Camera.dist; const scale=v/(h/2);
+    const eye=Camera.eye, tgt=Camera.target;
+    const fwd=norm([tgt[0]-eye[0], tgt[1]-eye[1], tgt[2]-eye[2]]);
+    let right=norm(cross(fwd,[0,0,1])); let up=cross(right,fwd);
+    if (Math.abs(dot(fwd,[0,0,1]))>0.98){ right=norm(cross(fwd,[0,1,0])); up=cross(right,fwd); }
+    return add( mul(right,-dx*scale), mul(up, dy*scale) );
   }
 
   function bindInteraction(){
-    const canvas = document.getElementById('gl');
-    canvas.addEventListener('contextmenu', e => e.preventDefault());
+    const canvas=document.getElementById('gl'); canvas.addEventListener('contextmenu', e => e.preventDefault());
+    document.querySelector('#tools')?.addEventListener('change', e=>{ if (e.target?.name==='tool') Input.tool = e.target.value; });
 
-    document.querySelector('#tools')?.addEventListener('change', e=>{
-      if (e.target?.name === 'tool') Input.tool = e.target.value;
-    });
-
-    canvas.addEventListener('pointerdown', e=>{
-      Input.down = true; Input.buttons = e.buttons;
-      Input.pointerId = e.pointerId; canvas.setPointerCapture(Input.pointerId);
-      Input.lastX = e.clientX; Input.lastY = e.clientY;
-      Input.dragMode = (e.button === 2 || e.shiftKey) ? 'pan' : 'orbit';
-    });
-    canvas.addEventListener('pointerup', e=>{
-      if (e.pointerId === Input.pointerId){ canvas.releasePointerCapture(Input.pointerId); Input.pointerId = null; }
-      Input.down = false; Input.buttons = e.buttons;
-    });
+    canvas.addEventListener('pointerdown', e=>{ Input.down=true; Input.buttons=e.buttons; Input.pointerId=e.pointerId; canvas.setPointerCapture(Input.pointerId); Input.lastX=e.clientX; Input.lastY=e.clientY; Input.dragMode = (e.button===2 || e.shiftKey) ? 'pan' : 'orbit'; });
+    canvas.addEventListener('pointerup',   e=>{ if (e.pointerId===Input.pointerId){ canvas.releasePointerCapture(Input.pointerId); Input.pointerId=null; } Input.down=false; Input.buttons=e.buttons; });
     canvas.addEventListener('pointermove', e=>{
       if (!Input.down) return;
-      const dx = e.clientX - Input.lastX;
-      const dy = e.clientY - Input.lastY;
-      Input.lastX = e.clientX; Input.lastY = e.clientY;
-
-      if (Input.dragMode === 'orbit'){
-        Camera.yaw   -= dx * 0.005;
-        Camera.pitch -= dy * 0.004;
-        Camera.pitch = Math.max(-Math.PI/2 + 0.05, Math.min(Math.PI/2 - 0.05, Camera.pitch));
-      } else {
-        const pan = screenPanToWorld(dx, dy);
-        Camera.target = add(Camera.target, pan);
-      }
+      const dx=e.clientX-Input.lastX, dy=e.clientY-Input.lastY; Input.lastX=e.clientX; Input.lastY=e.clientY;
+      if (Input.dragMode==='orbit'){ Camera.yaw -= dx*0.005; Camera.pitch -= dy*0.004; Camera.pitch = Math.max(-Math.PI/2+0.05, Math.min(Math.PI/2-0.05, Camera.pitch)); }
+      else { Camera.target = add(Camera.target, screenPanToWorld(dx,dy)); }
+      Suturing._noteMotion(dx,dy);
     });
-    canvas.addEventListener('wheel', e=>{
-      e.preventDefault();
-      const s = Math.exp(e.deltaY * 0.0015);
-      Camera.dist = Math.max(30, Math.min(260, Camera.dist * s));
-    }, { passive:false });
+    canvas.addEventListener('wheel', e=>{ e.preventDefault(); const s=Math.exp(e.deltaY*0.0015); Camera.dist=Math.max(30, Math.min(260, Camera.dist * s)); }, { passive:false });
+
+    // Route clicks by current step: mark vs bite
+    canvas.addEventListener('click', e=>{
+      const step = StepMachine.current?.();
+      if (step && step.goal?.clickWithinMm){ StepMachine.tryMarkAnnulus(e); }
+      else { Suturing.placeBiteFromEvent(e); }
+    });
 
     window.addEventListener('keydown', e=>{
-      if (e.key === '?' || (e.key === '/' && e.shiftKey)) { document.getElementById('dlg-onboarding')?.showModal(); }
-      if (e.key === ' ') { e.preventDefault(); if (State.timerRunning) pauseTimer(); else startTimer(); }
-      if (e.key === 'ArrowUp')   Camera.pitch = Math.min(Camera.pitch + 0.04,  Math.PI/2 - 0.05);
-      if (e.key === 'ArrowDown') Camera.pitch = Math.max(Camera.pitch - 0.04, -Math.PI/2 + 0.05);
-      if (e.key === 'ArrowLeft') Camera.yaw   += 0.06;
-      if (e.key === 'ArrowRight')Camera.yaw   -= 0.06;
-      if ((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='z') document.getElementById('btn-undo')?.click();
-      if ((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='y') document.getElementById('btn-redo')?.click();
+      if (e.key==='?' || (e.key==='/' && e.shiftKey)) { document.getElementById('dlg-onboarding')?.showModal(); }
+      if (e.key===' ') { e.preventDefault(); if (State.timerRunning) pauseTimer(); else startTimer(); }
+      if (e.key==='ArrowUp')   Camera.pitch = Math.min(Camera.pitch + 0.04,  Math.PI/2 - 0.05);
+      if (e.key==='ArrowDown') Camera.pitch = Math.max(Camera.pitch - 0.04, -Math.PI/2 + 0.05);
+      if (e.key==='ArrowLeft') Camera.yaw   += 0.06;
+      if (e.key==='ArrowRight')Camera.yaw   -= 0.06;
+      if ((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='z') { e.preventDefault(); Suturing.undo(); }
+      if ((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='y') { e.preventDefault(); Suturing.redo(); }
     });
 
     window.addEventListener('resize', onResize);
   }
 
   function focusCameraToCurrentStep(){
-    try {
-      const steps = (typeof getSteps === 'function') ? getSteps() : null;
-      if (!steps || !steps.length) return;
-      const s = steps[State.stepIndex] || steps[0];
-      let target = Assets.mitral.bounds.center;
-
-      if (s.highlight?.region === 'P2'){
-        target = Assets.mitral.landmarks.freeEdgeMid.P2;
-      } else if (s.highlight?.region === 'annulus-P2'){
-        target = Assets.mitral.landmarks.annulusMid.P2;
-      } else if (s.highlight?.region === 'leaflet-P2'){
-        const poly = Assets.mitral.landmarks.zones['leaflet-P2'];
-        let cx=0, cy=0, cz=0, n=poly.length/3;
-        for (let i=0;i<poly.length;i+=3){ cx+=poly[i]; cy+=poly[i+1]; cz+=poly[i+2]; }
-        target = [cx/n, cy/n, cz/n];
+    try{
+      const steps = (typeof getSteps==='function') ? getSteps() : null; if (!steps||!steps.length) return;
+      const s = steps[State.stepIndex] || steps[0]; let target = Assets.mitral.bounds.center;
+      if (s.highlight?.region==='P2') target = Assets.mitral.landmarks.freeEdgeMid.P2;
+      else if (s.highlight?.region==='annulus-P2') target = Assets.mitral.landmarks.annulusMid.P2;
+      else if (s.highlight?.region==='leaflet-P2'){
+        const poly = Assets.mitral.landmarks.zones['leaflet-P2']; let cx=0,cy=0,cz=0, n=poly.length/3;
+        for (let i=0;i<poly.length;i+=3){ cx+=poly[i]; cy+=poly[i+1]; cz+=poly[i+2]; } target=[cx/n,cy/n,cz/n];
       }
-      Camera.target = add( mul(Camera.target, 0.7), mul(target, 0.3) );
-    } catch (e) {}
+      Camera.target = add( mul(Camera.target,0.7), mul(target,0.3) );
+    } catch(e){}
   }
 
   window.MitralSim = Object.assign(window.MitralSim || {}, { Input, bindInteraction, focusCameraToCurrentStep });
@@ -1877,12 +1216,12 @@ Caps: ${JSON.stringify(caps, null, 2)}
   // SECTION 18: PHYSICS LITE
   // =========================
   const Physics = {
-    t: 0, _forceEMA: 0, _angleEMA: 0, _collisions: 0,
-    thread: { nodes: [], restLen: 1.0 },
+    t:0, _forceEMA:0, _angleEMA:0, _collisions:0,
+    thread: { nodes:[], restLen:1.0 },
     step(dt){
       this.t += dt;
       const wobble = 0.15 * Math.sin(this.t * 0.8);
-      Renderer.model = M4.translate(M4.ident(), [0, 0, wobble]);
+      Renderer.model = M4.translate(M4.ident(), [0,0,wobble]);
       this._forceEMA = this._forceEMA * 0.95;
       this._angleEMA = this._angleEMA * 0.95;
       this._collisions = Math.max(0, this._collisions - 0.02);
@@ -1894,53 +1233,27 @@ Caps: ${JSON.stringify(caps, null, 2)}
   };
 
   function updateTelemetryUI(forceN, angleDeg, collisions){
-    const f = document.getElementById('tele-force');
-    const a = document.getElementById('tele-angle');
-    const c = document.getElementById('tele-coll');
-    if (f) f.textContent = (forceN||0).toFixed(1) + ' N';
-    if (a) a.textContent = Math.max(0, angleDeg||0).toFixed(0) + '°';
+    const f=document.getElementById('tele-force'), a=document.getElementById('tele-angle'), c=document.getElementById('tele-coll');
+    if (f) f.textContent = (forceN||0).toFixed(1)+' N';
+    if (a) a.textContent = Math.max(0, angleDeg||0).toFixed(0)+'°';
     if (c) c.textContent = (collisions>0 ? 'Yes' : 'None');
-
-    const fb = document.getElementById('tele-force-bar');
-    const fav = document.getElementById('tele-force-barv');
-    const ab = document.getElementById('tele-angle-bar');
-    const abv = document.getElementById('tele-angle-barv');
+    const fb=document.getElementById('tele-force-bar'), fav=document.getElementById('tele-force-barv');
+    const ab=document.getElementById('tele-angle-bar'), abv=document.getElementById('tele-angle-barv');
     if (fb){ fb.value = Math.min(1, Math.abs(forceN)/5); if (fav) fav.textContent = Math.round(fb.value*100)+'%'; }
     if (ab){ ab.value = Math.max(0, Math.min(90, angleDeg)); if (abv) abv.textContent = Math.round(ab.value)+'°'; }
   }
   window.MitralSim = Object.assign(window.MitralSim || {}, { Physics });
 
   // =========================
-  // SECTION 19: SUTURING ENGINE
+  // SECTION 19: SUTURING ENGINE (+ Undo/Redo)
   // =========================
   const Suturing = {
-    stitches: [],
+    stitches: [], _redoStack: [],
     _lastMotion: {dx:0, dy:0, t:0},
-    _mmPerPx: () => {
-      const c = gl.canvas;
-      const h = Math.max(1, c.clientHeight);
-      const v = Math.tan(Camera.fov/2) * Camera.dist;
-      return v / (h/2);
-    },
+    _mmPerPx(){ const c=gl.canvas; const h=Math.max(1, c.clientHeight); const v=Math.tan(Camera.fov/2)*Camera.dist; return v/(h/2); },
+    _noteMotion(dx,dy){ this._lastMotion.dx = (this._lastMotion.dx*0.8)+(dx||0)*0.2; this._lastMotion.dy = (this._lastMotion.dy*0.8)+(dy||0)*0.2; this._lastMotion.t=performance.now(); },
 
-    init(){
-      const canvas = document.getElementById('gl');
-      canvas.addEventListener('pointermove', (e)=>{
-        this._lastMotion.dx = (this._lastMotion.dx*0.8) + (e.movementX||0)*0.2;
-        this._lastMotion.dy = (this._lastMotion.dy*0.8) + (e.movementY||0)*0.2;
-        this._lastMotion.t  = performance.now();
-      }, {passive:true});
-
-      canvas.addEventListener('click', (e)=>{
-        if (e.button !== 0) return;
-        const step = getSteps()[State.stepIndex];
-        if (step?.id?.startsWith('mark')) {
-          StepMachine.tryMarkAnnulus(e);
-        } else if (State.mode === 'assessment' || State.mode === 'practice' || State.mode === 'training') {
-          this.placeBiteFromEvent(e);
-        }
-      });
-    },
+    init(){ /* click routing handled in bindInteraction; we only need motion smoothing here */ },
 
     worldToScreen([x,y,z]){
       const mvp = M4.mul(Renderer.proj, M4.mul(Renderer.view, Renderer.model));
@@ -1953,158 +1266,93 @@ Caps: ${JSON.stringify(caps, null, 2)}
     },
 
     zoneScreenPolygon(){
-      const poly = Assets.mitral.landmarks.zones['leaflet-P2'];
-      const pts = [];
-      for (let i=0;i<poly.length;i+=3){
-        pts.push(this.worldToScreen([poly[i], poly[i+1], poly[i+2]]));
-      }
-      const half = pts.length/2|0;
-      return { pts, half };
+      const poly = Assets.mitral.landmarks.zones['leaflet-P2']; const pts=[];
+      for(let i=0;i<poly.length;i+=3){ pts.push(this.worldToScreen([poly[i],poly[i+1],poly[i+2]])); }
+      const half = pts.length/2|0; return { pts, half };
     },
 
-    _pinPoly(p, pts){
-      let inside = false;
-      for (let i=0, j=pts.length-1; i<pts.length; j=i++){
-        const xi=pts[i].x, yi=pts[i].y, xj=pts[j].x, yj=pts[j].y;
-        const intersect = ((yi>p.y)!==(yj>p.y)) && (p.x < (xj-xi)*(p.y-yi)/(yj-yi+1e-6)+xi);
-        if (intersect) inside = !inside;
-      }
-      return inside;
-    },
+    _pinPoly(p, pts){ let inside=false; for(let i=0, j=pts.length-1; i<pts.length; j=i++){
+      const xi=pts[i].x, yi=pts[i].y, xj=pts[j].x, yj=pts[j].y;
+      const intersect=((yi>p.y)!==(yj>p.y)) && (p.x < (xj-xi)*(p.y-yi)/(yj-yi+1e-6)+xi); if (intersect) inside=!inside; } return inside; },
 
-    _distPointPolyline(p, poly){
-      let best = Infinity;
-      for (let i=1;i<poly.length;i++){
-        const a = poly[i-1], b = poly[i];
-        const abx = b.x-a.x, aby=b.y-a.y;
-        const apx = p.x-a.x, apy=p.y-a.y;
-        const t = Math.max(0, Math.min(1, (apx*abx+apy*aby)/((abx*abx+aby*aby)||1)));
-        const qx = a.x + abx*t, qy = a.y + aby*t;
-        const d = Math.hypot(p.x-qx, p.y-qy);
-        if (d<best) best=d;
-      }
-      return best;
-    },
+    _distPointPolyline(p, poly){ let best=Infinity; for(let i=1;i<poly.length;i++){
+      const a=poly[i-1], b=poly[i]; const abx=b.x-a.x, aby=b.y-a.y; const apx=p.x-a.x, apy=p.y-a.y;
+      const t=Math.max(0, Math.min(1, (apx*abx+apy*aby)/((abx*abx+aby*aby)||1))); const qx=a.x+abx*t, qy=a.y+aby*t;
+      best=Math.min(best, Math.hypot(p.x-qx, p.y-qy)); } return best; },
 
-    _localTangent(p, outer){
-      let bestI = 1, bestD = Infinity;
-      for (let i=1;i<outer.length;i++){
-        const a=outer[i-1], b=outer[i];
-        const d = Math.abs( (b.y-a.y)*p.x - (b.x-a.x)*p.y + b.x*a.y - b.y*a.x ) / (Math.hypot(b.x-a.x, b.y-a.y)+1e-6);
-        if (d<bestD){ bestD=d; bestI=i; }
-      }
-      const a=outer[bestI-1], b=outer[bestI];
-      const tx=b.x-a.x, ty=b.y-a.y;
-      const L = Math.hypot(tx,ty)||1;
-      return [tx/L, ty/L];
-    },
+    _localTangent(p, outer){ let bestI=1, bestD=Infinity; for(let i=1;i<outer.length;i++){
+      const a=outer[i-1], b=outer[i]; const d=Math.abs((b.y-a.y)*p.x - (b.x-a.x)*p.y + b.x*a.y - b.y*a.x) / (Math.hypot(b.x-a.x,b.y-a.y)+1e-6);
+      if (d<bestD){ bestD=d; bestI=i; } } const a=outer[bestI-1], b=outer[bestI]; const tx=b.x-a.x, ty=b.y-a.y; const L=Math.hypot(tx,ty)||1; return [tx/L, ty/L]; },
 
     _nearestChordaePx(p){
-      const lines = (() => {
-        const c1 = Assets.mitral.meshes.chordae.P2_AL;
-        const c2 = Assets.mitral.meshes.chordae.P2_PM;
-        const out = [];
-        const push = (arr)=>{
-          for (let i=0;i<arr.length;i+=6){
-            out.push([
-              this.worldToScreen([arr[i],  arr[i+1],  arr[i+2]]),
-              this.worldToScreen([arr[i+3],arr[i+4],arr[i+5]])
-            ]);
-          }
-        };
-        push(c1); push(c2);
-        return out;
-      })();
-      let best = Infinity;
-      for (const [a,b] of lines){
-        const abx=b.x-a.x, aby=b.y-a.y;
-        const apx=p.x-a.x, apy=p.y-a.y;
-        const t = Math.max(0, Math.min(1, (apx*abx+apy*aby)/((abx*abx+aby*aby)||1)));
-        const qx=a.x+abx*t, qy=a.y+aby*t;
-        const d = Math.hypot(p.x-qx, p.y-qy);
-        if (d<best) best=d;
-      }
-      return best;
+      const lines=[]; const push=(arr)=>{ for(let i=0;i<arr.length;i+=6){
+        lines.push([ this.worldToScreen([arr[i],arr[i+1],arr[i+2]]), this.worldToScreen([arr[i+3],arr[i+4],arr[i+5]]) ]);
+      }}; push(Assets.mitral.meshes.chordae.P2_AL); push(Assets.mitral.meshes.chordae.P2_PM);
+      let best=Infinity; for (const [a,b] of lines){
+        const abx=b.x-a.x, aby=b.y-a.y; const apx=p.x-a.x, apy=p.y-a.y;
+        const t=Math.max(0, Math.min(1, (apx*abx+apy*aby)/((abx*abx+aby*aby)||1))); const qx=a.x+abx*t, qy=a.y+aby*t;
+        best = Math.min(best, Math.hypot(p.x-qx, p.y-qy));
+      } return best;
     },
 
     placeBiteFromEvent(e){
-      const rect = gl.canvas.getBoundingClientRect();
-      const p = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-
-      const { pts, half } = this.zoneScreenPolygon();
-      const outer = pts.slice(0, half);
-
+      const rect = gl.canvas.getBoundingClientRect(); const p = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      const { pts, half } = this.zoneScreenPolygon(); const outer = pts.slice(0, half), inner = pts.slice(half);
       const withinZone = this._pinPoly(p, pts);
 
-      const depthPx = this._distPointPolyline(p, outer);
-      const depthMm = depthPx * this._mmPerPx();
+      const depthPx = this._distPointPolyline(p, outer); const depthMm = depthPx * this._mmPerPx();
 
-      let mx=this._lastMotion.dx, my=this._lastMotion.dy;
-      if (performance.now() - this._lastMotion.t > 180) { mx = 0; my = 0; }
-      let angleDeg = 45;
-      if (Math.hypot(mx,my) > 2){
-        const tvec = this._localTangent(p, outer);
-        const L = Math.hypot(mx,my)||1; mx/=L; my/=L;
-        const dotp = Math.max(-1, Math.min(1, mx*tvec[0] + my*tvec[1]));
-        angleDeg = Math.acos(dotp) * 180/Math.PI;
+      let mx=this._lastMotion.dx, my=this._lastMotion.dy; if (performance.now()-this._lastMotion.t>180){ mx=0; my=0; }
+      let angleDeg=45;
+      if (Math.hypot(mx,my)>2){
+        const tvec=this._localTangent(p, outer); const L=Math.hypot(mx,my)||1; mx/=L; my/=L;
+        const dotp=Math.max(-1, Math.min(1, mx*tvec[0]+my*tvec[1])); angleDeg = Math.acos(dotp)*180/Math.PI;
       }
 
-      let spacingMm = null;
-      const prev = this.stitches.length ? this.stitches[this.stitches.length-1] : null;
-      if (prev) {
-        const dpx = Math.hypot(prev.screen.x - p.x, prev.screen.y - p.y);
-        spacingMm = dpx * this._mmPerPx();
-      }
+      let spacingMm=null; const prev=this.stitches.length ? this.stitches[this.stitches.length-1] : null;
+      if (prev){ const dpx=Math.hypot(prev.screen.x-p.x, prev.screen.y-p.y); spacingMm = dpx * this._mmPerPx(); }
 
-      const chordPx = this._nearestChordaePx(p);
-      const nearChord = chordPx * this._mmPerPx() < 2.0;
+      const chordPx = this._nearestChordaePx(p); const nearChord = chordPx * this._mmPerPx() < 2.0;
 
-      const step = getSteps()[State.stepIndex] || {};
-      const g = step.goal || {};
-      const errs = [];
-      const inDepth = g.biteDepthMm ? (depthMm >= g.biteDepthMm[0] && depthMm <= g.biteDepthMm[1]) : true;
-      if (!inDepth) errs.push(`Depth ${depthMm.toFixed(1)} mm (target ${g.biteDepthMm?.[0]}–${g.biteDepthMm?.[1]} mm)`);
-      const inAngle = g.angleDeg ? (angleDeg >= g.angleDeg[0] && angleDeg <= g.angleDeg[1]) : true;
-      if (!inAngle) errs.push(`Angle ${Math.round(angleDeg)}° (target ${g.angleDeg?.[0]}–${g.angleDeg?.[1]}°)`);
-      const inSpacing = (spacingMm==null || !g.spacingMm) ? true : (spacingMm >= g.spacingMm[0] && spacingMm <= g.spacingMm[1]);
-      if (!inSpacing && spacingMm!=null) errs.push(`Spacing ${spacingMm.toFixed(1)} mm (target ${g.spacingMm[0]}–${g.spacingMm[1]} mm)`);
-      if (!withinZone) errs.push('Outside target zone');
-      if (nearChord) errs.push('Chordal proximity risk');
+      const step = getSteps()[State.stepIndex] || {}; const g=step.goal||{}; const errs=[];
+      const inDepth = g.biteDepthMm ? (depthMm>=g.biteDepthMm[0] && depthMm<=g.biteDepthMm[1]) : true; if (!inDepth) errs.push(`Depth ${depthMm.toFixed(1)} mm (target ${g.biteDepthMm?.[0]}–${g.biteDepthMm?.[1]} mm)`);
+      const inAngle = g.angleDeg ? (angleDeg>=g.angleDeg[0] && angleDeg<=g.angleDeg[1]) : true; if (!inAngle) errs.push(`Angle ${Math.round(angleDeg)}° (target ${g.angleDeg?.[0]}–${g.angleDeg?.[1]}°)`);
+      const inSpacing = (spacingMm==null || !g.spacingMm) ? true : (spacingMm>=g.spacingMm[0] && spacingMm<=g.spacingMm[1]); if (!inSpacing && spacingMm!=null) errs.push(`Spacing ${spacingMm.toFixed(1)} mm (target ${g.spacingMm[0]}–${g.spacingMm[1]} mm)`);
+      if (!withinZone) errs.push('Outside target zone'); if (nearChord) errs.push('Chordal proximity risk');
+      const ok = errs.length===0;
 
-      const ok = errs.length === 0;
-
-      Overlay.ensureViewBox();
-      Overlay.drawStitch(p.x, p.y, ok ? 'ok' : (nearChord ? 'bad' : 'warn'));
-
+      Overlay.ensureViewBox(); Overlay.drawStitch(p.x, p.y, ok ? 'ok' : (nearChord ? 'bad' : 'warn'));
       const entry = { screen:p, angleDeg, depthMm, spacingMm, withinZone, nearChord, ok, errors:errs };
-      this.stitches.push(entry);
+      this.stitches.push(entry); this._redoStack.length = 0;
 
-      const accContribs = [];
-      if (g.biteDepthMm) accContribs.push(inDepth ? 1 : 0.4);
-      if (g.angleDeg)    accContribs.push(inAngle ? 1 : 0.4);
-      if (g.spacingMm && spacingMm!=null) accContribs.push(inSpacing ? 1 : 0.4);
-      accContribs.push(withinZone ? 1 : 0.2);
-      const accNow = accContribs.reduce((a,b)=>a+b,0) / accContribs.length;
-      const safetyDrop = (nearChord ? 0.15 : 0) + (Physics._collisions>0 ? 0.05 : 0);
-      Scoring.metrics.accuracy = Math.max(0, Math.min(1, (Scoring.metrics.accuracy*0.7 + accNow*0.3)));
-      Scoring.metrics.safety   = Math.max(0, Math.min(1, Scoring.metrics.safety - safetyDrop));
-      Scoring.compute();
-
+      Scoring.recomputeFromStitches();
       analyzeAndGuide({ type:'bite', data: entry });
       return entry;
-    }
+    },
+
+    // Redraw all stitches after undo/redo/reset
+    renderAll(){
+      Overlay.clear('hotspots');
+      for (const s of this.stitches){
+        Overlay.drawStitch(s.screen.x, s.screen.y, s.ok ? 'ok' : (s.nearChord ? 'bad' : 'warn'));
+      }
+    },
+
+    undo(){ const s=this.stitches.pop(); if (!s) return; this._redoStack.push(s); this.renderAll(); Scoring.recomputeFromStitches(); },
+    redo(){ const s=this._redoStack.pop(); if (!s) return; this.stitches.push(s); this.renderAll(); Scoring.recomputeFromStitches(); },
+    clear(){ this.stitches.length=0; this._redoStack.length=0; this.renderAll(); Scoring.recomputeFromStitches(); }
   };
   window.MitralSim = Object.assign(window.MitralSim||{}, { Suturing });
   Suturing.init();
 
   // =========================
-  // SECTION 20: SCENARIO & STEP MACHINE
+  // SECTION 20: SCENARIOS & STEP MACHINE
   // =========================
   const Scenarios = {
     "suturing-basic": {
       title: "Posterior leaflet interrupted suturing",
       steps: [
-        { id:"prep-01", title:"Identify target coaptation zone (P2)", highlight:{ region:"leaflet-P2", type:"zone" }, goal:{ gaze:true, duration:1500 }, rubric:{ weight:0.05 } },
+        { id:"prep-01", title:"Identify target coaptation zone (P2)", highlight:{ region:"leaflet-P2", type:"zone" }, goal:{ gaze:true, duration:1200 }, rubric:{ weight:0.05 } },
         { id:"mark-01", title:"Mark first annular anchor (P2 midpoint)", highlight:{ region:"annulus-P2", type:"ring" }, goal:{ clickWithinMm:2.0 }, rubric:{ weight:0.10, accuracyMm:[0,1,2,4] } },
         { id:"bite-01", title:"Place first leaflet bite at P2 (ventricular→atrial)", highlight:{ region:"leaflet-P2", type:"zone" }, goal:{ biteDepthMm:[1.5,3.0], angleDeg:[35,55], spacingMm:[2.0,3.0] }, rubric:{ weight:0.25, safetyPenaltyChordInjury:0.3 } },
         { id:"bite-02", title:"Second bite at P2, ~3 mm lateral", highlight:{ region:"leaflet-P2", type:"zone" }, goal:{ biteDepthMm:[1.5,3.0], angleDeg:[35,55], spacingMm:[2.5,3.5] }, rubric:{ weight:0.22, safetyPenaltyChordInjury:0.3 } }
@@ -2114,7 +1362,6 @@ Caps: ${JSON.stringify(caps, null, 2)}
   function getSteps(){ return Scenarios[State.scenario].steps; }
 
   const StepMachine = {
-    _timer: null, _markPlaced: false,
     current(){ return getSteps()[State.stepIndex]; },
     tryMarkAnnulus(clickEvent){
       const p = { x: clickEvent.clientX - gl.canvas.getBoundingClientRect().left,
@@ -2123,11 +1370,8 @@ Caps: ${JSON.stringify(caps, null, 2)}
       const targetS = Suturing.worldToScreen(targetW);
       const dpx = Math.hypot(p.x-targetS.x, p.y-targetS.y);
       const dmm = dpx * Suturing._mmPerPx();
-      const tol = this.current().goal.clickWithinMm || 2.0;
-      const ok = dmm <= tol;
-      Overlay.ensureViewBox();
-      Overlay.drawAimPoint(targetS.x, targetS.y, 'target');
-      Overlay.drawStitch(p.x, p.y, ok ? 'ok' : 'warn');
+      const tol = this.current().goal.clickWithinMm || 2.0; const ok = dmm <= tol;
+      Overlay.ensureViewBox(); Overlay.drawAimPoint(targetS.x, targetS.y); Overlay.drawStitch(p.x, p.y, ok ? 'ok' : 'warn');
       analyzeAndGuide({ type:'mark', data:{ screen:p, dmm, ok } });
       return ok;
     }
@@ -2135,9 +1379,10 @@ Caps: ${JSON.stringify(caps, null, 2)}
   window.MitralSim = Object.assign(window.MitralSim||{}, { Scenarios, getSteps, StepMachine });
 
   // =========================
-  // SECTION 21: AI CO-PILOT LOGIC (initial Overlay helper)
+  // SECTION 21: OVERLAY (Unified, Rich)
   // =========================
-  let Overlay = {
+  const _SVG = 'http://www.w3.org/2000/svg';
+  const Overlay = {
     svg: document.getElementById('overlay'),
     layers: {
       zones:    document.getElementById('layer-zones'),
@@ -2147,475 +1392,234 @@ Caps: ${JSON.stringify(caps, null, 2)}
       callouts: document.getElementById('layer-callouts')
     },
     ensureViewBox(){
+      if (!gl) return;
       const w = gl.canvas.clientWidth, h = gl.canvas.clientHeight;
       if (this.svg.getAttribute('viewBox') !== `0 0 ${w} ${h}`){
-        this.svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
-        this.svg.setAttribute('width',  w);
-        this.svg.setAttribute('height', h);
+        this.svg.setAttribute('viewBox', `0 0 ${w} ${h}`); this.svg.setAttribute('width', w); this.svg.setAttribute('height', h);
       }
     },
-    clear(){
-      for (const k of Object.keys(this.layers)) this.layers[k].innerHTML = '';
+    clear(layerName){
+      if (!layerName){ for (const k of Object.keys(this.layers)) this.layers[k].innerHTML=''; }
+      else { this.layers[layerName] && (this.layers[layerName].innerHTML=''); }
     },
+    mmPerPx(){ return Suturing._mmPerPx(); }, pxToMm(px){ return px * this.mmPerPx(); }, mmToPx(mm){ return mm / this.mmPerPx(); },
     drawZoneP2(){
-      this.ensureViewBox();
-      const { pts } = Suturing.zoneScreenPolygon();
+      this.ensureViewBox(); const { pts } = Suturing.zoneScreenPolygon();
       const d = pts.map((p,i)=> (i===0?`M ${p.x.toFixed(1)} ${p.y.toFixed(1)}`:`L ${p.x.toFixed(1)} ${p.y.toFixed(1)}`)).join(' ') + ' Z';
-      const path = document.createElementNS('http://www.w3.org/2000/svg','path');
-      path.setAttribute('d', d);
-      path.setAttribute('fill', 'rgba(0,209,255,0.18)');
-      path.setAttribute('stroke', 'rgba(0,209,255,0.85)');
-      path.setAttribute('stroke-width', '1.5');
-      path.setAttribute('filter','url(#f-glow)');
-      this.layers.zones.appendChild(path);
+      const path = document.createElementNS(_SVG,'path'); path.setAttribute('d', d);
+      path.setAttribute('fill','rgba(0,209,255,0.18)'); path.setAttribute('stroke','rgba(0,209,255,0.85)');
+      path.setAttribute('stroke-width','1.5'); path.setAttribute('filter','url(#f-glow)'); this.layers.zones.appendChild(path);
     },
     drawAimPoint(x,y){
-      const g = document.createElementNS('http://www.w3.org/2000/svg','g');
-      g.setAttribute('transform', `translate(${x},${y})`);
-      const c1 = document.createElementNS('http://www.w3.org/2000/svg','circle');
-      c1.setAttribute('r','6'); c1.setAttribute('fill', 'none'); c1.setAttribute('stroke','rgba(0,209,255,0.9)'); c1.setAttribute('stroke-width','2');
-      const c2 = document.createElementNS('http://www.w3.org/2000/svg','circle');
-      c2.setAttribute('r','2'); c2.setAttribute('fill','rgba(0,209,255,1)');
-      g.appendChild(c1); g.appendChild(c2);
-      this.layers.hotspots.appendChild(g);
+      const g=document.createElementNS(_SVG,'g'); g.setAttribute('transform',`translate(${x},${y})`);
+      const outer=document.createElementNS(_SVG,'circle'); outer.setAttribute('r','10'); outer.setAttribute('fill','none'); outer.setAttribute('stroke','rgba(0,209,255,0.9)'); outer.setAttribute('stroke-width','2'); outer.classList.add('pulse');
+      const inner=document.createElementNS(_SVG,'circle'); inner.setAttribute('r','3'); inner.setAttribute('fill','rgba(0,209,255,1)');
+      g.appendChild(outer); g.appendChild(inner); this.layers.hotspots.appendChild(g);
     },
-    drawStitch(x,y, state='ok'){
-      const color = state==='ok' ? 'var(--ok)' : (state==='bad' ? 'var(--bad)' : 'var(--warn)');
-      const g = document.createElementNS('http://www.w3.org/2000/svg','g');
-      g.setAttribute('transform', `translate(${x},${y})`);
-      const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
-      c.setAttribute('r','4'); c.setAttribute('fill','currentColor'); c.style.color = getComputedStyle(document.documentElement).getPropertyValue(color) || (state==='ok'?'#2ecc71':state==='bad'?'#ff4d4f':'#ffb020');
-      const ring = document.createElementNS('http://www.w3.org/2000/svg','circle');
-      ring.setAttribute('r','8'); ring.setAttribute('fill','none'); ring.setAttribute('stroke','currentColor'); ring.setAttribute('stroke-width','2'); ring.setAttribute('opacity','0.6');
-      g.appendChild(ring); g.appendChild(c);
-      this.layers.hotspots.appendChild(g);
+    drawStitch(x,y,state='ok'){
+      const color = state==='ok' ? '#2ecc71' : state==='bad' ? '#ff4d4f' : '#ffb020';
+      const g=document.createElementNS(_SVG,'g'); g.setAttribute('transform',`translate(${x},${y})`);
+      const ring=document.createElementNS(_SVG,'circle'); ring.setAttribute('r','8'); ring.setAttribute('fill','none'); ring.setAttribute('stroke',color); ring.setAttribute('stroke-width','2'); ring.setAttribute('opacity','0.7'); ring.classList.add('pulse');
+      const dot=document.createElementNS(_SVG,'circle'); dot.setAttribute('r','4'); dot.setAttribute('fill',color);
+      g.appendChild(ring); g.appendChild(dot); this.layers.hotspots.appendChild(g);
+      try { window.MitralSim?.Cues?.play(state === 'ok' ? 'ok' : state === 'bad' ? 'bad' : 'warn'); } catch(e){}
     },
-    drawArrow(a,b,label){
-      const L = document.createElementNS('http://www.w3.org/2000/svg','line');
-      L.setAttribute('x1',a.x); L.setAttribute('y1',a.y);
-      L.setAttribute('x2',b.x); L.setAttribute('y2',b.y);
-      L.setAttribute('stroke','rgba(255,255,255,0.8)'); L.setAttribute('stroke-width','1.5'); L.setAttribute('marker-end','url(#m-arrow)');
-      this.layers.rulers.appendChild(L);
-      if (label){
-        const t = document.createElementNS('http://www.w3.org/2000/svg','text');
-        t.setAttribute('x', (a.x+b.x)/2); t.setAttribute('y', (a.y+b.y)/2 - 6);
-        t.setAttribute('fill','#fff'); t.setAttribute('font-size','12');
-        t.textContent = label;
-        this.layers.rulers.appendChild(t);
+    drawRuler(a,b,labelMm){
+      const line=document.createElementNS(_SVG,'line'); line.setAttribute('x1',a.x); line.setAttribute('y1',a.y); line.setAttribute('x2',b.x); line.setAttribute('y2',b.y);
+      line.setAttribute('stroke','rgba(255,255,255,0.85)'); line.setAttribute('stroke-width','1.5'); line.setAttribute('marker-end','url(#m-arrow)'); this.layers.rulers.appendChild(line);
+      const mm=(typeof labelMm==='number')?labelMm:this.pxToMm(Math.hypot(b.x-a.x,b.y-a.y));
+      const tpl=document.getElementById('tpl-label'); if (tpl){
+        const node=tpl.content.firstElementChild.cloneNode(true); node.style.left=((a.x+b.x)/2)+'px'; node.style.top=((a.y+b.y)/2-10)+'px';
+        node.querySelector('[data-text]').textContent = mm.toFixed(1)+' mm';
+        const fo=document.createElementNS(_SVG,'foreignObject'); fo.setAttribute('x',Math.min(a.x,b.x)); fo.setAttribute('y',Math.min(a.y,b.y)-24); fo.setAttribute('width',Math.abs(a.x-b.x)+80); fo.setAttribute('height',40);
+        const host=document.createElement('div'); host.style.position='relative'; host.appendChild(node); fo.appendChild(host); this.layers.callouts.appendChild(fo);
       }
-    }
+    },
+    callout(x,y,title,body){
+      const tpl=document.getElementById('tpl-callout'); if (!tpl) return;
+      const node=tpl.content.firstElementChild.cloneNode(true); node.style.left=x+'px'; node.style.top=y+'px';
+      node.querySelector('[data-title]').textContent=title||'Guidance'; node.querySelector('[data-body]').textContent=body||'';
+      const fo=document.createElementNS(_SVG,'foreignObject'); fo.setAttribute('x',Math.max(0,x-120)); fo.setAttribute('y',Math.max(0,y-80)); fo.setAttribute('width',280); fo.setAttribute('height',160);
+      const host=document.createElement('div'); host.style.position='relative'; host.appendChild(node); fo.appendChild(host); this.layers.callouts.appendChild(fo);
+    },
+    heatmapFromPoints(points){ for (const p of points){ const blob=document.createElementNS(_SVG,'circle'); blob.setAttribute('cx',p.x); blob.setAttribute('cy',p.y); blob.setAttribute('r','10'); blob.setAttribute('fill','rgba(255,77,79,0.12)'); blob.setAttribute('stroke','rgba(255,77,79,0.22)'); blob.setAttribute('stroke-width','1'); this.layers.zones.appendChild(blob); } },
+    showHintsForCurrentStep(){ const step=getSteps()[State.stepIndex]; if (!step) return; this.clear(); if (State.mode!=='assessment' && State.flags.showHints){ if (step.highlight?.region==='leaflet-P2') this.drawZoneP2(); if (step.highlight?.region==='annulus-P2'){ const s=Suturing.worldToScreen(Assets.mitral.landmarks.annulusMid.P2); this.drawAimPoint(s.x,s.y);} } }
   };
   window.MitralSim = Object.assign(window.MitralSim||{}, { Overlay });
 
+  // =========================
+  // SECTION 22: SCORING
+  // =========================
+  const Scoring = {
+    weights:{ accuracy:0.5, safety:0.3, efficiency:0.2 },
+    metrics:{ accuracy:0.0, safety:1.0, efficiency:0.0 },
+    expectedSec:0, _tick:null,
+
+    ensureExpectedSec(){
+      if (this.expectedSec>0) return; let sec=0;
+      for (const step of getSteps()){
+        if (step?.rubric?.benchmarkSec){ sec+=step.rubric.benchmarkSec; continue; }
+        const id=String(step.id||''); if (id.startsWith('prep')) sec+=2; else if (id.startsWith('mark')) sec+=8; else if (id.startsWith('bite')) sec+=12; else sec+=10;
+      }
+      this.expectedSec=Math.max(10, sec);
+    },
+    updateEfficiency(){
+      this.ensureExpectedSec();
+      const elapsedMs = State.timerRunning ? (performance.now()-State.timerStart) : State.timerElapsed;
+      const elapsedSec = Math.max(1, elapsedMs/1000);
+      const r = this.expectedSec / elapsedSec;
+      this.metrics.efficiency = Math.max(0, Math.min(1, r));
+    },
+    recomputeFromStitches(){
+      const s=Suturing.stitches;
+      if (!s.length){ this.metrics.accuracy=0; this.metrics.safety=1; this.compute(); return; }
+      const okCount = s.filter(x=>x.ok).length;
+      this.metrics.accuracy = okCount / s.length;
+      const riskCount = s.filter(x=>x.nearChord).length;
+      this.metrics.safety = Math.max(0, 1 - 0.15 * riskCount);
+      this.compute();
+    },
+    compute(){
+      this.updateEfficiency();
+      const total = (this.metrics.accuracy*this.weights.accuracy) + (this.metrics.safety*this.weights.safety) + (this.metrics.efficiency*this.weights.efficiency);
+      State.score.total = Math.round(total*100);
+      updateScoreUI();
+    },
+    openResultsDialog(){
+      const acc=Math.round(this.metrics.accuracy*100), saf=Math.round(this.metrics.safety*100), eff=Math.round(this.metrics.efficiency*100);
+      const el=id=>document.getElementById(id);
+      el('res-total')&&(el('res-total').textContent=String(State.score.total));
+      el('res-accuracy')&&(el('res-accuracy').textContent=acc+'%');
+      el('res-safety')&&(el('res-safety').textContent=saf+'%');
+      el('res-efficiency')&&(el('res-efficiency').textContent=eff+'%');
+      el('res-accuracy-bar')&&(el('res-accuracy-bar').value=acc);
+      el('res-safety-bar')&&(el('res-safety-bar').value=saf);
+      el('res-efficiency-bar')&&(el('res-efficiency-bar').value=eff);
+      el('res-accuracy-txt')&&(el('res-accuracy-txt').textContent=acc+'%');
+      el('res-safety-txt')&&(el('res-safety-txt').textContent=saf+'%');
+      el('res-efficiency-txt')&&(el('res-efficiency-txt').textContent=eff+'%');
+      document.getElementById('dlg-results')?.showModal();
+    }
+  };
+  on('timer:start', () => { clearInterval(Scoring._tick); Scoring._tick = setInterval(()=> Scoring.compute(), 1000); });
+  on('timer:pause', () => { clearInterval(Scoring._tick); Scoring.compute(); });
+  on('timer:reset', () => { clearInterval(Scoring._tick); Scoring.metrics.efficiency=0; Scoring.compute(); });
+  window.MitralSim = Object.assign(window.MitralSim||{}, { Scoring });
+
+  // =========================
+  // SECTION 23: AI CO‑PILOT (Guidance)
+  // =========================
   function setMode(v){
-    State.mode = v;
-    emit('mode', v);
-    speak(`Mode: ${v}.`);
-    if (v === 'assessment') {
-      const el = document.getElementById('show-hints');
-      if (el) el.checked = false;
-      State.flags.showHints = false;
-    }
-    const modeIcon = document.getElementById('mode-icon');
-    if (modeIcon){
-      modeIcon.setAttribute('href', v==='training' ? '#i-training' : v==='practice' ? '#i-practice' : '#i-assessment');
-    }
+    State.mode=v; emit('mode', v); speak(`Mode: ${v}.`);
+    if (v==='assessment'){ document.getElementById('show-hints')?.removeAttribute('checked'); State.flags.showHints=false; }
+    const modeIcon=document.getElementById('mode-icon');
+    if (modeIcon){ modeIcon.setAttribute('href', v==='training' ? '#i-training' : v==='practice' ? '#i-practice' : '#i-assessment'); }
+    Overlay.showHintsForCurrentStep();
   }
 
   function gotoStep(i){
     State.stepIndex = Math.max(0, Math.min(i, getSteps().length-1));
-    updateStepUI();
-    Overlay.clear();
-
-    const step = getSteps()[State.stepIndex];
-    focusCameraToCurrentStep();
-
-    if (State.mode !== 'assessment' && State.flags.showHints){
-      if (step.highlight?.region === 'leaflet-P2') Overlay.drawZoneP2();
-      if (step.highlight?.region === 'annulus-P2'){
-        const s = Suturing.worldToScreen(Assets.mitral.landmarks.annulusMid.P2);
-        Overlay.drawAimPoint(s.x, s.y);
-      }
+    updateStepUI(); Overlay.clear(); focusCameraToCurrentStep();
+    const step = getSteps()[State.stepIndex]; if (State.mode!=='assessment' && State.flags.showHints){
+      if (step.highlight?.region==='leaflet-P2') Overlay.drawZoneP2();
+      if (step.highlight?.region==='annulus-P2'){ const s=Suturing.worldToScreen(Assets.mitral.landmarks.annulusMid.P2); Overlay.drawAimPoint(s.x,s.y); }
     }
-
-    const txt = `Step ${State.stepIndex+1}. ${step.title}`;
-    speak(txt);
-    document.getElementById('copilot-summary').textContent = step.title;
-
+    const txt = `Step ${State.stepIndex+1}. ${step.title}`; speak(txt); document.getElementById('copilot-summary').textContent = step.title;
     if (step.goal?.gaze && step.goal?.duration && State.mode==='training'){
       clearTimeout(gotoStep._gazeT);
-      gotoStep._gazeT = setTimeout(()=>{
-        analyzeAndGuide({ type:'gaze', data:{ ok:true } });
-      }, step.goal.duration);
+      gotoStep._gazeT = setTimeout(()=> analyzeAndGuide({ type:'gaze', data:{ ok:true } }), step.goal.duration);
     }
   }
 
   function addFeedback(msg, level='info'){
-    const box = document.getElementById('feedback');
-    const p = document.createElement('p');
+    const box=document.getElementById('feedback'); const p=document.createElement('p');
     const color = level==='bad' ? 'var(--bad)' : level==='warn' ? 'var(--warn)' : 'var(--ok)';
     p.innerHTML = `<span class="chip" style="border-color:${color}; color:${color}; background:rgba(255,255,255,0.05)">${msg}</span>`;
-    box.appendChild(p);
-    box.scrollTop = box.scrollHeight;
-    const live = document.getElementById('sr-assertive'); if (live) live.textContent = msg;
+    box.appendChild(p); box.scrollTop=box.scrollHeight;
+    const live=document.getElementById('sr-assertive'); if (live) live.textContent = msg;
   }
 
   function stepSuccess(){
-    const auto = document.getElementById('auto-advance')?.checked || State.flags.autoAdvance || State.mode==='assessment';
-    if (auto) {
-      const nxt = Math.min(State.stepIndex+1, getSteps().length-1);
-      if (nxt !== State.stepIndex) {
-        addFeedback('Step completed ✅', 'info'); speak('Good. Advancing.');
-        gotoStep(nxt);
-      }
-    } else {
-      addFeedback('Step completed ✅ Click Next to continue.', 'info');
-    }
+    const auto=document.getElementById('auto-advance')?.checked || State.flags.autoAdvance || State.mode==='assessment';
+    if (auto){ const nxt=Math.min(State.stepIndex+1, getSteps().length-1); if (nxt!==State.stepIndex){ addFeedback('Step completed ✅','info'); speak('Good. Advancing.'); gotoStep(nxt); } }
+    else { addFeedback('Step completed ✅ Click Next to continue.','info'); }
   }
 
   function analyzeAndGuide(event){
-    const step = getSteps()[State.stepIndex] || {};
-    const g = step.goal || {};
-
-    if (event.type === 'gaze'){
-      addFeedback('Target zone identified.','info'); stepSuccess(); return;
-    }
-
-    if (event.type === 'mark'){
-      const { dmm, ok } = event.data;
-      if (ok){ addFeedback(`Anchor marked within ${dmm.toFixed(1)} mm.`, 'info'); stepSuccess(); }
-      else  { addFeedback(`Mark is ${dmm.toFixed(1)} mm away (≤ ${g.clickWithinMm} mm). Re‑try nearer the cyan ring.`, 'warn'); speak('Move closer to the marked annular midpoint.'); }
-      return;
-    }
-
-    if (event.type === 'bite'){
-      const d = event.data;
-      const parts = [];
-      let level = 'info';
-
-      if (g.biteDepthMm){
-        if (d.depthMm < g.biteDepthMm[0]) { parts.push(`Depth ${d.depthMm.toFixed(1)} mm is too shallow (target ${g.biteDepthMm[0]}–${g.biteDepthMm[1]}).`); level='warn'; }
-        else if (d.depthMm > g.biteDepthMm[1]) { parts.push(`Depth ${d.depthMm.toFixed(1)} mm is too deep (target ${g.biteDepthMm[0]}–${g.biteDepthMm[1]}).`); level='warn'; }
-        else { parts.push(`Depth OK: ${d.depthMm.toFixed(1)} mm.`); }
-      }
-      if (g.angleDeg){
-        if (d.angleDeg < g.angleDeg[0] || d.angleDeg > g.angleDeg[1]) { parts.push(`Angle ${Math.round(d.angleDeg)}° outside ${g.angleDeg[0]}–${g.angleDeg[1]}°. Before clicking, drag slightly in your intended bite direction.`); level='warn'; }
-        else { parts.push(`Angle OK: ${Math.round(d.angleDeg)}°.`); }
-      }
-      if (g.spacingMm && d.spacingMm!=null){
-        if (d.spacingMm < g.spacingMm[0] || d.spacingMm > g.spacingMm[1]) { parts.push(`Spacing ${d.spacingMm.toFixed(1)} mm outside ${g.spacingMm[0]}–${g.spacingMm[1]} mm.`); level='warn'; }
-        else { parts.push(`Spacing OK: ${d.spacingMm.toFixed(1)} mm.`); }
-      }
+    const step=getSteps()[State.stepIndex] || {}; const g=step.goal||{};
+    if (event.type==='gaze'){ addFeedback('Target zone identified.','info'); stepSuccess(); return; }
+    if (event.type==='mark'){ const { dmm, ok }=event.data; if (ok){ addFeedback(`Anchor marked within ${dmm.toFixed(1)} mm.`,'info'); stepSuccess(); } else { addFeedback(`Mark is ${dmm.toFixed(1)} mm away (≤ ${g.clickWithinMm} mm). Re‑try nearer the cyan ring.`,'warn'); speak('Move closer to the annular midpoint.'); } return; }
+    if (event.type==='bite'){
+      const d=event.data; const parts=[]; let level='info';
+      if (g.biteDepthMm){ if (d.depthMm<g.biteDepthMm[0]) { parts.push(`Depth ${d.depthMm.toFixed(1)} mm too shallow (target ${g.biteDepthMm[0]}–${g.biteDepthMm[1]}).`); level='warn'; }
+        else if (d.depthMm>g.biteDepthMm[1]) { parts.push(`Depth ${d.depthMm.toFixed(1)} mm too deep (target ${g.biteDepthMm[0]}–${g.biteDepthMm[1]}).`); level='warn'; }
+        else { parts.push(`Depth OK: ${d.depthMm.toFixed(1)} mm.`); } }
+      if (g.angleDeg){ if (d.angleDeg<g.angleDeg[0] || d.angleDeg>g.angleDeg[1]) { parts.push(`Angle ${Math.round(d.angleDeg)}° outside ${g.angleDeg[0]}–${g.angleDeg[1]}°. Drag slightly in your intended bite direction before clicking.`); level='warn'; } else { parts.push(`Angle OK: ${Math.round(d.angleDeg)}°.`); } }
+      if (g.spacingMm && d.spacingMm!=null){ if (d.spacingMm<g.spacingMm[0] || d.spacingMm>g.spacingMm[1]) { parts.push(`Spacing ${d.spacingMm.toFixed(1)} mm outside ${g.spacingMm[0]}–${g.spacingMm[1]} mm.`); level='warn'; } else { parts.push(`Spacing OK: ${d.spacingMm.toFixed(1)} mm.`); } }
       if (!d.withinZone){ parts.push('Outside target zone — aim within cyan band.'); level='warn'; }
       if (d.nearChord){ parts.push('Chordal proximity risk — move more central and avoid chordae.'); level='bad'; }
-
       addFeedback(parts.join(' '), level);
-
-      const ok =
-        (!g.biteDepthMm || (d.depthMm>=g.biteDepthMm[0] && d.depthMm<=g.biteDepthMm[1])) &&
-        (!g.angleDeg    || (d.angleDeg>=g.angleDeg[0]   && d.angleDeg<=g.angleDeg[1]))   &&
-        (!g.spacingMm   || (d.spacingMm!=null && d.spacingMm>=g.spacingMm[0] && d.spacingMm<=g.spacingMm[1])) &&
-        d.withinZone && !d.nearChord;
-
-      if (ok){
-        stepSuccess();
-      } else {
-        if (State.mode==='practice'){
-          const tries = Suturing.stitches.length;
-          if (tries>=2 && g.angleDeg){ g.angleDeg = [g.angleDeg[0]-2, g.angleDeg[1]+2]; addFeedback('Hints relaxed: ±2° angle tolerance.', 'info'); }
-        }
-        speak('Review feedback and try again in the highlighted zone.');
-      }
+      const ok = (!g.biteDepthMm || (d.depthMm>=g.biteDepthMm[0] && d.depthMm<=g.biteDepthMm[1])) &&
+                 (!g.angleDeg    || (d.angleDeg>=g.angleDeg[0]   && d.angleDeg<=g.angleDeg[1])) &&
+                 (!g.spacingMm   || (d.spacingMm!=null && d.spacingMm>=g.spacingMm[0] && d.spacingMm<=g.spacingMm[1])) &&
+                 d.withinZone && !d.nearChord;
+      if (ok){ stepSuccess(); }
+      else if (State.mode==='practice'){ const tries=Suturing.stitches.length; if (tries>=2 && g.angleDeg){ g.angleDeg=[g.angleDeg[0]-2, g.angleDeg[1]+2]; addFeedback('Hints relaxed: ±2° angle tolerance.','info'); } speak('Review feedback and try again in the highlighted zone.'); }
       return;
     }
   }
 
   document.getElementById('btn-prev-step')?.addEventListener('click', ()=> gotoStep(State.stepIndex-1));
   document.getElementById('btn-next-step')?.addEventListener('click', ()=> gotoStep(State.stepIndex+1));
-
   document.getElementById('mode')?.addEventListener('change', e=> setMode(e.target.value));
   document.getElementById('scenario')?.addEventListener('change', e=>{ State.scenario=e.target.value; emit('scenario', e.target.value); gotoStep(0); });
-
   document.getElementById('voice-on')?.addEventListener('change', e=> State.flags.voice = e.target.checked);
   document.getElementById('auto-advance')?.addEventListener('change', e=> State.flags.autoAdvance = e.target.checked);
-  document.getElementById('show-hints')?.addEventListener('change', e=> { State.flags.showHints = e.target.checked; gotoStep(State.stepIndex); });
+  document.getElementById('show-hints')?.addEventListener('change', e=> { State.flags.showHints = e.target.checked; Overlay.showHintsForCurrentStep(); });
 
   window.MitralSim = Object.assign(window.MitralSim||{}, { setMode, gotoStep, analyzeAndGuide });
 
-  setTimeout(()=> gotoStep(State.stepIndex||0), 0);
-  window.addEventListener('resize', ()=> Overlay.ensureViewBox());
-
   // =========================
-  // SECTION 22: SCORING & RUBRIC
-  // =========================
-  const Scoring = {
-    weights: { accuracy: 0.5, safety: 0.3, efficiency: 0.2 },
-    metrics: { accuracy: 0.0, safety: 1.0, efficiency: 0.0 },
-    expectedSec: 0, _tick: null,
-
-    ensureExpectedSec(){
-      if (this.expectedSec > 0) return;
-      let sec = 0;
-      for (const step of getSteps()){
-        if (step?.rubric?.benchmarkSec) { sec += step.rubric.benchmarkSec; continue; }
-        const id = String(step.id||'');
-        if (id.startsWith('prep')) sec += 2;
-        else if (id.startsWith('mark')) sec += 8;
-        else if (id.startsWith('bite')) sec += 12;
-        else sec += 10;
-      }
-      this.expectedSec = Math.max(10, sec);
-    },
-
-    updateEfficiency(){
-      this.ensureExpectedSec();
-      const elapsedMs = State.timerRunning ? (performance.now() - State.timerStart) : State.timerElapsed;
-      const elapsedSec = Math.max(1, elapsedMs/1000);
-      const r = this.expectedSec / elapsedSec;
-      this.metrics.efficiency = Math.max(0, Math.min(1, Math.min(1, r)));
-    },
-
-    compute(){
-      this.updateEfficiency();
-      const total =
-        (this.metrics.accuracy  * this.weights.accuracy) +
-        (this.metrics.safety    * this.weights.safety)   +
-        (this.metrics.efficiency* this.weights.efficiency);
-      State.score.total = Math.round(total * 100);
-      updateScoreUI();
-    },
-
-    openResultsDialog(){
-      const acc = Math.round(this.metrics.accuracy*100);
-      const saf = Math.round(this.metrics.safety*100);
-      const eff = Math.round(this.metrics.efficiency*100);
-      const el = id => document.getElementById(id);
-
-      el('res-total')        && (el('res-total').textContent = String(State.score.total));
-      el('res-accuracy')     && (el('res-accuracy').textContent = acc + '%');
-      el('res-safety')       && (el('res-safety').textContent = saf + '%');
-      el('res-efficiency')   && (el('res-efficiency').textContent = eff + '%');
-
-      el('res-accuracy-bar') && (el('res-accuracy-bar').value = acc);
-      el('res-safety-bar')   && (el('res-safety-bar').value   = saf);
-      el('res-efficiency-bar')&&(el('res-efficiency-bar').value= eff);
-
-      el('res-accuracy-txt') && (el('res-accuracy-txt').textContent = acc + '%');
-      el('res-safety-txt')   && (el('res-safety-txt').textContent   = saf + '%');
-      el('res-efficiency-txt')&&(el('res-efficiency-txt').textContent= eff + '%');
-
-      document.getElementById('dlg-results')?.showModal();
-    }
-  };
-
-  on('timer:start', () => { clearInterval(Scoring._tick); Scoring._tick = setInterval(()=> Scoring.compute(), 1000); });
-  on('timer:pause', () => { clearInterval(Scoring._tick); Scoring.compute(); });
-  on('timer:reset', () => { clearInterval(Scoring._tick); Scoring.metrics.efficiency = 0; Scoring.compute(); });
-
-  window.MitralSim = Object.assign(window.MitralSim||{}, { Scoring });
-
-  // =========================
-  // SECTION 23: OVERLAY & ANNOTATION RENDERER (upgrade Overlay)
-  // =========================
-  const _SVG = 'http://www.w3.org/2000/svg';
-
-  // Extend the existing Overlay (no re-declare!)
-  Overlay.ensureViewBox = function(){
-    const w = gl.canvas.clientWidth, h = gl.canvas.clientHeight;
-    if (this.svg.getAttribute('viewBox') !== `0 0 ${w} ${h}`){
-      this.svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
-      this.svg.setAttribute('width',  w);
-      this.svg.setAttribute('height', h);
-    }
-  };
-  Overlay.clear = function(layerName){
-    if (!layerName) { for (const k of Object.keys(this.layers)) this.layers[k].innerHTML = ''; }
-    else { this.layers[layerName] && (this.layers[layerName].innerHTML = ''); }
-  };
-  Overlay.mmPerPx = function(){ return Suturing._mmPerPx(); };
-  Overlay.pxToMm  = function(px){ return px * this.mmPerPx(); };
-  Overlay.mmToPx  = function(mm){ return mm / this.mmPerPx(); };
-  Overlay.drawZoneP2 = function(){
-    this.ensureViewBox();
-    const { pts } = Suturing.zoneScreenPolygon();
-    const d = pts.map((p,i)=> (i===0?`M ${p.x.toFixed(1)} ${p.y.toFixed(1)}`:`L ${p.x.toFixed(1)} ${p.y.toFixed(1)}`)).join(' ') + ' Z';
-    const path = document.createElementNS(_SVG,'path');
-    path.setAttribute('d', d);
-    path.setAttribute('fill', 'rgba(0,209,255,0.18)');
-    path.setAttribute('stroke', 'rgba(0,209,255,0.85)');
-    path.setAttribute('stroke-width', '1.5');
-    path.setAttribute('filter','url(#f-glow)');
-    this.layers.zones.appendChild(path);
-  };
-  Overlay.drawAimPoint = function(x,y){
-    const g = document.createElementNS(_SVG,'g');
-    g.setAttribute('transform', `translate(${x},${y})`);
-    const outer = document.createElementNS(_SVG,'circle');
-    outer.setAttribute('r','10'); outer.setAttribute('fill','none'); outer.setAttribute('stroke','rgba(0,209,255,0.9)');
-    outer.setAttribute('stroke-width','2'); outer.classList.add('pulse');
-    const inner = document.createElementNS(_SVG,'circle');
-    inner.setAttribute('r','3'); inner.setAttribute('fill','rgba(0,209,255,1)');
-    g.appendChild(outer); g.appendChild(inner);
-    this.layers.hotspots.appendChild(g);
-  };
-  Overlay.drawStitch = function(x,y,state='ok'){
-    const color = state==='ok' ? '#2ecc71' : state==='bad' ? '#ff4d4f' : '#ffb020';
-    const g = document.createElementNS(_SVG,'g');
-    g.setAttribute('transform', `translate(${x},${y})`);
-    const ring = document.createElementNS(_SVG,'circle');
-    ring.setAttribute('r','8'); ring.setAttribute('fill','none'); ring.setAttribute('stroke', color);
-    ring.setAttribute('stroke-width','2'); ring.setAttribute('opacity','0.7'); ring.classList.add('pulse');
-    const dot = document.createElementNS(_SVG,'circle');
-    dot.setAttribute('r','4'); dot.setAttribute('fill', color);
-    g.appendChild(ring); g.appendChild(dot);
-    this.layers.hotspots.appendChild(g);
-    try { window.MitralSim?.Cues?.play(state === 'ok' ? 'ok' : state === 'bad' ? 'bad' : 'warn'); } catch(e){}
-  };
-  Overlay.drawRuler = function(a, b, labelMm){
-    const line = document.createElementNS(_SVG,'line');
-    line.setAttribute('x1', a.x); line.setAttribute('y1', a.y);
-    line.setAttribute('x2', b.x); line.setAttribute('y2', b.y);
-    line.setAttribute('stroke','rgba(255,255,255,0.85)'); line.setAttribute('stroke-width','1.5');
-    line.setAttribute('marker-end','url(#m-arrow)');
-    this.layers.rulers.appendChild(line);
-
-    const mm = (typeof labelMm === 'number') ? labelMm : this.pxToMm(Math.hypot(b.x-a.x, b.y-a.y));
-    const tpl = document.getElementById('tpl-label');
-    if (tpl){
-      const node = tpl.content.firstElementChild.cloneNode(true);
-      node.style.left = ((a.x+b.x)/2)+'px'; node.style.top = ((a.y+b.y)/2 - 10)+'px';
-      node.querySelector('[data-text]').textContent = mm.toFixed(1) + ' mm';
-      const fo = document.createElementNS(_SVG,'foreignObject');
-      fo.setAttribute('x', Math.min(a.x,b.x)); fo.setAttribute('y', Math.min(a.y,b.y)-24);
-      fo.setAttribute('width', Math.abs(a.x-b.x)+80); fo.setAttribute('height', 40);
-      const host = document.createElement('div'); host.style.position='relative'; host.appendChild(node);
-      fo.appendChild(host);
-      this.layers.callouts.appendChild(fo);
-    }
-  };
-  Overlay.callout = function(x, y, title, body){
-    const tpl = document.getElementById('tpl-callout');
-    if (!tpl) return;
-    const node = tpl.content.firstElementChild.cloneNode(true);
-    node.style.left = x+'px'; node.style.top = y+'px';
-    node.querySelector('[data-title]').textContent = title || 'Guidance';
-    node.querySelector('[data-body]').textContent  = body  || '';
-    const fo = document.createElementNS(_SVG,'foreignObject');
-    fo.setAttribute('x', Math.max(0,x-120)); fo.setAttribute('y', Math.max(0,y-80));
-    fo.setAttribute('width', 280); fo.setAttribute('height', 160);
-    const host = document.createElement('div'); host.style.position='relative'; host.appendChild(node);
-    fo.appendChild(host);
-    this.layers.callouts.appendChild(fo);
-  };
-  Overlay.heatmapFromPoints = function(points){
-    for (const p of points){
-      const blob = document.createElementNS(_SVG,'circle');
-      blob.setAttribute('cx', p.x); blob.setAttribute('cy', p.y);
-      blob.setAttribute('r','10');
-      blob.setAttribute('fill','rgba(255,77,79,0.12)');
-      blob.setAttribute('stroke','rgba(255,77,79,0.22)');
-      blob.setAttribute('stroke-width','1');
-      this.layers.zones.appendChild(blob);
-    }
-  };
-  Overlay.showHintsForCurrentStep = function(){
-    const step = getSteps()[State.stepIndex]; if (!step) return;
-    this.clear();
-    if (State.mode !== 'assessment' && State.flags.showHints){
-      if (step.highlight?.region === 'leaflet-P2') this.drawZoneP2();
-      if (step.highlight?.region === 'annulus-P2'){
-        const s = Suturing.worldToScreen(Assets.mitral.landmarks.annulusMid.P2);
-        this.drawAimPoint(s.x, s.y);
-      }
-    }
-  };
-  window.addEventListener('resize', ()=> Overlay.ensureViewBox());
-  window.MitralSim = Object.assign(window.MitralSim||{}, { Overlay });
-
-  // =========================
-  // SECTION 24: AUDIO/VOICE & TEXT-TO-CUE
+  // SECTION 24: AUDIO / SPEECH
   // =========================
   const Cues = {
-    manifest: null, haptics: null, ctx: null, unlocked: false,
+    manifest:null, haptics:null, ctx:null, unlocked:false,
     init(){
-      try { const a = document.getElementById('audio-manifest'); this.manifest = a ? JSON.parse(a.textContent) : { policy:{}, events:{} }; } catch(e){ this.manifest = { policy:{}, events:{} }; }
-      try { const h = document.getElementById('haptics-presets'); this.haptics = h ? JSON.parse(h.textContent) : {}; } catch(e){ this.haptics = {}; }
-      const unlock = () => { if (this.unlocked) return; this.unlocked = true; try { this.ctx = new (window.AudioContext||window.webkitAudioContext)(); } catch(e){} };
-      window.addEventListener('pointerdown', unlock, { once:true });
-      window.addEventListener('keydown',      unlock, { once:true });
+      try{ const a=document.getElementById('audio-manifest'); this.manifest = a ? JSON.parse(a.textContent) : { policy:{}, events:{} }; }catch(e){ this.manifest={policy:{},events:{}}; }
+      try{ const h=document.getElementById('haptics-presets'); this.haptics = h ? JSON.parse(h.textContent) : {}; }catch(e){ this.haptics={}; }
+      const unlock=()=>{ if (this.unlocked) return; this.unlocked=true; try{ this.ctx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} };
+      window.addEventListener('pointerdown', unlock, { once:true }); window.addEventListener('keydown', unlock, { once:true });
     },
     play(name){
-      const ev = this.manifest?.events?.[name];
-      const tryBeep = () => this.beep(name);
-      if (ev){
-        const el = document.getElementById(ev.el);
-        if (el && typeof el.play === 'function'){
-          try {
-            el.volume = Math.max(0, Math.min(1, ev.volume ?? 0.2));
-            if ('playbackRate' in el) el.playbackRate = ev.rate ?? 1.0;
-            el.currentTime = 0;
-            const p = el.play();
-            if (p && typeof p.catch === 'function') p.catch(tryBeep);
-          } catch(_){ tryBeep(); }
-        } else { tryBeep(); }
-      } else { tryBeep(); }
+      const ev=this.manifest?.events?.[name]; const tryBeep=()=>this.beep(name);
+      if (ev){ const el=document.getElementById(ev.el);
+        if (el && typeof el.play==='function'){ try{ el.volume=Math.max(0,Math.min(1,ev.volume??0.2)); if('playbackRate'in el) el.playbackRate=ev.rate??1.0; el.currentTime=0; const p=el.play(); if (p && typeof p.catch==='function') p.catch(tryBeep); }catch(_){ tryBeep(); } }
+        else tryBeep();
+      } else tryBeep();
       this.vibrate(name);
     },
-    vibrate(name){
-      try {
-        const pat = this.haptics?.[name] || this.haptics?.[name.replace('step-','')];
-        if (navigator.vibrate && Array.isArray(pat)) navigator.vibrate(pat);
-      } catch(_) {}
-    },
-    beep(name){
-      if (!this.ctx) return;
-      const ctx = this.ctx;
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      const now = ctx.currentTime;
-      let freq = 520;
-      if (name==='warn') freq = 340;
-      if (name==='bad')  freq = 240;
-      if (name==='collision') freq = 180;
-      o.frequency.setValueAtTime(freq, now);
-      g.gain.setValueAtTime(0.0001, now);
-      g.gain.exponentialRampToValueAtTime(0.08, now + 0.01);
-      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
-      o.connect(g).connect(ctx.destination);
-      o.start(now); o.stop(now + 0.15);
-    }
+    vibrate(name){ try{ const pat=this.haptics?.[name] || this.haptics?.[name.replace('step-','')]; if (navigator.vibrate && Array.isArray(pat)) navigator.vibrate(pat); }catch(_){ } },
+    beep(name){ if (!this.ctx) return; const ctx=this.ctx; const o=ctx.createOscillator(); const g=ctx.createGain(); const now=ctx.currentTime;
+      let freq=520; if (name==='warn') freq=340; if (name==='bad') freq=240; if (name==='collision') freq=180;
+      o.frequency.setValueAtTime(freq, now); g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.08, now+0.01); g.gain.exponentialRampToValueAtTime(0.0001, now+0.14);
+      o.connect(g).connect(ctx.destination); o.start(now); o.stop(now+0.15); }
   };
   Cues.init();
 
   function speak(text, opts={}){
-    const tooltip = document.getElementById('tooltip');
-    if (tooltip) tooltip.textContent = text;
-
+    const tooltip=document.getElementById('tooltip'); if (tooltip) tooltip.textContent=text;
     const voiceEnabled = !!(State.flags.voice || document.getElementById('voice-on')?.checked);
     if (voiceEnabled && 'speechSynthesis' in window){
-      try {
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text);
-        u.rate   = opts.rate   || 1.0;
-        u.pitch  = opts.pitch  || 1.0;
-        u.volume = opts.volume || 1.0;
-        window.speechSynthesis.speak(u);
-      } catch(_) {}
+      try{ window.speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text);
+        u.rate=opts.rate||1.0; u.pitch=opts.pitch||1.0; u.volume=opts.volume||1.0; window.speechSynthesis.speak(u);
+      }catch(_){}
     }
   }
+  document.getElementById('btn-start')?.addEventListener('click', ()=>{ startTimer(); Cues.play('ok'); speak('Session started.'); });
+  document.getElementById('btn-pause')?.addEventListener('click', ()=>{ pauseTimer(); Cues.play('ui-click'); speak('Paused.'); });
 
-  document.getElementById('btn-start')?.addEventListener('click', ()=> Cues.play('ok'));
-  document.getElementById('btn-pause')?.addEventListener('click', ()=> Cues.play('ui-click'));
-  document.getElementById('btn-reset')?.addEventListener('click', ()=> Cues.play('bad'));
-  document.getElementById('btn-undo')?.addEventListener('click', ()=> Cues.play('ui-click'));
-  document.getElementById('btn-redo')?.addEventListener('click', ()=> Cues.play('ui-click'));
-
-  if (window.MitralSim && typeof window.MitralSim.gotoStep === 'function'){
-    const _goto = window.MitralSim.gotoStep;
-    window.MitralSim.gotoStep = function(i){
-      Cues.play('step-advance');
-      return _goto(i);
-    };
+  if (window.MitralSim && typeof window.MitralSim.gotoStep==='function'){
+    const _goto=window.MitralSim.gotoStep; window.MitralSim.gotoStep=function(i){ Cues.play('step-advance'); return _goto(i); };
   }
   window.MitralSim = Object.assign(window.MitralSim||{}, { Cues, speak });
 
@@ -2624,149 +1628,60 @@ Caps: ${JSON.stringify(caps, null, 2)}
   // =========================
   const Persistence = {
     gather(){
-      const elapsedMs = State.timerRunning ? (performance.now() - State.timerStart) : State.timerElapsed;
+      const elapsedMs = State.timerRunning ? (performance.now()-State.timerStart) : State.timerElapsed;
       return {
-        meta: {
-          app: "MitralSim", version: "0.1", savedAt: new Date().toISOString(),
-          userAgent: navigator.userAgent, caps: { dpr: caps.dpr, webgl2: caps.webgl2, maxTexSize: caps.maxTexSize, info: caps.info }
-        },
-        state: {
-          mode: State.mode, scenario: State.scenario, stepIndex: State.stepIndex,
-          timer: { running: State.timerRunning, elapsedMs: Math.round(elapsedMs) }, flags: State.flags
-        },
-        scoring: { metrics: Scoring.metrics, total: State.score.total },
-        camera: { target: [...Camera.target], yaw: Camera.yaw, pitch: Camera.pitch, dist: Camera.dist, fov: Camera.fov },
+        meta: { app:"MitralSim", version:"0.2", savedAt:new Date().toISOString(), userAgent:navigator.userAgent, caps:{ dpr:caps.dpr, webgl2:caps.webgl2, maxTexSize:caps.maxTexSize, info:caps.info } },
+        state: { mode:State.mode, scenario:State.scenario, stepIndex:State.stepIndex, timer:{ running:State.timerRunning, elapsedMs:Math.round(elapsedMs) }, flags:State.flags },
+        scoring: { metrics:Scoring.metrics, total:State.score.total },
+        camera: { target:[...Camera.target], yaw:Camera.yaw, pitch:Camera.pitch, dist:Camera.dist, fov:Camera.fov },
         suturing: { stitches: Suturing.stitches }
       };
     },
     saveFullLocal(){
-      const payload = this.gather();
-      try {
-        const key = 'mitralsim-session-full';
-        const history = JSON.parse(localStorage.getItem(key) || '[]');
-        history.unshift(payload);
-        while (history.length > 5) history.pop();
-        localStorage.setItem(key, JSON.stringify(history));
-        addFeedback('Session saved locally.', 'info');
-      } catch (e) {
-        addFeedback('Local save failed (storage full?).', 'warn');
-      }
+      const payload=this.gather();
+      try{ const key='mitralsim-session-full'; const history=JSON.parse(localStorage.getItem(key)||'[]'); history.unshift(payload); while(history.length>5) history.pop(); localStorage.setItem(key, JSON.stringify(history)); } catch(e){}
     },
     exportJSON(){
-      const data = JSON.stringify(this.gather(), null, 2);
-      const blob = new Blob([data], { type: 'application/json' });
-      const ts = new Date().toISOString().replace(/[:.]/g,'-');
-      this._downloadBlob(blob, `mitralsim_session_${ts}.json`);
+      const data=JSON.stringify(this.gather(), null, 2); const blob=new Blob([data], {type:'application/json'});
+      const ts=new Date().toISOString().replace(/[:.]/g,'-'); this._downloadBlob(blob, `mitralsim_session_${ts}.json`);
     },
     async exportPNGSnapshot(){
       try {
-        Overlay.ensureViewBox();
-        const W = gl.drawingBufferWidth;
-        const H = gl.drawingBufferHeight;
-        const off = document.createElement('canvas');
-        off.width = W; off.height = H;
-        const ctx = off.getContext('2d');
-        ctx.drawImage(gl.canvas, 0, 0, W, H);
-        const svgOrig = document.getElementById('overlay');
-        const svgClone = svgOrig.cloneNode(true);
-        svgClone.setAttribute('width',  W);
-        svgClone.setAttribute('height', H);
-        const svgStr = new XMLSerializer().serializeToString(svgClone);
-        const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
-        const svgUrl  = URL.createObjectURL(svgBlob);
-        await new Promise((resolve, reject)=>{
-          const img = new Image();
-          img.onload = () => { ctx.drawImage(img, 0, 0, W, H); URL.revokeObjectURL(svgUrl); resolve(); };
-          img.onerror = reject;
-          img.src = svgUrl;
-        });
-        ctx.save();
-        ctx.font = '16px ' + getComputedStyle(document.body).fontFamily;
-        ctx.fillStyle = 'rgba(255,255,255,0.9)';
-        ctx.strokeStyle = 'rgba(0,0,0,0.6)';
-        ctx.lineWidth = 3;
-        const label = `MitralSim • ${Scenarios[State.scenario].title} • Score ${State.score.total}`;
-        ctx.strokeText(label, 14, H - 20);
-        ctx.fillText(label, 14, H - 20);
-        ctx.restore();
-        const blob = await new Promise(res => off.toBlob(res, 'image/png', 0.96));
-        const ts = new Date().toISOString().replace(/[:.]/g,'-');
-        this._downloadBlob(blob, `mitralsim_snapshot_${ts}.png`);
-        Cues.play('ui-click');
-        addFeedback('Snapshot exported.', 'info');
-      } catch (e) {
-        console.error(e);
-        addFeedback('Snapshot export failed.', 'bad');
-      }
+        Overlay.ensureViewBox(); const W=gl.drawingBufferWidth, H=gl.drawingBufferHeight;
+        const off=document.createElement('canvas'); off.width=W; off.height=H; const ctx=off.getContext('2d');
+        ctx.drawImage(gl.canvas, 0,0,W,H);
+        const svgOrig=document.getElementById('overlay'); const svgClone=svgOrig.cloneNode(true); svgClone.setAttribute('width',W); svgClone.setAttribute('height',H);
+        const svgStr=new XMLSerializer().serializeToString(svgClone); const svgBlob=new Blob([svgStr], {type:'image/svg+xml;charset=utf-8'}); const svgUrl=URL.createObjectURL(svgBlob);
+        await new Promise((resolve,reject)=>{ const img=new Image(); img.onload=()=>{ ctx.drawImage(img,0,0,W,H); URL.revokeObjectURL(svgUrl); resolve(); }; img.onerror=reject; img.src=svgUrl; });
+        ctx.save(); ctx.font='16px '+ getComputedStyle(document.body).fontFamily; ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.strokeStyle='rgba(0,0,0,0.6)'; ctx.lineWidth=3;
+        const label=`MitralSim • ${Scenarios[State.scenario].title} • Score ${State.score.total}`; ctx.strokeText(label,14,H-20); ctx.fillText(label,14,H-20); ctx.restore();
+        const blob=await new Promise(res => off.toBlob(res, 'image/png', 0.96)); const ts=new Date().toISOString().replace(/[:.]/g,'-');
+        this._downloadBlob(blob, `mitralsim_snapshot_${ts}.png`); Cues.play('ui-click');
+      } catch(e){ console.error(e); }
     },
-    _downloadBlob(blob, filename){
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = filename;
-      document.body.appendChild(a); a.click(); a.remove();
-      URL.revokeObjectURL(url);
-    }
+    _downloadBlob(blob, filename){ const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
   };
   window.MitralSim = Object.assign(window.MitralSim||{}, { Persistence });
-  function exportSnapshot(){ Persistence.exportPNGSnapshot(); }
-  window.exportSnapshot = exportSnapshot;
-
-  document.getElementById('btn-export-json')?.addEventListener('click', (e)=>{ e.preventDefault(); Persistence.exportJSON(); });
-  document.getElementById('btn-export-png')?.addEventListener('click',  (e)=>{ e.preventDefault(); Persistence.exportPNGSnapshot(); });
-  document.getElementById('btn-reset')?.addEventListener('click', ()=> Persistence.saveFullLocal());
-  window.addEventListener('beforeunload', ()=> { try { Persistence.saveFullLocal(); } catch(_) {} });
 
   // =========================
-  // SECTION 26: ACCESSIBILITY & LOCALIZATION
+  // SECTION 26: A11Y & I18N
   // =========================
-  const STR = {
-    en: { start:"Start", pause:"Pause", next:"Next", prev:"Prev", snapshot:"Snapshot saved.", resultsOpened:"Scorecard opened." },
-    vi: { start:"Bắt đầu", pause:"Tạm dừng", next:"Tiếp", prev:"Lùi", snapshot:"Đã lưu ảnh.", resultsOpened:"Đã mở bảng điểm." }
-  };
-  let Locale = (navigator.language || 'en').toLowerCase().startsWith('vi') ? 'vi' : 'en';
+  const STR = { en:{ start:"Start", pause:"Pause", next:"Next", prev:"Prev", snapshot:"Snapshot saved.", resultsOpened:"Scorecard opened." }, vi:{ start:"Bắt đầu", pause:"Tạm dừng", next:"Tiếp", prev:"Lùi", snapshot:"Đã lưu ảnh.", resultsOpened:"Đã mở bảng điểm." } };
+  let Locale = (navigator.language||'en').toLowerCase().startsWith('vi') ? 'vi' : 'en';
   function t(key){ return (STR[Locale] && STR[Locale][key]) || STR.en[key] || key; }
-  function setLocale(lang){ Locale = STR[lang] ? lang : 'en'; }
-
-  function announce(msg, assertive=false){
-    const node = document.getElementById(assertive ? 'sr-assertive' : 'sr-live'); if (!node) return;
-    node.textContent = ''; setTimeout(()=> node.textContent = msg, 20);
-  }
-
-  window.addEventListener('keydown', (e)=>{
-    if (e.target && /input|select|textarea/i.test(e.target.tagName)) return;
-    const key = e.key.toLowerCase();
-    if (key === 'p'){ e.preventDefault(); document.getElementById('dlg-preferences')?.showModal(); speak('Preferences opened.'); }
-    else if (key === 'r'){ e.preventDefault(); document.getElementById('dlg-results')?.showModal(); announce(t('resultsOpened')); }
-    else if (key === 's'){ e.preventDefault(); exportSnapshot(); announce(t('snapshot')); }
-    else if (key === 'h'){ const el = document.getElementById('show-hints'); if (el){ el.checked = !el.checked; State.flags.showHints = el.checked; Overlay.showHintsForCurrentStep(); speak(el.checked?'Hints on':'Hints off'); } }
-    else if (key === 'v'){ const el = document.getElementById('voice-on'); if (el){ el.checked = !el.checked; State.flags.voice = el.checked; speak(el.checked?'Voice on':'Voice off'); } }
-    else if (key === 'a'){ const el = document.getElementById('auto-advance'); if (el){ el.checked = !el.checked; State.flags.autoAdvance = el.checked; speak(el.checked?'Auto-advance on':'Auto-advance off'); } }
-    else if (key === 'c'){ const el = document.getElementById('toggle-contrast'); if (el){ el.checked = !el.checked; document.getElementById('app')?.classList.toggle('high-contrast', el.checked); speak(el.checked?'High contrast on':'High contrast off'); } }
-    else if (e.shiftKey && key === 'd'){ Debug.toggle(); }
-  });
-
-  window.MitralSim = Object.assign(window.MitralSim||{}, { STR, t, setLocale, announce });
+  function announce(msg, assertive=false){ const node=document.getElementById(assertive?'sr-assertive':'sr-live'); if (!node) return; node.textContent=''; setTimeout(()=> node.textContent=msg, 20); }
+  window.MitralSim = Object.assign(window.MitralSim||{}, { STR, t, announce });
 
   // =========================
-  // SECTION 27: DEBUG & QA PANEL
+  // SECTION 27: DEBUG PANEL
   // =========================
   const Debug = {
-    enabled: false, _raf: null, fps: 0, _lastT: 0, _samples: [],
+    enabled:false, _raf:null, fps:0, _lastT:0, _samples:[],
     init(){
-      const el = document.createElement('div');
-      el.id = 'dbg-panel';
-      el.style.cssText = `
-        position:fixed; right:16px; bottom:16px; z-index:1000;
-        width: 320px; max-width: 92vw;
-        background: rgba(10,16,32,.85); color:#eaf2ff; border:1px solid rgba(255,255,255,.14);
-        border-radius:12px; padding:12px; box-shadow: var(--shadow-2); font:12px/1.4 var(--font-ui);
-        display:none; backdrop-filter: blur(6px);
-      `;
-      el.innerHTML = `
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-          <strong>Debug & QA</strong>
-          <button id="dbg-close" class="ghost" style="padding:6px 10px;">Close</button>
-        </div>
+      const el=document.createElement('div'); el.id='dbg-panel';
+      el.style.cssText=`position:fixed; right:16px; bottom:16px; z-index:1000; width:320px; max-width:92vw; background:rgba(10,16,32,.85); color:#eaf2ff; border:1px solid rgba(255,255,255,.14); border-radius:12px; padding:12px; box-shadow:var(--shadow-2); font:12px/1.4 var(--font-ui); display:none; backdrop-filter:blur(6px);`;
+      el.innerHTML=`
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><strong>Debug & QA</strong><button id="dbg-close" class="ghost" style="padding:6px 10px;">Close</button></div>
         <div class="grid" style="gap:6px;">
           <div>FPS: <b id="dbg-fps">—</b> • dpr: ${caps.dpr}</div>
           <div>GPU: <small>${(caps.info && (caps.info.RENDERER || caps.info.VENDOR)) || '—'}</small></div>
@@ -2786,183 +1701,106 @@ Caps: ${JSON.stringify(caps, null, 2)}
           <button id="dbg-results" class="ghost">Open results</button>
           <button id="dbg-json" class="ghost">Export JSON</button>
           <button id="dbg-png" class="ghost">Snapshot PNG</button>
-        </div>
-      `;
+        </div>`;
       document.body.appendChild(el);
-
       el.querySelector('#dbg-close').addEventListener('click', ()=> this.toggle(false));
       el.querySelector('#dbg-clear').addEventListener('click', ()=> Overlay.clear());
       el.querySelector('#dbg-results').addEventListener('click', ()=> Scoring.openResultsDialog());
       el.querySelector('#dbg-json').addEventListener('click', ()=> Persistence.exportJSON());
       el.querySelector('#dbg-png').addEventListener('click', ()=> Persistence.exportPNGSnapshot());
+      el.querySelector('#dbg-zone').addEventListener('change', (e)=> { if (e.target.checked) Overlay.drawZoneP2(); else Overlay.clear('zones'); });
+      el.querySelector('#dbg-heat').addEventListener('change', (e)=> { if (e.target.checked) Overlay.heatmapFromPoints(Suturing.stitches.map(s=>s.screen)); else Overlay.clear('zones'); });
 
-      el.querySelector('#dbg-zone').addEventListener('change', (e)=> {
-        if (e.target.checked) { Overlay.drawZoneP2(); }
-        else { Overlay.clear('zones'); }
-      });
-      el.querySelector('#dbg-heat').addEventListener('change', (e)=> {
-        if (e.target.checked) { Overlay.heatmapFromPoints(Suturing.stitches.map(s=>s.screen)); }
-        else { Overlay.clear('zones'); }
-      });
+      if (!Physics._origStep){ Physics._origStep=Physics.step; Physics.step=(dt)=>{ if (this.enabled && document.getElementById('dbg-freeze')?.checked) dt=0; Physics._origStep.call(Physics, dt); }; }
 
-      if (!Physics._origStep){
-        Physics._origStep = Physics.step;
-        Physics.step = (dt)=>{
-          if (this.enabled && document.getElementById('dbg-freeze')?.checked) dt = 0;
-          Physics._origStep.call(Physics, dt);
-        };
-      }
-
-      const cross = document.createElement('div');
-      cross.id = 'dbg-crosshair';
-      cross.style.cssText = `position:fixed; width:1px; height:1px; pointer-events:none; display:none; z-index:999; outline: 9999px solid rgba(0,0,0,0);`;
-      const h = document.createElement('div'); const v = document.createElement('div');
-      Object.assign(h.style, { position:'absolute', left:'-1000px', right:'-1000px', top:'0', height:'1px', background:'rgba(0,209,255,0.6)' });
-      Object.assign(v.style, { position:'absolute', top:'-1000px', bottom:'-1000px', left:'0', width:'1px', background:'rgba(0,209,255,0.6)' });
-      cross.appendChild(h); cross.appendChild(v);
-      document.body.appendChild(cross);
-
-      window.addEventListener('pointermove', (e)=>{
-        if (!this.enabled || !document.getElementById('dbg-cross')?.checked) return;
-        cross.style.display = 'block';
-        cross.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
-      });
+      const cross=document.createElement('div'); cross.id='dbg-crosshair';
+      cross.style.cssText=`position:fixed; width:1px; height:1px; pointer-events:none; display:none; z-index:999; outline:9999px solid rgba(0,0,0,0);`;
+      const h=document.createElement('div'), v=document.createElement('div');
+      Object.assign(h.style,{position:'absolute',left:'-1000px',right:'-1000px',top:'0',height:'1px',background:'rgba(0,209,255,0.6)'});
+      Object.assign(v.style,{position:'absolute',top:'-1000px',bottom:'-1000px',left:'0',width:'1px',background:'rgba(0,209,255,0.6)'});
+      cross.appendChild(h); cross.appendChild(v); document.body.appendChild(cross);
+      window.addEventListener('pointermove', (e)=>{ if (!this.enabled || !document.getElementById('dbg-cross')?.checked) return; cross.style.display='block'; cross.style.transform=`translate(${e.clientX}px, ${e.clientY}px)`; });
 
       this._tick();
     },
-    toggle(force){
-      const want = (typeof force === 'boolean') ? force : !this.enabled;
-      this.enabled = want;
-      const el = document.getElementById('dbg-panel');
-      if (el) el.style.display = want ? 'block' : 'none';
-      const cross = document.getElementById('dbg-crosshair');
-      if (cross && !want) cross.style.display = 'none';
-      if (want) this._tick();
-    },
-    _tick(){
-      cancelAnimationFrame(this._raf);
-      const step = (t)=>{
-        if (this._lastT){ this._samples.push(1000/(t - this._lastT)); if (this._samples.length>30) this._samples.shift(); }
-        this._lastT = t;
-        const fps = this._samples.length ? (this._samples.reduce((a,b)=>a+b,0)/this._samples.length) : 0;
-        this.fps = fps;
-        if (this.enabled){
-          const set = (id, v) => { const el=document.getElementById(id); if (el) el.textContent = v; };
-          set('dbg-fps', fps.toFixed(1));
-          set('dbg-dist', Camera.dist.toFixed(1));
-          set('dbg-yaw',  (Camera.yaw*180/Math.PI).toFixed(0)+'°');
-          set('dbg-pitch',(Camera.pitch*180/Math.PI).toFixed(0)+'°');
-          set('dbg-stitches', String(Suturing.stitches.length));
-          set('dbg-coll', String(Math.max(0, Math.round(Physics._collisions))));
-        }
-        this._raf = requestAnimationFrame(step);
-      };
-      this._raf = requestAnimationFrame(step);
-    }
+    toggle(force){ const want=(typeof force==='boolean')?force:!this.enabled; this.enabled=want;
+      const el=document.getElementById('dbg-panel'); if (el) el.style.display = want ? 'block' : 'none';
+      const cross=document.getElementById('dbg-crosshair'); if (cross && !want) cross.style.display='none'; if (want) this._tick(); },
+    _tick(){ cancelAnimationFrame(this._raf); const step=(t)=>{ if (this._lastT){ this._samples.push(1000/(t-this._lastT)); if (this._samples.length>30) this._samples.shift(); } this._lastT=t;
+        const fps=this._samples.length?(this._samples.reduce((a,b)=>a+b,0)/this._samples.length):0; this.fps=fps;
+        if (this.enabled){ document.getElementById('dbg-fps')?.replaceChildren(document.createTextNode(String(fps.toFixed(1))));
+          document.getElementById('dbg-dist')?.replaceChildren(document.createTextNode(String(Camera.dist.toFixed(1))));
+          document.getElementById('dbg-yaw')?.replaceChildren(document.createTextNode(String((Camera.yaw*180/Math.PI).toFixed(0))+'°'));
+          document.getElementById('dbg-pitch')?.replaceChildren(document.createTextNode(String((Camera.pitch*180/Math.PI).toFixed(0))+'°'));
+          document.getElementById('dbg-stitches')?.replaceChildren(document.createTextNode(String(Suturing.stitches.length)));
+          document.getElementById('dbg-coll')?.replaceChildren(document.createTextNode(String(Math.max(0, Math.round(Physics._collisions))))); }
+        this._raf=requestAnimationFrame(step); }; this._raf=requestAnimationFrame(step); }
   };
-  Debug.init();
-  window.Debug = Debug;
-  window.MitralSim = Object.assign(window.MitralSim||{}, { Debug });
+  Debug.init(); window.Debug = Debug; window.MitralSim = Object.assign(window.MitralSim||{}, { Debug });
 
   // =========================
-  // SECTION 28: INIT & SAFE FALLBACK
+  // SECTION 28: INIT & WIRING
   // =========================
   function updateScoreUI(){
-    const s = State.score;
-    const acc = Math.round((Scoring.metrics.accuracy||0)*100);
-    const saf = Math.round((Scoring.metrics.safety||0)*100);
-    const eff = (Scoring.metrics.efficiency==null) ? '—' : (Math.round(Scoring.metrics.efficiency*100)+'%');
-    const $ = id => document.getElementById(id);
-    $('score')           && ( $('score').textContent           = String(s.total) );
-    $('score-accuracy')  && ( $('score-accuracy').textContent  = acc + '%' );
-    $('score-safety')    && ( $('score-safety').textContent    = saf + '%' );
-    $('score-efficiency')&& ( $('score-efficiency').textContent= eff );
+    const s=State.score; const acc=Math.round((Scoring.metrics.accuracy||0)*100); const saf=Math.round((Scoring.metrics.safety||0)*100);
+    const eff=(Scoring.metrics.efficiency==null)?'—':(Math.round(Scoring.metrics.efficiency*100)+'%');
+    const $=id=>document.getElementById(id);
+    $('score')&&($('score').textContent=String(s.total)); $('score-accuracy')&&($('score-accuracy').textContent=acc+'%');
+    $('score-safety')&&($('score-safety').textContent=saf+'%'); $('score-efficiency')&&($('score-efficiency').textContent=eff);
   }
 
   function updateStepUI(){
-    const steps = getSteps();
-    const $ = id => document.getElementById(id);
-    $('step-idx')   && ( $('step-idx').textContent   = String(State.stepIndex+1) );
-    $('step-total') && ( $('step-total').textContent = String(steps.length) );
-    $('step-title') && ( $('step-title').textContent = steps[State.stepIndex]?.title || '—' );
+    const steps=getSteps(); const $=id=>document.getElementById(id);
+    $('step-idx')&&($('step-idx').textContent=String(State.stepIndex+1));
+    $('step-total')&&($('step-total').textContent=String(steps.length));
+    $('step-title')&&($('step-title').textContent=steps[State.stepIndex]?.title || '—');
 
-    const ol = $('step-list'); if (!ol) return;
-    ol.innerHTML = '';
-    steps.forEach((s, idx) => {
-      const li = document.createElement('li');
-      li.textContent = s.title;
-      if (idx === State.stepIndex) li.classList.add('active');
-      li.tabIndex = 0;
-      li.addEventListener('click', () => gotoStep(idx));
-      li.addEventListener('keydown', e => { if (e.key==='Enter' || e.key===' ') { e.preventDefault(); gotoStep(idx); }});
-      ol.appendChild(li);
-    });
+    const ol=$('step-list'); if (!ol) return; ol.innerHTML=''; steps.forEach((s,idx)=>{ const li=document.createElement('li'); li.textContent=s.title; if (idx===State.stepIndex) li.classList.add('active'); li.tabIndex=0; li.addEventListener('click',()=>gotoStep(idx)); li.addEventListener('keydown',e=>{ if (e.key==='Enter'||e.key===' '){ e.preventDefault(); gotoStep(idx);} }); ol.appendChild(li); });
   }
 
   function bindContextLossHandlers(){
-    const canvas = gl?.canvas || document.getElementById('gl');
-    if (!canvas) return;
-    canvas.addEventListener('webglcontextlost', (e) => {
-      e.preventDefault();
-      const note = document.createElement('div');
-      note.id = 'ctx-lost';
-      note.style.cssText = 'position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.6);color:#fff;font:14px/1.4 var(--font-ui);z-index:99';
-      note.innerHTML = '<div class="panel" style="padding:12px;"><strong>Renderer paused</strong><br/>Graphics context was lost. Attempting to restore…</div>';
-      document.querySelector('.stage')?.appendChild(note);
+    const canvas=gl?.canvas||document.getElementById('gl'); if (!canvas) return;
+    canvas.addEventListener('webglcontextlost', (e)=>{ e.preventDefault(); const note=document.createElement('div'); note.id='ctx-lost';
+      note.style.cssText='position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.6);color:#fff;font:14px/1.4 var(--font-ui);z-index:99';
+      note.innerHTML='<div class="panel" style="padding:12px;"><strong>Renderer paused</strong><br/>Graphics context was lost. Attempting to restore…</div>'; document.querySelector('.stage')?.appendChild(note);
     }, { once:true });
-
-    canvas.addEventListener('webglcontextrestored', () => {
-      document.getElementById('ctx-lost')?.remove();
-      try {
-        initRenderer();
-        onResize();
-        Overlay.ensureViewBox?.();
-        gotoStep(State.stepIndex || 0);
-        requestAnimationFrame(renderFrame);
-        speak('Graphics restored.');
-      } catch(e) {
-        console.error('Context restore failed:', e);
-        speak('Could not restore graphics.');
-      }
+    canvas.addEventListener('webglcontextrestored', ()=>{ document.getElementById('ctx-lost')?.remove();
+      try{ initRenderer(); onResize(); Overlay.ensureViewBox?.(); gotoStep(State.stepIndex||0); requestAnimationFrame(renderFrame); speak('Graphics restored.'); }
+      catch(e){ console.error('Context restore failed:', e); speak('Could not restore graphics.'); }
     }, { once:true });
   }
 
   function wireTopBar(){
-    const $ = id => document.getElementById(id);
-    $('open-onboarding')?.addEventListener('click', () => $('dlg-onboarding')?.showModal());
-    $('ob-ok')?.addEventListener('click', () => $('dlg-onboarding')?.close());
-    $('take-screenshot')?.addEventListener('click', () => exportSnapshot());
-    const contrast = $('toggle-contrast');
+    const $=id=>document.getElementById(id);
+    $('open-onboarding')?.addEventListener('click', ()=> $('dlg-onboarding')?.showModal());
+    $('ob-ok')?.addEventListener('click', ()=> $('dlg-onboarding')?.close());
+    $('take-screenshot')?.addEventListener('click', ()=> Persistence.exportPNGSnapshot());
+    const contrast=$('toggle-contrast');
     if (contrast){
-      contrast.addEventListener('change', e => {
-        $('app')?.classList.toggle('high-contrast', e.target.checked);
-        State.flags.highContrast = !!e.target.checked;
-        announce(e.target.checked ? 'High contrast enabled.' : 'High contrast disabled.');
-      });
-      contrast.checked = !!State.flags.highContrast;
-      $('app')?.classList.toggle('high-contrast', contrast.checked);
+      contrast.addEventListener('change', e=>{ $('app')?.classList.toggle('high-contrast', e.target.checked); State.flags.highContrast=!!e.target.checked; announce(e.target.checked?'High contrast enabled.':'High contrast disabled.'); });
+      contrast.checked=!!State.flags.highContrast; $('app')?.classList.toggle('high-contrast', contrast.checked);
     }
+    $('btn-undo')?.addEventListener('click', ()=> Suturing.undo());
+    $('btn-redo')?.addEventListener('click', ()=> Suturing.redo());
+    $('btn-reset')?.addEventListener('click', ()=> resetSession());
+    $('btn-export-json')?.addEventListener('click', (e)=>{ e.preventDefault(); Persistence.exportJSON(); });
+    $('btn-export-png')?.addEventListener('click', (e)=>{ e.preventDefault(); Persistence.exportPNGSnapshot(); });
+  }
+
+  function resetSession(){
+    pauseTimer(); resetTimer(); Suturing.clear(); Overlay.clear(); gotoStep(0); Scoring.metrics={ accuracy:0, safety:1, efficiency:0 }; Scoring.compute();
+    Cues.play('bad'); speak('Session reset.');
   }
 
   function boot(){
-    initRenderer();
-    bindInteraction();
-    bindContextLossHandlers();
-    Overlay.ensureViewBox?.();
-    setMode(State.mode);
-    gotoStep(0);
-    updateStepUI();
-    updateScoreUI();
-    requestAnimationFrame(renderFrame);
-
-    const seen = localStorage.getItem('mitralsim-onboarded') === '1';
-    if (!seen) { document.getElementById('dlg-onboarding')?.showModal(); localStorage.setItem('mitralsim-onboarded','1'); }
+    initRenderer(); bindInteraction(); bindContextLossHandlers(); Overlay.ensureViewBox?.();
+    setMode(State.mode); gotoStep(0); updateStepUI(); updateScoreUI(); requestAnimationFrame(renderFrame);
+    const seen=localStorage.getItem('mitralsim-onboarded')==='1'; if (!seen){ document.getElementById('dlg-onboarding')?.showModal(); localStorage.setItem('mitralsim-onboarded','1'); }
     speak('Ready. Select a scenario and press Start to begin.');
   }
 
   wireTopBar();
-  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', boot, { once:true }); }
-  else { boot(); }
+  if (document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', boot, { once:true }); } else { boot(); }
   </script>
 </body>
 </html>
