@@ -6,11 +6,91 @@
        ========================= -->
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
   <title>Mitral Valve Repair Simulator — Training & Assessment</title>
-  <meta name="description" content="Web-based, high-fidelity mitral valve repair & replacement simulation for training and assessment with AI co-pilot guidance." />
-  <meta name="theme-color" content="#0b1220" />
-  <!-- Preload fonts (optional, system stack recommended), favicon/data URL placeholders -->
-  <!-- <link rel="preload" as="font" href="data:font/woff2;base64,..." crossorigin> -->
+
+  <!-- Discoverability -->
+  <meta name="description" content="A single-file, web-based, high-fidelity simulator for mitral valve repair & replacement. Practice suturing with stepwise AI co‑pilot guidance, rich annotations, and objective scoring." />
+  <meta name="keywords" content="mitral valve, cardiac surgery, cardiothoracic, suturing, ring annuloplasty, valve replacement, simulation, education, training, assessment, WebGL, medical VR, surgical skills" />
+  <meta name="application-name" content="MitralSim" />
+  <meta name="generator" content="MitralSim Single-File Blueprint" />
+  <meta name="referrer" content="no-referrer-when-downgrade" />
+  <meta name="color-scheme" content="dark light" />
+
+  <!-- Theming (dark/light-aware) -->
+  <meta name="theme-color" content="#0b1220" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#0e1530" media="(prefers-color-scheme: light)" />
+
+  <!-- iOS/Android PWA niceties (kept local/single-file friendly) -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="MitralSim" />
+  <meta name="format-detection" content="telephone=no" />
+
+  <!-- Canonical & social (replace URL after you publish to GitHub Pages) -->
+  <!-- TODO: update both href/content to your actual GitHub Pages URL, e.g., https://USERNAME.github.io/mitralsim/ -->
+  <link rel="canonical" href="https://example.com/mitralsim/" />
+  <meta property="og:url" content="https://example.com/mitralsim/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="MitralSim" />
+  <meta property="og:title" content="Mitral Valve Repair Simulator — Training & Assessment" />
+  <meta property="og:description" content="High‑fidelity, browser‑based suturing practice with AI co‑pilot, highlights, and objective scoring." />
+  <meta property="og:locale" content="en_US" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Mitral Valve Repair Simulator — Training & Assessment" />
+  <meta name="twitter:description" content="High‑fidelity, browser‑based suturing practice with AI co‑pilot, highlights, and objective scoring." />
+
+  <!-- Single-file favicons (SVG data URIs) -->
+  <!-- General favicon -->
+  <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3CradialGradient id='g' cx='50%25' cy='45%25' r='60%25'%3E%3Cstop offset='0' stop-color='%2300d1ff'/%3E%3Cstop offset='1' stop-color='%2300a0c6'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='32' cy='32' r='30' fill='url(%23g)'/%3E%3Cpath d='M16 32c5-8 11-12 16-12s11 4 16 12c-5 8-11 12-16 12s-11-4-16-12z' fill='%230b1220' opacity='.9'/%3E%3Ccircle cx='32' cy='32' r='30' fill='none' stroke='%23ffffff' stroke-opacity='.25'/%3E%3C/svg%3E" />
+  <!-- Pinned tab / mask icon for Safari (monochrome) -->
+  <link rel="mask-icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M16 32c5-8 11-12 16-12s11 4 16 12c-5 8-11 12-16 12s-11-4-16-12z' fill='%23000'/%3E%3Ccircle cx='32' cy='32' r='30' fill='none' stroke='%23000'/%3E%3C/svg%3E"
+        color="#00d1ff" />
+
+  <!-- Optional: preload future in-document assets if/when you add them
+       <link rel="preload" as="image" href="data:image/png;base64,..." />
+       <link rel="preload" as="font" href="data:font/woff2;base64,..." type="font/woff2" crossorigin>
+  -->
+
+  <!-- Structured data for rich results (SoftwareApplication + HowTo for the suturing task) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "name": "MitralSim",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "Web",
+        "isAccessibleForFree": true,
+        "description": "High-fidelity, browser-based simulator for mitral valve repair and replacement with AI co-pilot guidance, overlays, and scoring.",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "publisher": { "@type": "Organization", "name": "MitralSim Project" }
+      },
+      {
+        "@type": "HowTo",
+        "name": "Posterior leaflet interrupted suturing (training)",
+        "description": "Stepwise guidance with highlights, bite zones, and safety checks.",
+        "totalTime": "PT10M",
+        "tool": [
+          { "@type": "HowToTool", "name": "Needle driver" },
+          { "@type": "HowToTool", "name": "Forceps" },
+          { "@type": "HowToTool", "name": "Scissors" }
+        ],
+        "supply": [
+          { "@type": "HowToSupply", "name": "3-0 polypropylene suture" }
+        ],
+        "step": [
+          { "@type": "HowToStep", "name": "Identify target coaptation zone (P2)", "text": "Focus the field; confirm target zone is highlighted." },
+          { "@type": "HowToStep", "name": "Mark first annular anchor", "text": "Mark P2 midpoint on the annulus within 2 mm tolerance." },
+          { "@type": "HowToStep", "name": "Needle bite: ventricular → atrial at P2", "text": "Maintain 35–55° needle angle; bite depth 1.5–3.0 mm; spacing 2–3 mm." }
+        ]
+      }
+    ]
+  }
+  </script>
 
   <!-- =========================
        SECTION 02: HEAD • DESIGN TOKENS & GLOBAL CSS
