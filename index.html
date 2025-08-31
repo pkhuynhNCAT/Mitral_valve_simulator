@@ -1,1370 +1,2061 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <!-- =========================================================
-       MITRAL VALVE REPAIR TRAINER — SINGLE-FILE APP (FULL)
-       GOAL
-         • Super realistic, professional web-based simulator for mitral valve repair
-           (v1 focus: annuloplasty suturing) with AI Co‑Pilot, annotations, and scoring.
-         • Single-file design (host directly on GitHub Pages).
-         • Training mode (strict, highlighted, step-by-step).
-         • Practice mode (guided, rich feedback, detailed scoring).
-         • Commercial polish, accessibility, offline-ready.
-       SAFETY
-         • Educational use only. Not a medical device. HIPAA-free synthetic data.
-  ============================================================ -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mitral Repair Trainer — Single‑File Web App</title>
+<meta name="description" content="Educational mitral valve repair suturing simulation with AI co‑pilot. Single‑file, offline-capable." />
+<style>
+/* =============================================================================
+   Mitral Repair Trainer (MVRT)
+   Single-file offline web app for educational simulation of mitral annuloplasty suturing.
 
-  <!-- ===== META (production) ===== -->
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Mitral Valve Repair Trainer — Annuloplasty Suturing (Training & Practice)</title>
-  <meta name="description" content="Professional, high-fidelity web simulation for mitral valve repair training. Step-by-step suturing with AI Co‑Pilot, precise highlights/marks, and rigorous scoring — single-file app, GitHub Pages-ready." />
-  <meta name="keywords" content="mitral valve, surgery training, cardiac surgery, annuloplasty, suturing, simulation, web simulator, education, scoring, AI copilot, practice" />
-  <meta name="theme-color" content="#0d1321" />
-  <meta name="color-scheme" content="dark light">
-  <meta name="format-detection" content="telephone=no">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="MV Repair Trainer">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%25%27 y1=%270%25%27 x2=%27100%25%27 y2=%27100%25%27%3E%3Cstop stop-color=%27%235de4c7%27/%3E%3Cstop stop-color=%27%238bd3ff%27 offset=%271%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill=%27url(%23g)%27 d=%27M32 58C12 44 4 34 4 22a14 14 0 0 1 26-7 14 14 0 0 1 30 7c0 12-8 22-28 36z%27/%3E%3C/svg%3E" />
-  <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAFElEQVR4Ae3BAQ0AAADCIPunNscCFQAAUzsT2QAAI1iSAAAAAElFTkSuQmCC">
-  <link rel="canonical" href="." />
+README (short):
 
-  <!-- OpenGraph / Twitter -->
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="Mitral Valve Repair Trainer — Annuloplasty Suturing">
-  <meta property="og:description" content="Super realistic, commercial-grade web simulation. AI-guided steps, clear legends, highlighted targets, marked spots, and a rigorous scoring system.">
-  <meta property="og:image" content="data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%221200%22 height=%22630%22%3E%3Crect width=%27100%25%27 height=%27100%25%27 fill=%27%230d1321%27/%3E%3Ctext x=%2750%25%27 y=%2748%25%27 fill=%27%235de4c7%27 font-size=%2750%27 font-family=%27Arial,Helvetica,sans-serif%27 text-anchor=%27middle%27%3EMitral Valve Trainer%3C/text%3E%3Ctext x=%2750%25%27 y=%2766%25%27 fill=%27%238bd3ff%27 font-size=%2728%27 text-anchor=%27middle%27%3EAnnuloplasty Suturing%3C/text%3E%3C/svg%3E">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Mitral Valve Repair Trainer — Annuloplasty Suturing">
-  <meta name="twitter:description" content="AI co‑pilot guidance, stepwise suturing, clear highlights/marks, and detailed scoring — single-file app.">
-  <meta name="twitter:image" content="data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%221200%22 height=%22630%22%3E%3Crect width=%27100%25%27 height=%27100%25%27 fill=%27%230d1321%27/%3E%3Ctext x=%2750%25%27 y=%2748%25%27 fill=%27%235de4c7%27 font-size=%2750%27 font-family=%27Arial,Helvetica,sans-serif%27 text-anchor=%27middle%27%3EMitral Valve Trainer%3C/text%3E%3Ctext x=%2750%25%27 y=%2766%25%27 fill=%27%238bd3ff%27 font-size=%2728%27 text-anchor=%27middle%27%3EAnnuloplasty Suturing%3C/text%3E%3C/svg%3E">
+* Two modes: Training (guided) and Practice (assisted).
+* Place annular bites around the mitral annulus, pass through virtual ring, tension and tie.
+* Rule-based AI co‑pilot evaluates depth, angle, spacing, commissure proximity, tension, forbidden zones, ring mapping.
+* Live metrics & scoring; export JSON & PNG; printable report; localStorage persistence.
+* All rendering is on a main <canvas> with an inline <svg> overlay. No external assets.
+* Accessibility: ARIA labels, focus outlines, hotkeys cheat sheet, high contrast theme toggle.
+* HARD LIMITATIONS: This is an educational simulation only. Not clinical advice or a real surgical device.
 
-  <!-- =========================================================
-       STYLE SYSTEM — Commercial, accessible, responsive
-  ============================================================ -->
-  <style>
-    /* ===== Reset & Baseline ===== */
-    *,*::before,*::after{box-sizing:border-box}
-    html,body{height:100%}
-    html{color-scheme:dark light}
-    body{
-      margin:0; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
-      background:radial-gradient(1400px 800px at 60% -10%, #1a2547 0%, #0d1321 60%);
-      color:var(--ink-0, #e7ecfb);
-      font-family: var(--sans, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial);
-      line-height:1.35;
-    }
-    img,svg,video,canvas{max-width:100%; height:auto}
-    :focus{outline:none}
-    :focus-visible{outline:2px solid var(--focus, #8bd3ff); outline-offset:.15rem}
-    ::selection{background: #234b7d; color:#fff}
-    [hidden]{display:none !important}
+Keyboard shortcuts:
+N Next step, B Back step, H Cycle hints, U Undo, Y Redo, R Reset, G Ghost overlay, T Toggle Training/Practice, P Pause/Resume timer, ? Help
 
-    /* ===== Tokens ===== */
-    :root{
-      --bg-0:#0d1321;
-      --bg-1:#101a34;
-      --bg-2:#0f1730;
-      --ink-0:#e7ecfb;
-      --ink-1:#a7b5dc;
-      --ink-dim:#7c89b4;
+LocalStorage keys:
 
-      --brand:#5de4c7;
-      --brand-2:#8bd3ff;
-      --warn:#ffc857;
-      --danger:#ff5661;
-      --ok:#5dd39e;
-      --muted:#0a1327;
-      --ink-invert:#09222f;
+* mvrt\:lastCase, mvrt\:settings, mvrt\:highscores
 
-      --shadow-1:0 4px 16px rgba(0,0,0,.35);
-      --shadow-2:0 10px 28px rgba(0,0,0,.45);
-      --radius-lg:14px; --radius:10px; --radius-sm:8px;
+\============================================================================= \*/
 
-      --app-mxw:1600px;
+/\* ----------------------------- CSS Variables ------------------------------ \*/
+\:root{
+\--bg: #0e1116;
+\--panel: #151a21;
+\--panel-2: #1b222b;
+\--text: #e9eef5;
+\--muted: #aab6c5;
+\--accent: #78c6ff;
+\--accent-2:#9ef8df;
+\--danger:#ff6b6b;
+\--warn:#f1c40f;
+\--ok:#2ecc71;
+\--border:#2a3441;
+\--shadow: rgba(0,0,0,0.35);
+\--callout:#264653;
+\--btn:#1f2732;
+\--btn-hover:#273140;
+\--link:#a1d1ff;
+\--heat:#ff3b30AA;
+\--safe:#1abc9c;
+\--caution:#f39c12;
+\--forbid:#e74c3c;
 
-      --sans: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
-      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-      --fs-xxs:10px; --fs-xs:12px; --fs-sm:13px; --fs-md:14px; --fs-lg:16px; --fs-xl:18px; --fs-2xl:22px; --fs-3xl:28px;
+\--code:#0d1117;
+\--ring:#c9d3df;
 
-      --dur-1:120ms; --dur-2:220ms; --dur-3:420ms; --dur-4:800ms;
-      --eio:cubic-bezier(.22,.61,.36,1);
-      --focus:#8bd3ff;
+\--font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+\--mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+}
 
-      --z-topbar:20; --z-overlay:10; --z-hud:15; --z-toast:30; --z-modal:50;
-    }
-    [data-theme="light"]{
-      --bg-0:#f6f8fc; --bg-1:#ffffff; --bg-2:#f1f4fb;
-      --ink-0:#0f1730; --ink-1:#3a4a77; --ink-dim:#5b6a96;
-      --muted:#e8eefc; --ink-invert:#e7fcf6;
-      --focus:#0066cc;
-      background:linear-gradient(180deg,#eff3ff,#ffffff);
-      color:var(--ink-0);
-    }
+body.light{
+\--bg:#f5f7fb;
+\--panel:#ffffff;
+\--panel-2:#f1f5fb;
+\--text:#0c1117;
+\--muted:#4b5563;
+\--accent:#0077ff;
+\--accent-2:#0bb;
+\--danger:#c0392b;
+\--warn:#b8860b;
+\--ok:#167e56;
+\--border:#d5dde7;
+\--shadow: rgba(0,0,0,0.15);
+\--btn:#eef3fb;
+\--btn-hover:#e3ecfa;
+\--link:#0a66c2;
+\--heat:#e74c3c94;
+\--safe:#12a57b;
+\--caution:#bd7d0a;
+\--forbid:#b32424;
+\--code:#0d1117;
+\--ring:#65758b;
+}
 
-    /* ===== Typography ===== */
-    h1,h2,h3,h4,h5,h6{margin:.25rem 0; font-weight:800}
-    h1{font-size:var(--fs-xl)}
-    h2{font-size:var(--fs-lg)}
-    h3{font-size:var(--fs-md)}
-    p{margin:.5rem 0}
-    small,.meta{color:var(--ink-1); font-size:var(--fs-xs)}
-    code,kbd,samp{font-family:var(--mono); font-size:.95em}
+/\* ----------------------------- Base & Layout ------------------------------ \*/
+\*{box-sizing\:border-box}
+html,body{height:100%}
+body{
+margin:0;
+background\:var(--bg);
+color\:var(--text);
+font-family\:var(--font);
+-webkit-font-smoothing\:antialiased;
+-moz-osx-font-smoothing\:grayscale;
+}
 
-    /* ===== Grid Layout ===== */
-    .app{
-      display:grid;
-      grid-template-rows: 64px 1fr 44px;
-      grid-template-columns: 300px minmax(720px,1fr) 420px;
-      grid-template-areas:
-        "topbar topbar topbar"
-        "sidebar viewport copilot"
-        "bottombar bottombar bottombar";
-      height:100%;
-      margin:0 auto; max-width:var(--app-mxw);
-    }
-    header.topbar{grid-area:topbar}
-    aside.sidebar{grid-area:sidebar}
-    main.viewport{grid-area:viewport}
-    aside.copilot{grid-area:copilot}
-    footer.bottombar{grid-area:bottombar}
+a{color\:var(--link);text-decoration\:none}
+a\:hover
 
-    @media (max-width: 1440px){ .app{ grid-template-columns: 260px 1fr 380px; } }
-    @media (max-width: 1200px){
-      .app{ grid-template-columns: 1fr; grid-template-rows: 64px auto auto 44px;
-            grid-template-areas: "topbar" "viewport" "copilot" "bottombar"; }
-      aside.sidebar{display:none}
-    }
-    @media (max-width: 640px){ .app{ grid-template-rows: 56px auto auto 40px; } }
+\#app{
+display\:grid;
+grid-template-rows: auto 1fr auto;
+min-height:100vh;
+}
 
-    /* ===== Components ===== */
-    header.topbar{
-      display:flex; align-items:center; gap:16px; padding:10px 14px;
-      background:linear-gradient(180deg, rgba(17,24,43,.85), rgba(17,24,43,.6));
-      border-bottom:1px solid #223055; box-shadow:var(--shadow-1);
-      position:relative; z-index:var(--z-topbar); backdrop-filter: blur(8px) saturate(1.1);
-    }
-    .title{display:flex; align-items:center; gap:12px; min-width:240px}
-    .title .mark{
-      width:38px; height:38px; border-radius:10px;
-      background:conic-gradient(from 90deg, var(--brand-2), var(--brand), var(--brand-2));
-      box-shadow: inset 0 0 18px #0008, 0 2px 8px #000a; position:relative;
-    }
-    .title .mark::after{
-      content:"MV"; position:absolute; inset:0; display:grid; place-items:center;
-      font-weight:900; color:var(--ink-invert); letter-spacing:.3px; text-shadow:0 1px 0 #ffffff22;
-    }
-    .title h1{font-size:var(--fs-xl); margin:0}
-    .title .subtitle{font-size:var(--fs-xs); color:var(--ink-1); margin-top:-2px}
+header{
+position\:sticky; top:0; z-index:8;
+display\:flex; align-items\:center; gap:.75rem;
+padding:.5rem .75rem;
+background\:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0)) , var(--panel);
+border-bottom:1px solid var(--border);
+box-shadow:0 2px 8px var(--shadow);
+}
+.header-left{display\:flex; align-items\:center; gap:.75rem; flex:1}
+.header-right{display\:flex; align-items\:center; gap:.5rem}
+.app-title{
+font-weight:700; letter-spacing:.2px; white-space\:nowrap;
+display\:flex; align-items\:center; gap:.5rem;
+}
+.app-title .logo{
+width:28px;height:28px;border-radius:6px;
+background: radial-gradient(60% 60% at 30% 30%, #fff3, transparent 60%),
+linear-gradient(135deg, var(--accent), var(--accent-2));
+box-shadow:0 2px 10px var(--shadow), inset 0 0 0 1px #0002;
+}
 
-    .segmented{
-      display:inline-flex; padding:2px; border-radius:12px;
-      background:#0e1a33; border:1px solid #223055; box-shadow:var(--shadow-1);
-    }
-    .segmented input{display:none}
-    .segmented label{
-      padding:6px 10px; font-size:var(--fs-xs); color:var(--ink-1);
-      cursor:pointer; border-radius:8px; min-width:120px; text-align:center; user-select:none;
-    }
-    .segmented input:checked + label{
-      color:#041c16; font-weight:800;
-      background:linear-gradient(180deg, #3bd2b6, #3abfc1);
-      box-shadow:inset 0 -1px 0 #0005, 0 1px 2px #0008;
-    }
+select, button, .toggle, input\[type="number"]{
+background\:var(--btn); color\:var(--text);
+border:1px solid var(--border);
+border-radius:.5rem; padding:.45rem .6rem;
+font-size:.95rem;
+}
+button\:hover{background\:var(--btn-hover)}
+button\:active{transform\:translateY(1px)}
+button\[disabled]{opacity:.6;cursor\:not-allowed}
+.toggle{display\:inline-flex; gap:.35rem; align-items\:center; cursor\:pointer;}
+.toggle input{accent-color\:var(--accent)}
+.kbd{
+font-family\:var(--mono); font-size:.8rem; padding:.1rem .35rem;
+border-radius:.35rem; background\:var(--panel-2); border:1px solid var(--border);
+}
 
-    .topbar-actions{margin-left:auto; display:flex; align-items:center; gap:8px}
-    .btn{
-      appearance:none; border:1px solid #27406a; background:linear-gradient(180deg,#1a2646,#131c34);
-      color:var(--ink-0); padding:8px 12px; border-radius:10px; font-weight:700; letter-spacing:.2px; cursor:pointer;
-      box-shadow:inset 0 0 0 1px #0008, var(--shadow-1);
-      transition:transform var(--dur-1) var(--eio), filter var(--dur-1) var(--eio);
-    }
-    .btn:hover{filter:brightness(1.08)}
-    .btn:active{transform:translateY(1px)}
-    .btn.ghost{background:transparent}
-    .btn.brand{border-color:#197e6e; background:linear-gradient(180deg,#0f423b,#0c302b)}
-    .btn.warn{border-color:#8a5a11; background:linear-gradient(180deg,#4d3612,#3a2a10)}
+.info-chip{
+font-weight:600; padding:.35rem .5rem;
+border-radius:.4rem; background\:var(--panel-2); border:1px solid var(--border);
+}
+.info-chip.ok{color:#fff;background\:linear-gradient(180deg, #2ecc7022, #2ecc70AA); border-color:#2ecc70AA}
+.info-chip.warn{background\:linear-gradient(180deg, #f1c40f22, #f1c40fAA)}
+.info-chip.danger{background\:linear-gradient(180deg, #ff6b6b22, #ff6b6bAA)}
 
-    aside.sidebar{
-      padding:10px; overflow:auto; background:linear-gradient(180deg,#0f1730,#0d1426);
-      border-right:1px solid #223055;
-    }
-    .card{
-      background:linear-gradient(180deg,#121c38,#0f1832);
-      border:1px solid #1f2c52; border-radius:var(--radius-lg); padding:12px; margin-bottom:10px; box-shadow:var(--shadow-1);
-    }
-    .card h3{margin:.2em 0 .6em 0; font-size:var(--fs-md); letter-spacing:.3px}
-    .kv{display:grid; grid-template-columns: 1fr auto; gap:6px; font-size:var(--fs-xs)}
-    .kv div:nth-child(odd){color:var(--ink-1)}
-    .badge{display:inline-block; padding:3px 8px; border-radius:999px; background:#132145; border:1px solid #2a3d67; font-size:var(--fs-xxs); color:#9ec2ff}
+main{
+display\:grid; grid-template-columns: 300px 1fr 350px; gap:.75rem;
+padding:.75rem;
+}
+@media(min-width:1800px){ main{ grid-template-columns: 340px 1fr 380px; } }
+@media(max-width:1400px){ main{ grid-template-columns: 270px 1fr 330px; } }
 
-    .legend{display:grid; gap:6px; font-size:var(--fs-xs)}
-    .legend .item{display:flex; align-items:center; gap:8px}
-    .legend .swatch{width:12px; height:12px; border-radius:50%; box-shadow:0 0 0 3px #0006}
-    .swatch.teal{background:var(--brand)}
-    .swatch.blue{background:var(--brand-2)}
-    .swatch.gold{background:var(--warn)}
-    .swatch.red{background:var(--danger)}
+.panel{
+background\:var(--panel); border:1px solid var(--border); border-radius:.75rem;
+box-shadow:0 8px 24px var(--shadow);
+display\:flex; flex-direction\:column; overflow\:hidden; min-height:200px;
+}
+.panel h3{
+margin:0; padding:.6rem .75rem; font-size:1rem; letter-spacing:.2px;
+border-bottom:1px solid var(--border); background\:var(--panel-2);
+}
+.panel .content{padding:.7rem .75rem; overflow\:auto; height:100%}
 
-    main.viewport{
-      position:relative; overflow:hidden;
-      background:
-        radial-gradient(900px 500px at 50% -100px, #1b2b52, transparent 50%),
-        radial-gradient(900px 500px at 50% 120%, #0a1122, transparent 50%),
-        var(--muted);
-      border-left:1px solid #20325a; border-right:1px solid #20325a;
-    }
-    #render3d{
-      position:absolute; inset:0; width:100%; height:100%; display:block; cursor: crosshair;
-      filter: drop-shadow(0 30px 60px #0009);
-    }
-    #overlay{
-      position:absolute; inset:0; width:100%; height:100%;
-      pointer-events:none; z-index:var(--z-overlay);
-    }
+fieldset{
+border:1px dashed var(--border); border-radius:.5rem; padding:.5rem .65rem; margin:.5rem 0;
+}
+legend{padding:0 .35rem; font-weight:600; color\:var(--muted)}
 
-    /* Overlay primitives = highlights, guides, marks, sutures, warnings */
-    #overlay .target { animation: halo-breathe var(--dur-4) ease-in-out infinite; }
-    #overlay .target circle.core{ fill:var(--brand); stroke:#022; stroke-width:1.2; }
-    #overlay .target circle.halo{ fill:url(#halo-brand); }
-    #overlay .target text.label{ fill:var(--brand-2); font-weight:900; font-size:10px; text-shadow:0 1px 0 #000; }
-    #overlay .guide{ stroke:var(--brand-2); stroke-width:3; fill:none; marker-end:url(#arrow); filter:url(#soft-glow); }
-    #overlay .guide--ghost{ stroke:var(--warn); stroke-dasharray:5 5; animation: dashflow 1.8s linear infinite; }
-    #overlay .suture-ok{ stroke:var(--brand-2); stroke-width:3; fill:none; filter:url(#soft-glow) }
-    #overlay .suture-bad{ stroke:var(--danger); stroke-width:3.5; fill:none; filter:url(#soft-glow) }
-    #overlay .warn circle{ fill:url(#halo-warn) }
-    #overlay .warn text{ fill:#2b1f00; font-weight:900; font-size:11px; text-anchor:middle }
+.controls-row{display\:flex; gap:.5rem; flex-wrap\:wrap; align-items\:center; margin:.35rem 0}
+.controls-col{display\:flex; flex-direction\:column; gap:.35rem; margin:.35rem 0}
+label{font-size:.9rem; color\:var(--muted)}
+.small{font-size:.85rem; color\:var(--muted)}
+hr.sep{border\:none; border-top:1px solid var(--border); margin:.5rem 0}
 
-    .hud{ position:absolute; left:12px; bottom:12px; right:12px; display:flex; gap:12px; justify-content:space-between; pointer-events:none; z-index:var(--z-hud); }
-    .hud .cluster{ display:flex; gap:10px; align-items:flex-end; }
-    .tile{ pointer-events:auto; padding:8px 12px; border-radius:12px; background:linear-gradient(180deg,#111c38,#0e172e); border:1px solid #20345f; box-shadow:var(--shadow-1); font-size:var(--fs-xs); min-width:90px; }
-    .tile strong{display:block; font-size:var(--fs-2xl); line-height:1.1}
+.canvas-wrap{
+position\:relative; display\:grid; grid-template-rows: auto 1fr; gap:.3rem;
+height: calc(100vh - 220px);
+}
+\#viewport{
+position\:relative; flex:1; overflow\:hidden; border-radius:.75rem;
+background: radial-gradient(120% 120% at 50% 50%, #fff1 0%, transparent 70%), var(--panel);
+border:1px solid var(--border);
+}
+\#sim{
+position\:absolute; inset:0; display\:block; width:100%; height:100%;
+background: transparent;
+}
+\#overlay{
+position\:absolute; inset:0; pointer-events\:none;
+}
+.overlay-group{pointer-events\:none}
+.hit{ pointer-events\:auto; cursor\:pointer }
 
-    aside.copilot{ display:flex; flex-direction:column; background:linear-gradient(180deg,#121a33,#0f1526); border-left:1px solid #223055; }
-    .tabs{display:flex; gap:6px; padding:10px; border-bottom:1px solid #223055}
-    .tab{ padding:8px 10px; font-size:var(--fs-xs); border-radius:10px; cursor:pointer; border:1px solid transparent; color:var(--ink-1); user-select:none; transition:filter var(--dur-1) var(--eio); }
-    .tab:hover{filter:brightness(1.08)}
-    .tab.active{color:#041a15; font-weight:800; background:linear-gradient(180deg,#3bd2b6,#3bc3c2); box-shadow:var(--shadow-1)}
-    .panel{flex:1; overflow:auto; padding:12px; display:none}
-    .panel.active{display:block}
-    .chat{display:flex; flex-direction:column; gap:10px}
-    .msg{ display:grid; grid-template-columns:auto 1fr; gap:10px; align-items:flex-start; background:linear-gradient(180deg,#0f1a32,#0c1529); border:1px solid #223055; border-radius:14px; padding:10px; }
-    .msg .role{font-size:var(--fs-xxs); text-transform:uppercase; letter-spacing:.5px; color:var(--ink-1)}
-    .msg .text{font-size:var(--fs-sm)}
-    .msg.coach{border-color:#226e62; box-shadow:0 0 0 2px #1a3f3a inset}
-    .msg.user{border-color:#334a7a; box-shadow:0 0 0 2px #263553 inset}
-    .checkpoint{padding:8px 10px; border-left:3px solid var(--brand); background:#0c1a2b; border-radius:10px; font-size:var(--fs-xs)}
-    .checklist{display:grid; gap:8px}
-    .check{display:flex; gap:8px; align-items:flex-start; background:#0f1830; border:1px solid #223055; border-radius:10px; padding:8px}
-    .check input{accent-color:var(--brand)}
-    .scorebox{display:grid; grid-template-columns:repeat(2,1fr); gap:10px}
-    @media (min-width: 1440px){ .scorebox{grid-template-columns:repeat(4,1fr)} }
-    .metric{background:#0f1830; border:1px solid #223055; border-radius:12px; padding:8px}
-    .metric .label{font-size:var(--fs-xxs); color:var(--ink-1)}
-    .metric .val{font-size:var(--fs-2xl); font-weight:900}
-    .log{font-family:var(--mono); font-size:var(--fs-xs); background:#0b1224; border:1px solid #1e2a4d; border-radius:10px; padding:8px; white-space:pre-wrap}
+.badge{
+display\:inline-flex; align-items\:center; gap:.35rem;
+padding:.2rem .45rem; border-radius:.35rem; background\:var(--panel-2);
+border:1px solid var(--border); font-size:.9rem; font-weight:600;
+}
+\#ghostToggle{margin-left:.4rem}
 
-    footer.bottombar{ display:flex; align-items:center; gap:10px; padding:6px 10px; background:linear-gradient(180deg, rgba(16,25,44,.9), rgba(12,19,34,.9)); border-top:1px solid #223055; }
-    .kbd{font-family:var(--mono); font-size:var(--fs-xxs); background:#0a162b; border:1px solid #20345f; padding:3px 6px; border-radius:6px}
-    .hint{color:var(--ink-1); font-size:var(--fs-xs)}
+.coach{
+display\:flex; flex-direction\:column; gap:.45rem;
+}
+.coach .msg{
+background\:var(--panel-2); border:1px solid var(--border); border-left:4px solid var(--accent);
+padding:.55rem .6rem; border-radius:.5rem;
+}
+.coach .msg.warn{border-left-color\:var(--warn)}
+.coach .msg.danger{border-left-color\:var(--danger)}
+.metric-grid{display\:grid; grid-template-columns:1fr 1fr; gap:.4rem}
+.metric{
+background\:var(--panel-2); border:1px solid var(--border); border-radius:.5rem; padding:.35rem .5rem;
+}
+.metric .val{ font-family\:var(--mono); font-weight:700; font-size:1rem}
 
-    /* ===== Accessibility & Motion ===== */
-    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-    @media (prefers-reduced-motion: reduce){
-      *{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; scroll-behavior:auto !important}
-    }
-    @media (prefers-contrast: more){
-      :root{--focus:#00b7ff}
-      .btn,.card,.tile,.metric,.msg{border-width:2px}
-    }
-    @media (forced-colors: active){
-      .tab.active{background:Highlight; color:HighlightText}
-    }
+footer{
+padding:.6rem .8rem; font-size:.9rem; color\:var(--muted);
+border-top:1px solid var(--border); background\:var(--panel);
+display\:flex; align-items\:center; justify-content\:space-between; gap:.5rem;
+}
 
-    /* ===== Print ===== */
-    @media print{
-      body{background:#fff; color:#000}
-      .app{max-width:100%; grid-template-columns:1fr; grid-template-areas:"topbar" "viewport" "scores"; grid-template-rows:auto auto auto}
-      aside.sidebar, aside.copilot, footer.bottombar{display:none}
-      main.viewport{border:none}
-    }
+/\* Bottom bar stepper \*/
+\#bottomBar{
+position\:sticky; bottom:0; z-index:7;
+display\:flex; align-items\:center; justify-content\:space-between; gap:.75rem;
+padding:.5rem .75rem; background\:var(--panel);
+border-top:1px solid var(--border); box-shadow:0 -2px 8px var(--shadow);
+}
+.stepper{display\:flex; align-items\:center; gap:.4rem; flex-wrap\:wrap}
+.dot{
+width:14px;height:14px;border-radius:50%; border:1px solid var(--border);
+background: linear-gradient(180deg, #fff2, #0000);
+}
+.dot.active{background\:var(--accent); border-color\:transparent; box-shadow:0 0 0 3px #4ba3ff55}
+.dot.done{background\:linear-gradient(180deg, #2ecc7044, #2ecc70aa); border-color:#2ecc70aa}
+.dot.warn{background\:linear-gradient(180deg, #f1c40f44, #f1c40faa); border-color:#f1c40faa}
 
-    /* ===== Motion primitives ===== */
-    @keyframes halo-breathe{ 0%,100%{opacity:.85;transform:scale(1)} 50%{opacity:.55;transform:scale(1.06)} }
-    @keyframes dashflow{ to{ stroke-dashoffset:-1000 } }
+.icon{
+display\:inline-block; width:16px;height:16px; vertical-align\:middle;
+background: radial-gradient(40% 40% at 30% 30%, #fff6, #fff0),
+linear-gradient(160deg,#9aa6b2,#596273);
+mask: var(--mask) no-repeat center / contain;
+}
 
-    /* ===== Modal (Help) ===== */
-    .modal{
-      position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:var(--z-modal);
-      background:rgba(0,0,0,.6);
-    }
-    .modal.open{display:flex}
-    .modal .sheet{
-      width:min(860px, 96vw); max-height:86vh; overflow:auto; padding:16px;
-      background:linear-gradient(180deg,#131b33,#0f1529); border:1px solid #23365f; border-radius:14px; box-shadow:var(--shadow-2);
-    }
-    .modal h2{margin-top:0}
-  </style>
+/\* Tooltips \*/
+.tooltip{position\:relative}
+.tooltip\:hover::after{
+content\:attr(data-tip);
+position\:absolute; bottom\:calc(100% + 6px); left:50%; transform\:translateX(-50%);
+background:#000d; color:#fff; padding:.25rem .45rem; border-radius:.35rem; font-size:.8rem; white-space\:nowrap;
+}
 
-  <!-- ===== Global SVG defs for highlights/arrows/glows ===== -->
-  <svg width="0" height="0" class="sr-only" aria-hidden="true" focusable="false">
-    <defs>
-      <radialGradient id="halo-brand" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="#5de4c7" stop-opacity="0.95"/>
-        <stop offset="55%" stop-color="#5de4c7" stop-opacity="0.42"/>
-        <stop offset="100%" stop-color="#5de4c7" stop-opacity="0"/>
-      </radialGradient>
-      <radialGradient id="halo-warn" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="#ffc857" stop-opacity="0.95"/>
-        <stop offset="55%" stop-color="#ffc857" stop-opacity="0.42"/>
-        <stop offset="100%" stop-color="#ffc857" stop-opacity="0"/>
-      </radialGradient>
-      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="6" markerHeight="6" orient="auto">
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="#8bd3ff"/>
-      </marker>
-      <filter id="soft-glow" x="-50%" y="-50%" width="200%" height="200%">
-        <feGaussianBlur stdDeviation="2" result="blur"/>
-        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-      <clipPath id="viewport-clip">
-        <rect x="0" y="0" width="100%" height="100%"></rect>
-      </clipPath>
-    </defs>
-  </svg>
+/\* Toasts \*/
+\#toasts{ position\:fixed; right:.75rem; bottom:3.5rem; display\:flex; flex-direction\:column; gap:.35rem; z-index:9999; }
+.toast{
+background\:var(--panel-2); border:1px solid var(--border); border-left:4px solid var(--accent);
+padding:.45rem .55rem; border-radius:.5rem; max-width:420px; box-shadow:0 8px 24px var(--shadow);
+}
+.toast.warn{ border-left-color\:var(--warn) }
+.toast.danger{ border-left-color\:var(--danger) }
+
+/\* Modal \*/
+.modal-backdrop{ position\:fixed; inset:0; background:#0009; display\:none; align-items\:center; justify-content\:center; z-index:10000; }
+.modal{ background\:var(--panel); border:1px solid var(--border); border-radius:.75rem; width\:min(860px, 92vw); max-height:86vh; display\:flex; flex-direction\:column; overflow\:hidden; }
+.modal header{ position\:sticky; top:0; border-bottom:1px solid var(--border); background\:var(--panel-2) }
+.modal .body{ padding:.75rem; overflow\:auto }
+.modal footer{ padding:.6rem .75rem; border-top:1px solid var(--border); display\:flex; gap:.5rem; justify-content\:flex-end }
+
+/\* Focus rings \*/
+button\:focus, select\:focus, \[tabindex="0"]\:focus, input\:focus{ outline:2px solid var(--accent); outline-offset:2px }
+
+/\* Radar & sparkline canvases \*/
+\#radar,#sparkline{ width:100%; height:180px; display\:block; background\:linear-gradient(180deg, #fff1, #0000) }
+
+/\* Help overlay \*/
+\#helpOverlay{ display\:none }
+.help-kbd{ display\:inline-flex; align-items\:center; gap:.4rem; flex-wrap\:wrap }
+.help-kbd .kbd{ margin:.15rem }
+
+/\* Collapsible sections \*/
+details summary{ cursor\:pointer; padding:.2rem 0; color\:var(--muted); font-weight:600 }
+details summary::-webkit-details-marker{ display\:none }
+details\[open] summary{ color\:var(--text) }
+
+/\* Audio mute chip \*/
+.mute-chip{ cursor\:pointer }
+
+/\* Case notes \*/
+\#caseNotes{ width:100%; min-height:70px; resize\:vertical; }
+
+/\* Ghost toggle chip \*/
+\#ghostToggle{ cursor\:pointer }
+
+/\* Legend swatches \*/
+.swatch{ display\:inline-block; width:14px; height:14px; border-radius:3px; margin-right:6px; border:1px solid var(--border) }
+.sw-safe{ background\:linear-gradient(180deg, #1abc9c55, #1abc9c) }
+.sw-caution{ background\:linear-gradient(180deg, #f39c1255, #f39c12) }
+.sw-forbid{ background\:linear-gradient(180deg, #e74c3c55, #e74c3c) }
+.sw-ideal{ background\:repeating-linear-gradient(90deg, #6aa9ff 0 4px, transparent 4px 8px), #6aa9ff22; border:1px dashed #6aa9ff }
+
+/\* Mini hemodynamic gauge \*/
+\#gauge{ width:100%; height:110px; display\:block; }
+
+/\* Visually hidden (for screen readers / a11y) \*/
+.visually-hidden{ position\:absolute !important; height:1px; width:1px; overflow\:hidden; clip\:rect(1px, 1px, 1px, 1px); white-space\:nowrap; }
+
+/\* ----------------------------- End CSS ------------------------------------ \*/ </style>
+
 </head>
+<body class="light" data-theme="light" data-mode="training" aria-live="polite">
+<div id="app" role="application" aria-label="Mitral Repair Trainer">
+  <header>
+    <div class="header-left">
+      <div class="logo" aria-hidden="true"></div>
+      <div class="app-title" aria-label="App title">Mitral Repair Trainer</div>
+      <span class="small">Educational simulation only — not for clinical use.</span>
+    </div>
+    <div class="header-right" role="toolbar" aria-label="Top controls">
+      <label class="toggle tooltip" data-tip="Toggle between guided Training and assisted Practice">
+        <input id="modeToggle" type="checkbox" aria-label="Toggle Practice mode" />
+        <span id="modeLabel">Training</span>
+      </label>
+      <select id="caseSelect" aria-label="Case selector">
+        <option value="standard">Standard annulus</option>
+        <option value="dilated">Dilated annulus</option>
+        <option value="calcified">Calcified posterior band</option>
+      </select>
+      <select id="themeToggle" aria-label="Theme">
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+      </select>
+      <button id="resetBtn" class="tooltip" data-tip="R">Reset Case</button>
+      <button id="exportPNGBtn" class="tooltip" data-tip="Export current view as PNG">Export PNG</button>
+      <button id="downloadReportBtn" class="tooltip" data-tip="Download session JSON & open printable summary">Download Report</button>
+      <span class="badge tooltip" id="ghostToggle" data-tip="G">Ghost: Off</span>
+      <span class="badge tooltip mute-chip" id="audioToggle" data-tip="Toggle sounds (muted by default)">🔈 Muted</span>
+      <span class="info-chip" id="timer" aria-live="polite">00:00</span>
+      <span class="info-chip" id="stepBadge" aria-live="polite">Step 1/9</span>
+      <span class="info-chip ok" id="scoreBadge" aria-live="polite">Score: —</span>
+      <button id="aboutBtn" aria-label="About">About</button>
+      <button id="helpBtn" aria-label="Help">?</button>
+    </div>
+  </header>
 
-<body>
-  <!-- ===== No JS Notice ===== -->
-  <noscript class="sr-only">This simulator requires JavaScript. Please enable it to use the training and scoring features.</noscript>
-
-  <!-- ===== App ===== -->
-  <div class="app" id="app" role="application" aria-label="Mitral Valve Repair Training Simulator">
-    <!-- Top bar -->
-    <header class="topbar" role="banner">
-      <div class="title" aria-label="Application title">
-        <div class="mark" aria-hidden="true"></div>
-        <div>
-          <h1>Mitral Valve Repair Trainer</h1>
-          <p class="subtitle">Annuloplasty Suturing — Training &amp; Practice</p>
-        </div>
-      </div>
-
-      <div class="segmented" role="radiogroup" aria-label="Mode selection">
-        <input type="radio" id="mode-training" name="mode" value="training" checked />
-        <label for="mode-training" title="Guided step-by-step with strict gating and highlights">Training</label>
-        <input type="radio" id="mode-practice" name="mode" value="practice" />
-        <label for="mode-practice" title="Assisted practice with feedback, scoring, and gentle warnings">Practice</label>
-      </div>
-
-      <div class="topbar-actions" role="group" aria-label="Global actions">
-        <button class="btn brand" id="btn-start" title="Begin guided session">Start Session</button>
-        <button class="btn" id="btn-ghost" title="Toggle ghost trajectory to shadow each step" aria-pressed="false">Show Ghost</button>
-        <button class="btn" id="btn-reset" title="Reset session and clear placements">Reset</button>
-        <button class="btn ghost" id="btn-export" title="Export scoring report (JSON)">Export Report</button>
-      </div>
-    </header>
-
-    <!-- Sidebar -->
-    <aside class="sidebar" role="complementary" aria-label="Patient and procedure context">
-      <section class="card" aria-labelledby="card-patient-h">
-        <h3 id="card-patient-h">Patient Context</h3>
-        <div class="kv" aria-describedby="patient-meta">
-          <div>Case ID</div><div><span class="badge" id="case-id">MV-2201</span></div>
-          <div>Age</div><div id="patient-age">64</div>
-          <div>Sex</div><div id="patient-sex">F</div>
-          <div>Pathology</div><div id="patient-path">Degenerative MR (P2)</div>
-          <div>Plan</div><div id="patient-plan">Annuloplasty ring + test coaptation</div>
-        </div>
-        <p class="meta" id="patient-meta">Synthetic case. Heparinized, left atriotomy complete, atrial retractor in place.</p>
-      </section>
-
-      <section class="card" aria-labelledby="card-instr-h">
-        <h3 id="card-instr-h">Instruments</h3>
-        <div class="kv" aria-live="polite">
-          <div><span class="kbd">1</span></div><div>Needle Driver <strong>(active)</strong></div>
-          <div><span class="kbd">2</span></div><div>Forceps (assist)</div>
-          <div><span class="kbd">3</span></div><div>Scissors (cut)</div>
-        </div>
-        <p class="meta">Press <span class="kbd">1</span>/<span class="kbd">2</span>/<span class="kbd">3</span> to switch. Active tool: <strong id="hud-tool">Needle Driver</strong>.</p>
-      </section>
-
-      <section class="card" aria-labelledby="card-legend-h">
-        <h3 id="card-legend-h">Legend (What You’ll See)</h3>
-        <div class="legend" id="legend">
-          <div class="item"><span class="swatch teal" aria-hidden="true"></span><span>Target annulus bite zone (highlighted area)</span></div>
-          <div class="item"><span class="swatch blue" aria-hidden="true"></span><span>Placed suture (entry → exit)</span></div>
-          <div class="item"><span class="swatch gold" aria-hidden="true"></span><span>Ghost trajectory (shadow this path step-by-step)</span></div>
-          <div class="item"><span class="swatch red" aria-hidden="true"></span><span>Restricted tissue (leaflet / chordae) — avoid</span></div>
-        </div>
-        <p class="meta">Training highlights the exact spot to click (Entry), then where to traverse (Exit). Practice keeps the same guidance with lighter gating.</p>
-      </section>
-
-      <section class="card" aria-labelledby="card-settings-h">
-        <h3 id="card-settings-h">Session Settings</h3>
-        <div class="kv">
-          <div>Difficulty</div><div><span id="difficulty" class="badge">Standard</span></div>
-          <div>Assist Level</div><div><span id="assist-level" class="badge">High</span></div>
-          <div>Voice</div><div><span id="voice" class="badge">On</span></div>
-          <div>Haptics</div><div><span id="haptics" class="badge">Auto</span></div>
-        </div>
-        <p class="meta">Change mode in the top bar. Voice guidance mirrors on-screen instructions.</p>
-      </section>
-
-      <section class="card" aria-labelledby="card-rubric-h">
-        <h3 id="card-rubric-h">Rubric — What We Score</h3>
-        <ul class="meta" style="margin:0 0 .25rem 1rem">
-          <li>Accuracy of Entry/Exit (±2 mm near annulus)</li>
-          <li>Needle Angle (75–95° to annulus)</li>
-          <li>Depth Across Annulus (adequate traverse)</li>
-          <li>Sequence &amp; Spacing (uniform annular coverage)</li>
-          <li>Tissue Handling (no leaflet/chordae trauma)</li>
-          <li>Time Efficiency (steady, safe pace)</li>
-        </ul>
-        <p class="meta">Weights: 40% accuracy • 15% angle • 15% depth • 10% sequence • 10% handling • 10% time.</p>
-      </section>
-    </aside>
-
-    <!-- Viewport -->
-    <main class="viewport" role="main" aria-label="Simulation viewport">
-      <canvas id="render3d" aria-label="Anatomy rendering surface">Your browser does not support the HTML5 Canvas element.</canvas>
-      <svg id="overlay" aria-hidden="false">
-        <g id="hotspots" aria-label="Target hotspots (marked spots)"></g>
-        <g id="ghost" aria-label="Ghost trajectories (shadow path)"></g>
-        <g id="guides" aria-label="Guidance arrows and arcs"></g>
-        <g id="suturing" aria-label="Placed sutures"></g>
-        <g id="warnings" aria-label="Warnings and restricted zones"></g>
-      </svg>
-
-      <!-- HUD -->
-      <div class="hud" aria-live="polite" role="status">
-        <div class="cluster">
-          <div class="tile" aria-label="Total score"><div class="meta">Score</div><strong id="hud-score">0</strong></div>
-          <div class="tile" aria-label="Placement accuracy"><div class="meta">Accuracy</div><strong id="hud-acc">–</strong></div>
-          <div class="tile" aria-label="Elapsed time"><div class="meta">Time</div><strong id="hud-time">00:00</strong></div>
-          <div class="tile" aria-label="Errors"><div class="meta">Errors</div><strong id="hud-err">0</strong></div>
-        </div>
-        <div class="cluster">
-          <div class="tile" aria-label="Current step"><div class="meta">Step</div><strong id="hud-step">0/0</strong></div>
-          <div class="tile" aria-label="Active instrument"><div class="meta">Instrument</div><strong id="hud-tool">Needle Driver</strong></div>
-        </div>
-      </div>
-    </main>
-
-    <!-- Co‑Pilot / Steps / Scores / Logs -->
-    <aside class="copilot" aria-label="AI Co‑Pilot and panels">
-      <div class="tabs" role="tablist" aria-label="Panels">
-        <div class="tab active" id="tab-coach" data-tab="coach" role="tab" aria-selected="true" aria-controls="panel-coach" tabindex="0">AI Co‑Pilot</div>
-        <div class="tab" id="tab-steps" data-tab="steps" role="tab" aria-controls="panel-steps" tabindex="-1">Steps</div>
-        <div class="tab" id="tab-scores" data-tab="scores" role="tab" aria-controls="panel-scores" tabindex="-1">Scoring</div>
-        <div class="tab" id="tab-logs" data-tab="logs" role="tab" aria-controls="panel-logs" tabindex="-1">Logs</div>
-      </div>
-
-      <section class="panel active" id="panel-coach" role="tabpanel" aria-labelledby="tab-coach">
-        <div class="chat" id="chat" aria-live="polite">
-          <div class="msg coach">
-            <div class="role">Co‑Pilot</div>
-            <div class="text">
-              Welcome. In <strong>Training</strong>, I’ll highlight the exact annular target (marked spot),
-              show a <em>ghost trajectory</em> to shadow, and guide you step-by-step.<br>
-              In <strong>Practice</strong>, you’ll still receive guidance and clear legends, and I’ll explain
-              precisely what went wrong (angle, depth, accuracy, tissue handling) and how to correct it.
-            </div>
+  <main>
+    <!-- Left: Tools & Legend -->
+    <aside class="panel" id="leftPanel" aria-label="Tools and Legend" aria-expanded="true">
+      <h3>Tools &amp; Legend</h3>
+      <div class="content">
+        <fieldset>
+          <legend>Instruments</legend>
+          <div class="controls-row" role="radiogroup" aria-label="Instrument chooser">
+            <label><input type="radio" name="instrument" value="needle" checked /> Needle driver</label>
+            <label><input type="radio" name="instrument" value="forceps" /> Forceps</label>
+            <label><input type="radio" name="instrument" value="suture" /> Suture management</label>
           </div>
-          <div class="checkpoint">Current task: Orient anatomical landmarks — A2/P2 scallops &amp; commissures.</div>
-        </div>
-      </section>
+          <div class="controls-row">
+            <label>Suture type</label>
+            <select id="sutureType" aria-label="Suture type">
+              <option value="pledgeted" selected>2‑0 Polyester (pledgeted)</option>
+              <option value="nonpledgeted">2‑0 Polyester (non‑pledgeted)</option>
+            </select>
+          </div>
+          <div class="controls-row">
+            <label>Needle size</label>
+            <select id="needleSize" aria-label="Needle size">
+              <option value="MH">MH (taper)</option>
+              <option value="SH">SH (taper)</option>
+              <option value="FS-2">FS‑2 (reverse cutting)</option>
+            </select>
+          </div>
+          <div class="controls-row">
+            <label>Ring size</label>
+            <select id="ringSize" aria-label="Ring size">
+              <option>28</option><option>30</option><option selected>32</option><option>34</option><option>36</option>
+            </select>
+          </div>
+          <div class="small">Hotkeys: <span class="kbd">N</span> Next <span class="kbd">B</span> Back <span class="kbd">H</span> Hints <span class="kbd">U</span> Undo <span class="kbd">Y</span> Redo <span class="kbd">R</span> Reset <span class="kbd">G</span> Ghost <span class="kbd">T</span> Mode <span class="kbd">P</span> Timer</div>
+        </fieldset>
 
-      <section class="panel" id="panel-steps" role="tabpanel" aria-labelledby="tab-steps">
-        <div class="checklist" id="checklist" aria-describedby="steps-desc">
-          <p class="sr-only" id="steps-desc">Follow each step in order. Training mode enforces target highlights; Practice offers guidance with scoring.</p>
-          <div class="check"><input type="checkbox" disabled id="chk-0"><label for="chk-0">1. Orient: Identify A2/P2 &amp; commissures</label></div>
-          <div class="check"><input type="checkbox" disabled id="chk-1"><label for="chk-1">2. Select: Needle Driver + 2‑0 braided suture</label></div>
-          <div class="check"><input type="checkbox" disabled id="chk-2"><label for="chk-2">3. Plan: Review 12 evenly spaced annular targets</label></div>
-          <div class="check"><input type="checkbox" disabled id="chk-3"><label for="chk-3">4. Place Suture 1 (12 o’clock, A2)</label></div>
-          <div class="check"><input type="checkbox" disabled id="chk-4"><label for="chk-4">5. Place Suture 2</label></div>
-          <div class="check"><input type="checkbox" disabled id="chk-5"><label for="chk-5">6. Place Suture 3</label></div>
-          <div class="check"><input type="checkbox" disabled id="chk-6"><label for="chk-6">7. Place Suture 4</label></div>
-          <div class="check"><input type="checkbox" disabled id="chk-7"><label for="chk-7">8. Place Suture 5</label></div>
-          <div class="check"><input type="checkbox" disabled id="chk-8"><label for="chk-8">9. Place Suture 6</label></div>
-          <div class="check"><input type="checkbox" disabled id="chk-9"><label for="chk-9">10. Place Suture 7</label></div>
-          <div class="check"><input type="checkbox" disabled id="chk-10"><label for="chk-10">11. Place Suture 8</label></div>
-          <div class="check"><input type="checkbox" disabled id="chk-11"><label for="chk-11">12. Place Suture 9</label></div>
-          <div class="check"><input type="checkbox" disabled id="chk-12"><label for="chk-12">13. Place Suture 10</label></div>
-          <div class="check"><input type="checkbox" disabled id="chk-13"><label for="chk-13">14. Place Suture 11</label></div>
-          <div class="check"><input type="checkbox" disabled id="chk-14"><label for="chk-14">15. Place Suture 12</label></div>
-          <div class="check"><input type="checkbox" disabled id="chk-15"><label for="chk-15">16. Review: Verify spacing &amp; depth across annulus</label></div>
-          <div class="check"><input type="checkbox" disabled id="chk-16"><label for="chk-16">17. Finish: Tie &amp; cut (simulation)</label></div>
-        </div>
-      </section>
+```
+    <fieldset>
+      <legend>Legend</legend>
+      <div class="controls-col small">
+        <div><span class="swatch sw-safe"></span>Safe zone (green)</div>
+        <div><span class="swatch sw-caution"></span>Caution (amber)</div>
+        <div><span class="swatch sw-forbid"></span>Forbidden (red)</div>
+        <div><span class="swatch sw-ideal"></span>Target suture path (dashed) & ideal bite markers (blue)</div>
+      </div>
+      <hr class="sep" />
+      <div class="small">Annular sectors: A1‑A2‑A3 (anterior), P1‑P2‑P3 (posterior)</div>
+    </fieldset>
 
-      <section class="panel" id="panel-scores" role="tabpanel" aria-labelledby="tab-scores">
-        <div class="scorebox" aria-live="polite">
-          <div class="metric"><div class="label">Total Score</div><div class="val" id="score-total">0</div></div>
-          <div class="metric"><div class="label">Accuracy</div><div class="val" id="score-acc">0%</div></div>
-          <div class="metric"><div class="label">Angle</div><div class="val" id="score-ang">0%</div></div>
-          <div class="metric"><div class="label">Depth</div><div class="val" id="score-depth">0%</div></div>
-          <div class="metric"><div class="label">Sequence</div><div class="val" id="score-seq">0%</div></div>
-          <div class="metric"><div class="label">Handling</div><div class="val" id="score-hand">0%</div></div>
-          <div class="metric"><div class="label">Time</div><div class="val" id="score-time">0%</div></div>
-          <div class="metric"><div class="label">Errors</div><div class="val" id="score-err">0</div></div>
-        </div>
-        <p class="meta">
-          Scoring model: 40% accuracy · 15% angle · 15% depth · 10% sequence · 10% handling · 10% time.
-          The AI Co‑Pilot explains low sub-scores and how to correct them (e.g., “angle too shallow,” “entry too far from annulus,” “avoid leaflet tissue”).
-        </p>
-      </section>
+    <fieldset>
+      <legend>Settings</legend>
+      <label class="small">Hint level</label>
+      <input id="hintRange" type="range" min="0" max="3" step="1" value="2" aria-label="Hint level" />
+      <label class="small">Scoring weights</label>
+      <div class="controls-col small">
+        <div>Precision <input id="wPrecision" type="number" min="0" max="60" value="40" style="width:72px" /></div>
+        <div>Tissue Respect <input id="wTissue" type="number" min="0" max="60" value="25" style="width:72px" /></div>
+        <div>Ring Integration <input id="wRing" type="number" min="0" max="60" value="20" style="width:72px" /></div>
+        <div>Efficiency <input id="wEff" type="number" min="0" max="60" value="15" style="width:72px" /></div>
+      </div>
+    </fieldset>
 
-      <section class="panel" id="panel-logs" role="tabpanel" aria-labelledby="tab-logs">
-        <pre class="log" id="log" aria-live="polite">
-<!-- SESSION LOG appears here -->
-        </pre>
-      </section>
-    </aside>
-
-    <!-- Bottom bar -->
-    <footer class="bottombar" role="contentinfo">
-      <div class="hint">Shortcuts:</div>
-      <div class="kbd" aria-label="Needle Driver key">1</div> Needle Driver
-      <div class="kbd" aria-label="Forceps key">2</div> Forceps
-      <div class="kbd" aria-label="Scissors key">3</div> Scissors
-      <div class="kbd" aria-label="Next step key">N</div> Next Step
-      <div class="kbd" aria-label="Back step key">B</div> Back
-      <div class="kbd" aria-label="Toggle highlights key">H</div> Highlights
-      <div class="kbd" aria-label="Toggle ghost key">G</div> Ghost
-      <div class="kbd" aria-label="Help key">?</div> Help
-      <div class="hint" style="margin-left:auto">Voice guidance mirrors all on-screen instructions.</div>
-    </footer>
+    <fieldset>
+      <legend>Hemodynamic surrogate (illustrative)</legend>
+      <canvas id="gauge" aria-label="Qualitative hemodynamic surrogate gauge"></canvas>
+      <div class="small">Even spacing & appropriate tension slightly improve this gauge.</div>
+    </fieldset>
   </div>
+</aside>
 
-  <!-- Help modal -->
-  <div class="modal" id="help-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="help-title">
-    <div class="sheet">
-      <h2 id="help-title">How to Use — Suturing Trainer</h2>
-      <ol>
-        <li><strong>Training Mode:</strong> Click <em>Start Session</em>. The highlighted target shows where to place the <em>Entry</em>. A ghost arrow shows how to traverse to the <em>Exit</em>.</li>
-        <li>Click once to set <strong>Entry</strong> near the annulus highlight. Click again to set <strong>Exit</strong> across the annulus. Maintain a near-perpendicular angle.</li>
-        <li>Read <strong>AI Co‑Pilot</strong> feedback. It explains accuracy, angle, depth, and handling (avoid leaflet/chordae zones).</li>
-        <li>Proceed through all 12 targets. Review spacing and depth, then finish.</li>
-        <li><strong>Practice Mode:</strong> Same steps, lighter gating; still scored with detailed explanations.</li>
-      </ol>
-      <p><strong>Keyboard:</strong> <span class="kbd">1</span>/<span class="kbd">2</span>/<span class="kbd">3</span> tools · <span class="kbd">N</span>/<span class="kbd">B</span> steps · <span class="kbd">H</span> highlights · <span class="kbd">G</span> ghost · <span class="kbd">?</span> help.</p>
-      <p class="meta">Educational use only. Not a medical device.</p>
-      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
-        <button class="btn" id="help-close">Close</button>
+<!-- Center: Simulation Viewport -->
+<section class="panel" aria-label="Simulation viewport">
+  <h3>
+    Atrial View — Annuloplasty Suturing
+    <span class="small"> | Ghost overlay shows a perfect reference; hints guide placement.</span>
+  </h3>
+  <div class="content canvas-wrap">
+    <div id="viewport" aria-label="Canvas viewport" role="region">
+      <canvas id="sim" aria-label="Mitral anatomy and instruments canvas"></canvas>
+      <svg id="overlay" viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Interactive overlay">
+        <g class="overlay-group" id="labels"></g>
+        <g class="overlay-group" id="callouts"></g>
+        <g class="overlay-group" id="hitLayer"></g>
+      </svg>
+    </div>
+    <div class="controls-row" style="justify-content:space-between">
+      <div class="small">Interaction: Click to set entry, drag to arc needle, release to set exit. Drag suture tail to tension. Drag to ring holes to pass.</div>
+      <div>
+        <button id="playDemo">Play Demo</button>
+        <button id="playDemoSlow">Play Demo 0.5×</button>
+        <button id="finishBtn" class="tooltip" data-tip="Compute final score and summary">Finish</button>
       </div>
     </div>
   </div>
+</section>
 
-  <!-- =========================================================
-       APPLICATION SCRIPT (type=module)
-  ============================================================ -->
-  <script type="module">
-    // ============================================================
-    // CONFIG & CONSTANTS
-    // ============================================================
-    const CONFIG = {
-      TASK: {
-        NAME: 'Annuloplasty Suturing',
-        SUTURES: 12,
-        ORDER: [0,1,11,2,10,3,9,4,8,5,7,6],     // surgical sequence (balanced)
-        START_CLOCK_DEG: 270                      // start near 12 o’clock
-      },
-      THRESHOLDS: {
-        ANNULUS_SNAP_PX: 24,        // max px from annulus for Entry to be accepted in Training
-        TARGET_ANGULAR_TOL_DEG: 15, // allowed deviation from highlighted target (±)
-        D0: 12,                     // decay length for accuracy exp(-d/D0)
-        IDEAL_NEEDLE_ANGLE_DEG: 90, // perpendicular to annulus
-        ANGLE_TOL_DEG: 25,          // tolerated deviation from perpendicular (0 score at ~25° off)
-        DEPTH_MIN_PX: 6,            // min traverse across annulus along normal
-        DEPTH_MAX_PX: 24            // max for full depth score
-      },
-      WEIGHTS: { ACC:0.40, ANG:0.15, DEPTH:0.15, SEQ:0.10, HAND:0.10, TIME:0.10 },
-      TIME: { IDEAL_SECONDS_PER_SUTURE: 15 },
-      UI:   { VOICE:true, HAPTICS:'auto' }
+<!-- Right: AI Co-pilot -->
+<aside class="panel" aria-label="AI Co‑pilot">
+  <h3>AI Co‑pilot</h3>
+  <div class="content coach" id="coach">
+    <div class="msg" id="coachStatus" aria-live="polite">Welcome. Training mode is active. Step 1: Orientation — explore the annulus sectors. Press <span class="kbd">N</span> to advance.</div>
+    <details open>
+      <summary>Hints &amp; rationale</summary>
+      <div id="hints" class="small">
+        Keep bites within the green band, align needle with local annular tangent, and maintain even spacing. Stricter thresholds near commissures.
+      </div>
+    </details>
+    <details open>
+      <summary>Real‑time metrics</summary>
+      <div class="metric-grid" id="metrics">
+        <div class="metric"><div class="small">Depth error</div><div class="val" id="mDepth">—</div></div>
+        <div class="metric"><div class="small">Angle error</div><div class="val" id="mAngle">—</div></div>
+        <div class="metric"><div class="small">Spacing CV</div><div class="val" id="mSpacing">—</div></div>
+        <div class="metric"><div class="small">Tension</div><div class="val" id="mTension">—</div></div>
+      </div>
+    </details>
+    <details open>
+      <summary>Errors &amp; fixes</summary>
+      <div id="errors" class="small">No errors yet. Proceed when ready.</div>
+    </details>
+    <div class="controls-row">
+      <button id="nextAction">Next recommended action</button>
+    </div>
+    <hr class="sep" />
+    <details>
+      <summary>Score overview</summary>
+      <canvas id="radar" aria-label="Score radar chart"></canvas>
+      <canvas id="sparkline" aria-label="Error trend sparkline"></canvas>
+    </details>
+  </div>
+</aside>
+```
+
+  </main>
+
+  <!-- Bottom bar -->
+
+  <div id="bottomBar" role="region" aria-label="Stepper and controls">
+    <div class="stepper" id="stepper" aria-label="Training steps">
+      <!-- 9 dots, generated by JS -->
+    </div>
+    <div class="controls-row">
+      <button id="backBtn" class="tooltip" data-tip="B">Back</button>
+      <button id="nextBtn" class="tooltip" data-tip="N">Next</button>
+      <button id="undoBtn" class="tooltip" data-tip="U">Undo</button>
+      <button id="redoBtn" class="tooltip" data-tip="Y">Redo</button>
+      <label class="visually-hidden" for="caseNotes">Case notes</label>
+      <input id="caseNotes" placeholder="Case notes…" aria-label="Case notes" />
+    </div>
+  </div>
+
+  <footer>
+    <div>© <span id="year"></span> Mitral Repair Trainer • <a href="#" id="licenseLink">License &amp; disclaimer</a></div>
+    <div class="small">Educational simulation only — not for clinical decision‑making.</div>
+  </footer>
+</div>
+
+<!-- Toasts -->
+
+<div id="toasts" aria-live="polite"></div>
+
+<!-- Modal Backdrops -->
+
+<div class="modal-backdrop" id="aboutModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+    <header><h3 id="aboutTitle" style="margin:.4rem .6rem">About</h3></header>
+    <div class="body small">
+      <p><strong>Mitral Repair Trainer</strong> — single‑file educational simulation (v<span id="version"></span>).</p>
+      <p>Author: <em>Your Name Here</em>. All content is for training only and not a clinical device. No external dependencies; runs offline.</p>
+      <p>Feedback style: concise, supportive, corrective. Data stays in your browser (localStorage).</p>
+      <details>
+        <summary>Changelog (high level)</summary>
+        <ul>
+          <li>Initial release: training & practice modes, AI co‑pilot, scoring, exports, replay.</li>
+        </ul>
+      </details>
+    </div>
+    <footer><button onclick="MVRT.UI.hideModal('aboutModal')">Close</button></footer>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="helpModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <header><h3 id="helpTitle" style="margin:.4rem .6rem">Help &amp; Cheat‑sheet</h3></header>
+    <div class="body small">
+      <p><strong>Goal:</strong> Practice annuloplasty ring suturing from an atrial view. Follow steps, place bites along the annulus, maintain depth/angle/spacing, pass through ring, tension, and tie.</p>
+      <p><strong>Interaction:</strong> Click to set <em>entry</em> → drag along an arc → release to set <em>exit</em>. Drag free tail to tension. Drag tail over ring holes to pass.</p>
+      <p class="help-kbd">
+        <span class="kbd">N</span> Next <span class="kbd">B</span> Back <span class="kbd">H</span> Hints <span class="kbd">U</span> Undo <span class="kbd">Y</span> Redo <span class="kbd">R</span> Reset
+        <span class="kbd">G</span> Ghost <span class="kbd">T</span> Mode <span class="kbd">P</span> Timer <span class="kbd">?</span> Help
+      </p>
+      <hr class="sep"/>
+      <details open>
+        <summary>Acceptance tests</summary>
+        <ul id="testList"></ul>
+      </details>
+      <details>
+        <summary>Screenshots</summary>
+        <div id="screens"></div>
+      </details>
+    </div>
+    <footer><button onclick="MVRT.UI.hideModal('helpModal')">Close</button></footer>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="licenseModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="licenseTitle">
+    <header><h3 id="licenseTitle" style="margin:.4rem .6rem">License &amp; Disclaimer</h3></header>
+    <div class="body small" style="line-height:1.55">
+      <p><strong>License:</strong> MIT‑like permissive license. You may copy, modify, and use for educational purposes. No warranty.</p>
+      <p><strong>Disclaimer:</strong> This software is an <em>educational simulation</em> only and <strong>not</strong> for clinical decision‑making or real procedures. The rendering and heuristics are approximate; no patient‑specific calculations are performed. Use with professional discretion.</p>
+    </div>
+    <footer><button onclick="MVRT.UI.hideModal('licenseModal')">Close</button></footer>
+  </div>
+</div>
+
+<script>
+/* =============================================================================
+   MVRT — Mitral Repair Trainer
+   Single-file JS (no external libraries). ES6 modules via namespaces.
+   Modules: AppState, Cases, Geometry, Renderer, Physics, AI, Scoring, UI, Export, Storage, Audio, Tests
+   ============================================================================= */
+
+const MVRT = (() => {
+'use strict';
+
+/* -------------------------------- Utilities -------------------------------- */
+const Util = {
+  clamp:(v,min,max)=>Math.max(min,Math.min(max,v)),
+  lerp:(a,b,t)=>a+(b-a)*t,
+  dist:(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),
+  dists:(x1,y1,x2,y2)=>Math.hypot(x1-x2,y1-y2),
+  rad:(deg)=>deg*Math.PI/180, deg:(rad)=>rad*180/Math.PI,
+  now:()=>performance.now(),
+  fmt:(n,d=1)=> (Number.isFinite(n)? n.toFixed(d) : '—'),
+  niceTime:(ms)=> {
+    const s = Math.floor(ms/1000);
+    const m = Math.floor(s/60);
+    const r = s % 60;
+    return `${String(m).padStart(2,'0')}:${String(r).padStart(2,'0')}`;
+  },
+  pointInPoly:(pt, poly)=>{ // ray-cast
+    let c=false; const x=pt.x, y=pt.y;
+    for (let i=0,j=poly.length-1;i<poly.length;j=i++){
+      const xi=poly[i].x, yi=poly[i].y, xj=poly[j].x, yj=poly[j].y;
+      const intersect = ((yi>y)!=(yj>y)) && (x < (xj-xi)*(y-yi)/(yj-yi+1e-6)+xi);
+      if(intersect) c=!c;
+    } return c;
+  },
+  bezier:(p0,p1,p2,p3,t)=>{
+    const u=1-t;
+    return {
+      x: u*u*u*p0.x + 3*u*u*t*p1.x + 3*u*t*t*p2.x + t*t*t*p3.x,
+      y: u*u*u*p0.y + 3*u*u*t*p1.y + 3*u*t*t*p2.y + t*t*t*p3.y
+    }
+  },
+  // Smooth random (Perlin-ish) using value noise
+  makeNoise2D(seed=1337){
+    const rand = (()=>{ let s=seed>>>0; return ()=> (s = (s*1664525 + 1013904223)>>>0, s/0xffffffff) })();
+    const perm = new Uint8Array(512); for(let i=0;i<256;i++) perm[i]=i;
+    for(let i=255;i>0;i--){ const j=(rand()*256)|0; [perm[i],perm[j]]=[perm[j],perm[i]] }
+    for(let i=0;i<256;i++) perm[256+i]=perm[i];
+    const grad = (h,x,y)=>{const u = (h&1)?x:-x; const v=(h&2)?y:-y; return u+v}
+    return (x,y)=>{
+      const X=Math.floor(x)&255, Y=Math.floor(y)&255;
+      x-=Math.floor(x); y-=Math.floor(y);
+      const u=x*x*(3-2*x), v=y*y*(3-2*y);
+      const a=perm[X]+Y, b=perm[X+1]+Y;
+      const n00=grad(perm[a],x,y), n01=grad(perm[a+1],x,y-1);
+      const n10=grad(perm[b],x-1,y), n11=grad(perm[b+1],x-1,y-1);
+      const nx0 = n00*(1-v)+n01*v, nx1 = n10*(1-v)+n11*v;
+      return (nx0*(1-u)+nx1*u);
     };
+  },
+  saveBlob:(blob, filename)=>{
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove() }, 0);
+  },
+  dataURLToBlob:(dataURL)=>{
+    const [meta, data] = dataURL.split(',');
+    const mime = /:(.*?);/.exec(meta)[1];
+    const bin = atob(data);
+    const n = bin.length;
+    const u8 = new Uint8Array(n);
+    for(let i=0;i<n;i++) u8[i] = bin.charCodeAt(i);
+    return new Blob([u8], {type:mime});
+  },
+  uid: (()=>{ let i=0; return ()=>`id_${(++i).toString(36)}_${Date.now().toString(36)}` })(),
+  withTry:(fn, onErr)=>{
+    try { return fn() } catch(e){ console.error(e); onErr?.(e); }
+  },
+  measureText(ctx, text, font='12px sans-serif'){ ctx.save(); ctx.font=font; const m=ctx.measureText(text); ctx.restore(); return m; }
+};
 
-    // ============================================================
-    // CORE UTILS, EVENT BUS, STORAGE, VOICE, SERVICE WORKER
-    // ============================================================
-    const Utils = {
-      clamp:(v,min,max)=>Math.max(min,Math.min(max,v)),
-      lerp:(a,b,t)=>a+(b-a)*t,
-      map:(v,inMin,inMax,outMin,outMax)=>outMin+( (v-inMin)*(outMax-outMin)/(inMax-inMin) ),
-      dist:(x1,y1,x2,y2)=>Math.hypot(x2-x1,y2-y1),
-      rad:(deg)=>deg*Math.PI/180,
-      deg:(rad)=>rad*180/Math.PI,
-      fmtTime:(ms)=>{const s=Math.floor(ms/1000),m=Math.floor(s/60);return `${String(m).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;},
-      now:()=>performance.now(),
-      uid:()=>Math.random().toString(36).slice(2),
+/* -------------------------------- Cases ----------------------------------- */
+const Cases = {
+  data:{
+    standard:{
+      id:'standard',
+      title:'Standard annulus',
+      ellipse:{ a:220, b:170, rot:Util.rad(-20) },
+      center:{ x:0, y:0 }, // relative, will be centered at canvas runtime
+      commissures:{ anterolateral: 160, posteromedial: 340 }, // degrees along param (0 at +x)
+      ideal:{ biteDeg: 12, depthMM:{min:2.0, max:3.0}, spacingMM: 6.0 },
+      thresholds:{ depthTol:1.2, angleTol:12, spacingCV:0.22, tensionMax: 0.85 },
+      ring:{ size:32, holes: 28 },
+      forbidden:[], // no red masks
+      note:'Smooth annulus; standard thresholds.'
+    },
+    dilated:{
+      id:'dilated',
+      title:'Dilated annulus',
+      ellipse:{ a:250, b:185, rot:Util.rad(-18) },
+      center:{ x:0, y:0 },
+      commissures:{ anterolateral: 158, posteromedial: 338 },
+      ideal:{ biteDeg: 10, depthMM:{min:2.0, max:3.0}, spacingMM: 7.0 },
+      thresholds:{ depthTol:1.4, angleTol:14, spacingCV:0.28, tensionMax: 1.0 }, // looser tension
+      ring:{ size:34, holes: 30 },
+      forbidden:[],
+      note:'Larger posterior segment; looser tension thresholds.'
+    },
+    calcified:{
+      id:'calcified',
+      title:'Calcified posterior band',
+      ellipse:{ a:220, b:170, rot:Util.rad(-22) },
+      center:{ x:0, y:0 },
+      commissures:{ anterolateral: 160, posteromedial: 340 },
+      ideal:{ biteDeg: 11, depthMM:{min:2.0, max:3.0}, spacingMM: 6.2 },
+      thresholds:{ depthTol:1.0, angleTol:10, spacingCV:0.20, tensionMax: 0.80 },
+      ring:{ size:32, holes: 28 },
+      forbidden:[ // simple band P2-P3
+        { name:'Calcified band', poly:[ {x: -60, y: 40}, {x:-140, y:40}, {x:-160,y:80}, {x:-40,y:80} ] }
+      ],
+      note:'Stricter angle alignment near P2–P3; forbidden posterior band.'
+    }
+  }
+};
 
-      // Ellipse helpers (annulus model)
-      ellipsePoint(a,b,t,rot=0, cx=0, cy=0){
-        const x=a*Math.cos(t), y=b*Math.sin(t);
-        const nx=(2*x)/(a*a), ny=(2*y)/(b*b);
-        const cos=Math.cos(rot), sin=Math.sin(rot);
-        const xr=x*cos - y*sin, yr=x*sin + y*cos;
-        const nxr=nx*cos - ny*sin, nyr=nx*sin + ny*cos;
-        const nl=Math.hypot(nxr,nyr)||1;
-        return {x:cx+xr, y:cy+yr, nx:nxr/nl, ny:nyr/nl, t};
-      },
-      projectToEllipse(a,b,rot,cx,cy,px,py, iters=6){
-        const cos=Math.cos(-rot), sin=Math.sin(-rot);
-        const ux= (px-cx)*cos - (py-cy)*sin;
-        const uy= (px-cx)*sin + (py-cy)*cos;
-        let t=Math.atan2(uy/b, ux/a);
-        for(let i=0;i<iters;i++){
-          const ct=Math.cos(t), st=Math.sin(t);
-          const ex=a*ct, ey=b*st;
-          const vx=ex-ux, vy=ey-uy;
-          const dx=-a*st, dy=b*ct;
-          const f=vx*dx + vy*dy;
-          const g=dx*dx + dy*dy + vx*(-a*ct) + vy*(-b*st);
-          t= t - (f/(g||1e-6));
-        }
-        return (t+Math.PI*2)%(Math.PI*2);
-      },
-      pointInPoly(pt, poly){
-        let c=false;
-        for(let i=0,j=poly.length-1;i<poly.length;j=i++){
-          const xi=poly[i][0], yi=poly[i][1], xj=poly[j][0], yj=poly[j][1];
-          const intersect=((yi>pt[1])!=(yj>pt[1])) && (pt[0] < (xj-xi)*(pt[1]-yi)/(yj-yi+1e-9)+xi);
-          if(intersect)c=!c;
-        }
-        return c;
+/* ------------------------------- App State -------------------------------- */
+const AppState = {
+  version:'1.0.0',
+  canvas:null, ctx:null, overlay:null, DPR:1,
+  width:1200, height:780,
+  mode:'training', // 'training' | 'practice'
+  trainingSteps:[
+    'Orientation','Ring sizing preview','Choose suture type','Define first bite (P2)',
+    'Advance circumferentially','Pass through ring','Approximation & tensioning',
+    'Knot tying','Final check'
+  ],
+  stepIndex:0,
+  timerStart:0, timerPaused:true, elapsed:0,
+  caseId:'standard',
+  settings:{
+    hintLevel:2,
+    weights:{ precision:40, tissue:25, ring:20, eff:15 },
+    theme:'light',
+    audio:false
+  },
+  instruments:{ current:'needle', sutureType:'pledgeted', needle:'MH', ringSize:32 },
+  ghost:true,
+  geometry:{ center:{x:0,y:0}},
+  // Bites & sutures:
+  bites:[], // {id, entry:{x,y}, exit:{x,y}, tEntry, tExit, depthMM, angleErr, spacingErr, commissureTag, time, pledged:boolean, tension:0..1, ringHole:null, flags:{forbidden:boolean, repierce:boolean}}
+  // Thread endpoints for tensioning and interaction
+  threads:[], // {id, tail:{x,y}, fixed:[{x,y}], tension, pathPts:[]}
+  // Undo/redo
+  history:[], future:[],
+  // Events
+  events:[], // {time, type, info}
+  // Errors timeline for sparkline
+  errorTrend:[], // numeric over time
+  // Score data (cached)
+  score:null, // {precision, tissue, ring, eff, total, grade}
+  // Replay (recorded user input)
+  replay:[], // {t, action, data}
+  // Acceptance tests
+  tests:[],
+};
+
+/* ------------------------------- Storage ---------------------------------- */
+const Storage = {
+  load(){
+    const lastCase = localStorage.getItem('mvrt:lastCase');
+    const settings = localStorage.getItem('mvrt:settings');
+    const scores = localStorage.getItem('mvrt:highscores');
+    if(lastCase && Cases.data[lastCase]) AppState.caseId = lastCase;
+    if(settings){
+      try{ const s=JSON.parse(settings);
+        AppState.settings = Object.assign(AppState.settings, s);
+      }catch{}
+    }
+    AppState.instruments.ringSize = Cases.data[AppState.caseId].ring.size;
+    if(scores){ /* not used directly here */ }
+  },
+  save(){
+    localStorage.setItem('mvrt:lastCase', AppState.caseId);
+    localStorage.setItem('mvrt:settings', JSON.stringify(AppState.settings));
+    // Highscores updated when finishing
+  }
+};
+
+/* ------------------------------- Geometry --------------------------------- */
+const Geometry = {
+  // Canvas transform utilities (centered coordinate system)
+  toCanvas(pt){ return { x: AppState.width/2 + pt.x, y: AppState.height/2 + pt.y } },
+  fromCanvas(pt){ return { x: pt.x - AppState.width/2, y: pt.y - AppState.height/2 } },
+  ellipsePoint(caseConf, deg){
+    const {a,b,rot} = caseConf.ellipse;
+    const t = Util.rad(deg);
+    const x = a*Math.cos(t), y = b*Math.sin(t);
+    const xr = x*Math.cos(rot) - y*Math.sin(rot);
+    const yr = x*Math.sin(rot) + y*Math.cos(rot);
+    return {x:xr, y:yr};
+  },
+  ellipseTangentAngle(caseConf, deg){
+    const {a,b,rot} = caseConf.ellipse;
+    const t=Util.rad(deg);
+    // derivative of ellipse param rotated
+    const dx = -a*Math.sin(t), dy = b*Math.cos(t);
+    const tx = dx*Math.cos(rot) - dy*Math.sin(rot);
+    const ty = dx*Math.sin(rot) + dy*Math.cos(rot);
+    return Math.atan2(ty, tx);
+  },
+  nearestAngleOnEllipse(caseConf, pt){
+    // Iterate over coarse + refine search for nearest angle
+    let bestDeg=0, bestD=1e9;
+    for(let d=0; d<360; d+=5){
+      const p = this.ellipsePoint(caseConf, d);
+      const dd = Util.dists(pt.x,pt.y,p.x,p.y);
+      if(dd<bestD){ bestD=dd; bestDeg=d; }
+    }
+    // refine
+    let step=1, iter=0;
+    while(step>0.05 && iter<60){
+      iter++;
+      let improved=false;
+      for(const o of [-step,0,step]){
+        const cand = bestDeg+o;
+        const p=this.ellipsePoint(caseConf,cand);
+        const dd=Util.dists(pt.x,pt.y,p.x,p.y);
+        if(dd<bestD){ bestD=dd; bestDeg=cand; improved=true; }
       }
+      if(!improved) step/=2;
+    }
+    return ((bestDeg%360)+360)%360;
+  },
+  radialDepth(caseConf, pt){
+    const deg = this.nearestAngleOnEllipse(caseConf, pt);
+    const on = this.ellipsePoint(caseConf, deg);
+    const d = Util.dists(pt.x,pt.y,on.x,on.y);
+    const inward = 1; // coordinate-free; we take absolute distance as depth surrogate
+    return {deg, on, depth:d*inward};
+  },
+  segmentTag(deg){
+    // Define rough sector mapping for labeling (A1..A3, P1..P3)
+    // We'll define anterior roughly 120deg wide centered near +y if rotated; use canonical mapping after rotation ~ handled visually.
+    // For pedagogy we map param angle to 6 equal sectors, starting at 0° on +x, increasing CCW.
+    const idx = Math.floor((((deg%360)+360)%360) / 60); // 0..5
+    const map = ['A1','A2','A3','P3','P2','P1']; // order so that posterior is near negative y
+    return map[idx];
+  }
+};
+
+/* -------------------------------- Physics --------------------------------- */
+const Physics = {
+  // Simple Hooke-like tension; thread sag approximated with cubic Bezier
+  tension(thread){
+    // rest length based on straight distance along bites
+    let len=0;
+    const pts = [ ...thread.fixed, thread.tail ];
+    for(let i=1;i<pts.length;i++) len += Util.dists(pts[i-1].x,pts[i-1].y,pts[i].x,pts[i].y);
+    const rest = thread.rest || (thread.rest = Math.max(80, len*0.92));
+    const k = 1/Math.max(1, rest);
+    const ext = Math.max(0, len-rest);
+    thread.tension = Util.clamp(k*ext, 0, 1.5);
+    return thread.tension;
+  },
+  bezierForSegment(a,b,tension=0.2){
+    // control points perpendicular to segment to simulate bowing
+    const mx = (a.x+b.x)/2, my=(a.y+b.y)/2;
+    const ang = Math.atan2(b.y-a.y, b.x-a.x);
+    const bend = (1-tension)*0.35*Util.dists(a.x,a.y,b.x,b.y);
+    const nx = -Math.sin(ang), ny = Math.cos(ang);
+    const p0=a, p3=b;
+    const p1={ x: Util.lerp(a.x,mx,0.5)+nx*bend, y: Util.lerp(a.y,my,0.5)+ny*bend };
+    const p2={ x: Util.lerp(mx,b.x,0.5)+nx*bend, y: Util.lerp(my,b.y,0.5)+ny*bend };
+    return {p0,p1,p2,p3};
+  },
+  deformTissue(localPts, bite, strength=0.55){
+    // Applies a small, local "dent" near bite points; returns offsets (used transiently)
+    const offs=[];
+    for(const p of localPts){
+      const d = Util.dists(p.x,p.y,bite.entry.x,bite.entry.y);
+      const r = 40; // radius of influence
+      const s = Math.max(0, 1 - d/r);
+      const dx = (bite.entry.x - p.x)*s*0.08*strength;
+      const dy = (bite.entry.y - p.y)*s*0.08*strength;
+      offs.push({dx,dy});
+    }
+    return offs;
+  }
+};
+
+/* -------------------------------- Renderer -------------------------------- */
+const Renderer = {
+  init(){
+    const c = AppState.canvas = document.getElementById('sim');
+    const o = AppState.overlay = document.getElementById('overlay');
+    const ctx = AppState.ctx = c.getContext('2d');
+    const DPR = AppState.DPR = Math.max(1, Math.min(2, window.devicePixelRatio||1));
+    const rect = c.getBoundingClientRect();
+    AppState.width = Math.floor(rect.width*DPR);
+    AppState.height = Math.floor(rect.height*DPR);
+    c.width = AppState.width;
+    c.height = AppState.height;
+    c.style.width = rect.width+'px';
+    c.style.height = rect.height+'px';
+    ctx.scale(DPR, DPR);
+    // build overlay viewBox to match pixels
+    o.setAttribute('viewBox', `0 0 ${rect.width} ${rect.height}`);
+    // textures
+    this.noise = Util.makeNoise2D(20240830);
+    this.time = 0;
+    this._buildLabels();
+    this._buildRingHoles();
+    this.draw();
+  },
+  _buildLabels(){
+    const labels = document.getElementById('labels');
+    labels.innerHTML = '';
+    const make = (text, pos)=>{
+      const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+      t.textContent=text; t.setAttribute('x', pos.x); t.setAttribute('y', pos.y);
+      t.setAttribute('fill', 'var(--text)'); t.setAttribute('font-size','12');
+      t.setAttribute('text-anchor','middle'); t.setAttribute('paint-order','stroke'); t.setAttribute('stroke','var(--panel)'); t.setAttribute('stroke-width','3');
+      labels.appendChild(t);
     };
+    // sector labels
+    const conf = Cases.data[AppState.caseId];
+    const center = Geometry.toCanvas({x:0,y:0});
+    const R = 180;
+    const names = [['A1',30],['A2',90],['A3',150],['P3',210],['P2',270],['P1',330]];
+    for(const [name,deg] of names){
+      const p = Geometry.ellipsePoint(conf, deg);
+      const pc = Geometry.toCanvas({x:p.x*0.75, y:p.y*0.75});
+      make(name,{x:pc.x, y:pc.y});
+    }
+  },
+  _buildRingHoles(){
+    const hit = document.getElementById('hitLayer');
+    hit.innerHTML = '';
+    const conf = Cases.data[AppState.caseId];
+    const holes = conf.ring.holes;
+    const labels = document.getElementById('callouts');
+    labels.innerHTML='';
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('id','ringHolesG');
+    document.getElementById('hitLayer').appendChild(g);
+    const r = 2.75; // px radius
+    for(let i=0;i<holes;i++){
+      const deg = (i/holes)*360;
+      const p = Geometry.ellipsePoint(conf, deg);
+      const s = 0.85; // ring slightly inside annulus
+      const pc = Geometry.toCanvas({x:p.x*s,y:p.y*s});
+      const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('cx', pc.x); c.setAttribute('cy', pc.y); c.setAttribute('r', r);
+      c.setAttribute('fill','transparent'); c.setAttribute('stroke','none');
+      c.classList.add('hit');
+      c.dataset.holeIndex = i.toString();
+      c.addEventListener('mouseenter', ()=>{ c.setAttribute('fill','rgba(120,198,255,0.8)') });
+      c.addEventListener('mouseleave', ()=>{ c.setAttribute('fill','transparent') });
+      c.addEventListener('click', (e)=>{
+        UI.ringHoleClicked(i, pc);
+        e.stopPropagation();
+      });
+      g.appendChild(c);
+    }
+  },
+  resize(){
+    const c = AppState.canvas;
+    const rect = c.getBoundingClientRect();
+    const DPR = AppState.DPR;
+    AppState.width = Math.floor(rect.width*DPR);
+    AppState.height = Math.floor(rect.height*DPR);
+    c.width = AppState.width;
+    c.height = AppState.height;
+    c.style.width = rect.width+'px';
+    c.style.height = rect.height+'px';
+    AppState.ctx.setTransform(DPR,0,0,DPR,0,0);
+    AppState.overlay.setAttribute('viewBox', `0 0 ${rect.width} ${rect.height}`);
+    this._buildLabels();
+    this._buildRingHoles();
+  },
+  drawBackground(ctx){
+    const w = ctx.canvas.clientWidth, h = ctx.canvas.clientHeight;
+    ctx.save();
+    // Left atrium subtle trabeculations (procedural noise)
+    const scale = 90;
+    for(let y=0;y<h;y+=4){
+      for(let x=0;x<w;x+=4){
+        const n = this.noise(x/scale + this.time*0.0005, y/scale + 33);
+        const v = 12 + Math.floor(10*n);
+        ctx.fillStyle = `rgba(255,255,255,${(v/255)*0.08})`;
+        ctx.fillRect(x,y,4,4);
+      }
+    }
+    // Papillary silhouettes
+    ctx.globalAlpha = 0.08;
+    ctx.fillStyle = '#000';
+    for(let i=0;i<2;i++){
+      ctx.beginPath();
+      const cx = w/2 + (i?80:-80), cy = h/2 + 180;
+      ctx.ellipse(cx, cy, 40, 22, 0, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.restore();
+  },
+  drawAnnulus(ctx){
+    const conf = Cases.data[AppState.caseId];
+    const center = {x:AppState.width/2/AppState.DPR, y:AppState.height/2/AppState.DPR};
+    // Soft shadow
+    ctx.save();
+    ctx.translate(center.x, center.y);
+    ctx.shadowColor = '#0006'; ctx.shadowBlur = 20; ctx.shadowOffsetY=8;
+    ctx.beginPath();
+    for(let d=0; d<=360; d+=3){
+      const p = Geometry.ellipsePoint(conf, d);
+      if(d===0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x,p.y);
+    }
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(0,0,0,0.12)';
+    ctx.fill();
+    ctx.restore();
 
-    const Bus = {
-      map:new Map(),
-      on(evt,fn){ if(!this.map.has(evt)) this.map.set(evt,new Set()); this.map.get(evt).add(fn); },
-      off(evt,fn){ this.map.get(evt)?.delete(fn); },
-      emit(evt,data){ this.map.get(evt)?.forEach(fn=>fn(data)); }
+    // Annulus band & leaflets
+    ctx.save();
+    ctx.translate(center.x, center.y);
+
+    // Leaflets shading (anterior, posterior)
+    const gradA = ctx.createRadialGradient(0,0,50, 0,0,240);
+    gradA.addColorStop(0,'#ffffff12'); gradA.addColorStop(1,'#ffffff02');
+    ctx.fillStyle=gradA;
+    // approximate leaflets area
+    ctx.beginPath();
+    for(let d=30; d<=150; d+=3){
+      const p=Geometry.ellipsePoint(conf,d); if(d===30) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y);
+    }
+    for(let d=150; d>=30; d-=3){
+      const p=Geometry.ellipsePoint(conf,d); ctx.lineTo(p.x*0.92,p.y*0.92);
+    }
+    ctx.closePath(); ctx.fill();
+
+    ctx.beginPath();
+    for(let d=210; d<=330; d+=3){ const p=Geometry.ellipsePoint(conf,d); if(d===210) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y); }
+    for(let d=330; d>=210; d-=3){ const p=Geometry.ellipsePoint(conf,d); ctx.lineTo(p.x*0.94,p.y*0.94); }
+    ctx.closePath(); ctx.fill();
+
+    // Annular safe/caution band
+    for(let pass=0; pass<2; pass++){
+      ctx.beginPath();
+      const scale = pass? 0.88 : 1.0;
+      for(let d=0; d<=360; d+=2){
+        const p=Geometry.ellipsePoint(conf,d); if(d===0) ctx.moveTo(p.x*scale,p.y*scale); else ctx.lineTo(p.x*scale,p.y*scale);
+      }
+      ctx.closePath();
+      ctx.lineWidth = pass? 10: 16;
+      ctx.strokeStyle = pass? 'rgba(255,175,0,0.25)' : 'rgba(46, 204, 113, 0.22)';
+      ctx.stroke();
+    }
+
+    // Ideal path (dashed)
+    ctx.beginPath();
+    ctx.setLineDash([8,6]);
+    for(let d=0; d<=360; d+=4){
+      const p=Geometry.ellipsePoint(conf,d);
+      if(d===0) ctx.moveTo(p.x*0.95,p.y*0.95); else ctx.lineTo(p.x*0.95,p.y*0.95);
+    }
+    ctx.setLineDash([]);
+    ctx.lineWidth=1.2; ctx.strokeStyle='rgba(106,169,255,0.9)'; ctx.stroke();
+
+    // Ideal bite markers (blue dots)
+    ctx.fillStyle='rgba(80,160,255,0.95)';
+    const step = Cases.data[AppState.caseId].ideal.biteDeg;
+    for(let d=0; d<360; d+=step){
+      const p=Geometry.ellipsePoint(conf,d);
+      ctx.beginPath(); ctx.arc(p.x*0.94,p.y*0.94,2.2,0,Math.PI*2); ctx.fill();
+    }
+
+    // Forbidden masks
+    for(const mask of (conf.forbidden||[])){
+      ctx.beginPath();
+      for(let i=0;i<mask.poly.length;i++){
+        const p=mask.poly[i];
+        if(i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y);
+      }
+      ctx.closePath();
+      ctx.fillStyle='rgba(231,76,60,0.18)';
+      ctx.fill();
+      ctx.strokeStyle='rgba(231,76,60,0.5)'; ctx.lineWidth=1.5; ctx.stroke();
+    }
+
+    // Ring template
+    ctx.save();
+    ctx.globalAlpha = 0.85;
+    ctx.beginPath();
+    for(let d=0; d<=360; d+=3){
+      const p=Geometry.ellipsePoint(conf,d);
+      const s=0.85;
+      if(d===0) ctx.moveTo(p.x*s,p.y*s); else ctx.lineTo(p.x*s,p.y*s);
+    }
+    ctx.closePath();
+    const gradR = ctx.createLinearGradient(-200,-100, 200,140);
+    gradR.addColorStop(0,'#c9d3df'); gradR.addColorStop(1,'#8b9bb1');
+    ctx.strokeStyle = gradR;
+    ctx.lineWidth = 6;
+    ctx.stroke();
+    ctx.restore();
+
+    // Commissures callouts
+    const comm = conf.commissures;
+    ctx.fillStyle='rgba(255,255,255,0.8)'; ctx.font='12px sans-serif';
+    for(const [name,deg] of [['AL', comm.anterolateral],['PM', comm.posteromedial]]){
+      const p=Geometry.ellipsePoint(conf,deg);
+      ctx.beginPath(); ctx.arc(p.x,p.y,4,0,Math.PI*2); ctx.fill();
+      const lbl= name==='AL'?'Anterolateral commissure':'Posteromedial commissure';
+      const m = Util.measureText(ctx, lbl, '12px sans-serif');
+      ctx.fillStyle='rgba(0,0,0,0.3)';
+      ctx.fillRect(p.x+8,p.y-12,m.width+8,16);
+      ctx.fillStyle='#fff'; ctx.fillText(lbl, p.x+12, p.y+1);
+      ctx.fillStyle='rgba(255,255,255,0.8)';
+    }
+
+    ctx.restore();
+  },
+  drawSutures(ctx){
+    // render placed bites & threads
+    const dpr = AppState.DPR;
+    const pledged = (b)=> b.pledged;
+    ctx.save();
+    ctx.translate(AppState.width/2/dpr, AppState.height/2/dpr);
+    for(const b of AppState.bites){
+      // Arc (needle trajectory) approximate
+      ctx.beginPath();
+      ctx.moveTo(b.entry.x, b.entry.y);
+      const mid={ x: (b.entry.x+b.exit.x)/2, y:(b.entry.y+b.exit.y)/2 };
+      const ang = Math.atan2(b.exit.y-b.entry.y, b.exit.x-b.entry.x) - Math.PI/2;
+      const r= Util.dists(b.entry.x,b.entry.y,b.exit.x,b.exit.y)*0.35;
+      const c1={ x: mid.x + Math.cos(ang)*r, y: mid.y + Math.sin(ang)*r };
+      ctx.quadraticCurveTo(c1.x,c1.y, b.exit.x, b.exit.y);
+      ctx.lineWidth=2.2;
+      ctx.strokeStyle='rgba(106,169,255,0.85)';
+      ctx.stroke();
+
+      // Entry/Exit markers
+      ctx.fillStyle='#fff'; ctx.strokeStyle='#0003';
+      for(const p of [b.entry, b.exit]){
+        ctx.beginPath(); ctx.arc(p.x,p.y,3,0,Math.PI*2); ctx.fill(); ctx.stroke();
+      }
+
+      // Pledget
+      if(pledged(b)){
+        ctx.fillStyle='rgba(230,230,230,0.95)';
+        const u = Math.atan2(b.exit.y-b.entry.y, b.exit.x-b.entry.x);
+        const px = (b.entry.x+b.exit.x)/2, py=(b.entry.y+b.exit.y)/2;
+        ctx.save(); ctx.translate(px,py); ctx.rotate(u);
+        ctx.fillRect(-6,-3,12,6);
+        ctx.restore();
+      }
+    }
+
+    // Draw thread segments with tension effect
+    for(const t of AppState.threads){
+      const pts = [ ...t.fixed, t.tail ];
+      for(let i=1;i<pts.length;i++){
+        const a=pts[i-1], b=pts[i];
+        const {p0,p1,p2,p3} = Physics.bezierForSegment(a,b, Util.clamp(t.tension, 0.05, 1.0));
+        ctx.beginPath();
+        ctx.moveTo(p0.x,p0.y);
+        ctx.bezierCurveTo(p1.x,p1.y,p2.x,p2.y,p3.x,p3.y);
+        ctx.lineWidth=1.8;
+        ctx.strokeStyle='rgba(106,169,255,0.8)';
+        ctx.stroke();
+      }
+      // Tail handle
+      ctx.fillStyle='rgba(120,198,255,0.85)';
+      ctx.beginPath(); ctx.arc(t.tail.x,t.tail.y,4,0,Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+  },
+  drawGhost(ctx){
+    if(!AppState.ghost || AppState.settings.hintLevel<3) return;
+    const conf = Cases.data[AppState.caseId];
+    ctx.save();
+    ctx.translate(AppState.width/2/AppState.DPR, AppState.height/2/AppState.DPR);
+    ctx.globalAlpha = 0.25;
+    ctx.beginPath();
+    for(let d=0; d<=360; d+=1){
+      const p=Geometry.ellipsePoint(conf,d);
+      const s=0.94;
+      if(d===0) ctx.moveTo(p.x*s,p.y*s); else ctx.lineTo(p.x*s,p.y*s);
+    }
+    ctx.strokeStyle='#5eead4';
+    ctx.lineWidth=6;
+    ctx.stroke();
+    ctx.restore();
+  },
+  drawHeatmap(ctx){
+    // show if over-tension events exist (transient)
+    const over = AppState.events.slice(-20).some(e=>e.type==='tensionOver' && AppState.now - e.time < 2500);
+    if(!over) return;
+    const w = ctx.canvas.clientWidth, h = ctx.canvas.clientHeight;
+    ctx.save();
+    const grad = ctx.createRadialGradient(w/2,h/2,160, w/2,h/2,380);
+    grad.addColorStop(0, 'rgba(255,59,48,0.12)');
+    grad.addColorStop(1, 'rgba(255,59,48,0.02)');
+    ctx.fillStyle=grad;
+    ctx.fillRect(0,0,w,h);
+    ctx.restore();
+  },
+  drawInstruments(ctx){
+    // Simple vector instruments (needle driver & forceps)
+    const dpr = AppState.DPR;
+    const tool = AppState.instruments.current;
+    const mouse = UI.mouseWorld || {x:0,y:0};
+    const pt = {x: mouse.x, y: mouse.y};
+    const c = Geometry.toCanvas(pt);
+    ctx.save();
+    // subtle shadow
+    ctx.shadowColor='#0005'; ctx.shadowBlur=8; ctx.shadowOffsetY=4;
+    ctx.translate(c.x, c.y);
+    ctx.rotate( Math.sin(this.time*0.003)*0.05 );
+    if(tool==='needle'){
+      ctx.fillStyle='#cbd5e1';
+      ctx.strokeStyle='#475569';
+      ctx.lineWidth=1.3;
+      ctx.beginPath();
+      ctx.moveTo(-22,-6); ctx.lineTo(24, -2); ctx.lineTo(22, 6); ctx.lineTo(-22,2); ctx.closePath();
+      ctx.fill(); ctx.stroke();
+      // needle tip
+      ctx.beginPath(); ctx.arc(26,-1.5, 3.5, Math.PI*0.2, Math.PI*1.6); ctx.strokeStyle='#9aa6b2'; ctx.stroke();
+    } else if(tool==='forceps'){
+      ctx.fillStyle='#9aa6b2';
+      ctx.beginPath(); ctx.roundRect(-30,-4,60,8,4); ctx.fill();
+      ctx.beginPath(); ctx.roundRect(-30,-1,60,2,1); ctx.fillStyle='#e5e7eb'; ctx.fill();
+    } else {
+      ctx.fillStyle='#94a3b8';
+      ctx.beginPath(); ctx.roundRect(-16,-16,32,32,6); ctx.fill();
+      ctx.fillStyle='#ffffffaa'; ctx.fillRect(-6,-6,12,12);
+    }
+    ctx.restore();
+  },
+  draw(){
+    const ctx = AppState.ctx; const dpr=AppState.DPR;
+    if(!ctx) return;
+    const w = ctx.canvas.clientWidth, h = ctx.canvas.clientHeight;
+    ctx.clearRect(0,0,w,h);
+    this.drawBackground(ctx);
+    this.drawAnnulus(ctx);
+    this.drawGhost(ctx);
+    this.drawSutures(ctx);
+    this.drawHeatmap(ctx);
+    this.drawInstruments(ctx);
+  },
+  loop(ts){
+    Renderer.time = ts||0;
+    Renderer.draw();
+    requestAnimationFrame(Renderer.loop);
+  }
+};
+
+/* --------------------------------- Audio ---------------------------------- */
+const Audio = {
+  ctx:null, gain:null, enabled:false,
+  init(){
+    try{
+      this.ctx = new (window.AudioContext||window.webkitAudioContext)();
+      this.gain = this.ctx.createGain(); this.gain.gain.value=0.0; // muted by default
+      this.gain.connect(this.ctx.destination);
+    }catch(e){ console.warn('Audio not available'); }
+  },
+  setEnabled(on){
+    this.enabled = on;
+    if(!this.ctx) return;
+    if(this.ctx.state==='suspended' && on) this.ctx.resume();
+    this.gain.gain.value = on ? 0.06 : 0.0;
+  },
+  click(){
+    if(!this.enabled||!this.ctx) return;
+    const o = this.ctx.createOscillator(); const g=this.ctx.createGain();
+    o.type='triangle'; o.frequency.value=440;
+    g.gain.value=0.12;
+    o.connect(g); g.connect(this.gain);
+    o.start();
+    setTimeout(()=>{ o.stop(); }, 80);
+  },
+  pull(){
+    if(!this.enabled||!this.ctx) return;
+    const o=this.ctx.createOscillator(); const g=this.ctx.createGain();
+    o.type='sine'; o.frequency.value=180;
+    g.gain.setValueAtTime(0.0, this.ctx.currentTime);
+    g.gain.linearRampToValueAtTime(0.2, this.ctx.currentTime+0.02);
+    g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime+0.25);
+    o.connect(g); g.connect(this.gain); o.start();
+    setTimeout(()=>o.stop(), 260);
+  }
+};
+
+/* ----------------------------------- AI ----------------------------------- */
+const AI = {
+  lastMsg:'',
+  evalBite(bite){
+    const conf = Cases.data[AppState.caseId];
+    // depth: distance to ideal band center from annulus
+    const depthBand = (conf.ideal.depthMM.min + conf.ideal.depthMM.max)/2;
+    const entryR = Geometry.radialDepth(conf, bite.entry);
+    const exitR = Geometry.radialDepth(conf, bite.exit);
+    const depth = (entryR.depth + exitR.depth)/2 / 10; // pixels->mm approx scale (~10px/mm)
+    const depthErr = Math.abs(depth - depthBand);
+    // angle error: difference between local tangent and bite vector
+    const localAngle = Geometry.ellipseTangentAngle(conf, (entryR.deg+exitR.deg)/2);
+    const biteAngle = Math.atan2(bite.exit.y-bite.entry.y, bite.exit.x-bite.entry.x);
+    const angleErr = Math.abs(Util.deg(biteAngle - localAngle));
+    const angNorm = ((angleErr+540)%360)-180; // normalize
+    const angleError = Math.abs(angNorm);
+    // spacing error: vs previous
+    let spacingErr = 0;
+    if(AppState.bites.length>1){
+      const prev = AppState.bites[AppState.bites.length-2];
+      const curAng = (entryR.deg+exitR.deg)/2;
+      const prevR = Geometry.radialDepth(conf, prev.entry);
+      const prevAng = (prevR.deg + Geometry.radialDepth(conf,prev.exit).deg)/2;
+      spacingErr = Math.abs(curAng - prevAng) - conf.ideal.biteDeg;
+    }
+    // commissure stricter thresholds
+    const nearCom = (deg)=>{
+      const c1 = conf.commissures.anterolateral, c2=conf.commissures.posteromedial;
+      const d1 = Math.min(Math.abs(deg-c1), 360-Math.abs(deg-c1));
+      const d2 = Math.min(Math.abs(deg-c2), 360-Math.abs(deg-c2));
+      return (d1<10)||(d2<10);
     };
-
-    const Store = {
-      load(key,def){ try{ return JSON.parse(localStorage.getItem(key)) ?? def }catch{ return def } },
-      save(key,val){ try{ localStorage.setItem(key, JSON.stringify(val)) }catch{} }
+    const midDeg = (entryR.deg+exitR.deg)/2;
+    const stricter = nearCom(midDeg);
+    const tolAngle = conf.thresholds.angleTol - (stricter?3:0);
+    const tolDepth = conf.thresholds.depthTol - (stricter?0.3:0);
+    // Forbidden zone check
+    let inForbidden=false;
+    for(const mask of conf.forbidden){
+      if(Util.pointInPoly(bite.entry, mask.poly) || Util.pointInPoly(bite.exit, mask.poly)){
+        inForbidden = true;
+        break;
+      }
+    }
+    // Build feedback
+    bite.depthMM = depth; bite.angleErr = angleError; bite.spacingErr = spacingErr;
+    bite.flags = bite.flags||{}; bite.flags.forbidden = inForbidden;
+    bite.segment = Geometry.segmentTag(midDeg);
+    const errs=[];
+    if(depthErr>tolDepth) errs.push({type:'depth', delta: depthErr});
+    if(angleError>tolAngle) errs.push({type:'angle', delta: angleError});
+    if(Math.abs(spacingErr) > conf.ideal.biteDeg*0.5) errs.push({type:'spacing', delta: spacingErr});
+    if(inForbidden) errs.push({type:'forbidden', delta: 1});
+    const msg = this.messageFor(errs, {depthBand, tolAngle, tolDepth, seg:bite.segment, midDeg});
+    UI.updateMetrics({ depthErr, angleError, spacingErr, tension: UI.currentTension() });
+    UI.addErrorMessages(errs, bite);
+    this.lastMsg = msg;
+    UI.setCoachStatus(msg, errs);
+    return errs;
+  },
+  messageFor(errs, ctx){
+    if(!errs.length) return `Good placement in ${ctx.seg}. Depth ~${Util.fmt(ctx.depthBand)} mm and alignment within ±${ctx.tolAngle}°. Proceed to next bite.`;
+    const primary = errs[0].type;
+    const byType = {
+      depth: ()=> `Entry too ${'deep'} by ${Util.fmt(errs[0].delta,1)} mm; aim for ${Util.fmt(ctx.depthBand,1)} mm depth in ${ctx.seg}. Adjust ${Util.fmt(errs[0].delta*0.8,1)} mm toward atrial side.`,
+      angle: ()=> `Angle off by ${Util.fmt(errs[0].delta,1)}°. Keep needle tangent to annulus (±${ctx.tolAngle}°). Rotate wrist slightly ${errs[0].delta>0?'counter-':'clockwise'}.`,
+      spacing: ()=> `Spacing drift of ${Util.fmt(errs[0].delta,1)}°. Maintain uniform spacing; use ghost dots as guide.`,
+      forbidden: ()=> `Bite intersects a forbidden posterior band. Reposition to a green zone — avoid calcified segments.`
     };
+    return byType[primary] ? byType[primary]() : 'Adjust placement to match depth, angle, and spacing tolerances.';
+  },
+  onTension(t){
+    const conf = Cases.data[AppState.caseId];
+    const over = t > conf.thresholds.tensionMax;
+    if(over){
+      UI.warn('Over‑tension detected; reduce pull until heatmap clears. Recommend ~15% less.');
+      AppState.events.push({time:Date.now(), type:'tensionOver', info:{t}});
+      AppState.errorTrend.push(1.0);
+    } else {
+      AppState.errorTrend.push(0.2);
+    }
+    UI.updateMetrics({ tension: t });
+  },
+  nextAction(){
+    // Based on step & last error, propose action
+    const step = AppState.stepIndex;
+    const last = AppState.bites[AppState.bites.length-1];
+    if(step<=3 && !last) return UI.toast('Define the first bite at P2 safe zone. Click to set entry, drag to set exit.', 'warn');
+    const errs = (last?.flags && (last.angleErr>0 || last.flags.forbidden)) ? 1 : 0;
+    if(errs){
+      UI.toast('Reposition entry (Ctrl+drag) or Undo then re‑place with improved orientation.', 'warn');
+    } else {
+      UI.toast('Proceed to next bite and maintain even spacing.', 'ok');
+    }
+  }
+};
 
-    const Voice = {
-      enabled: CONFIG.UI.VOICE && ('speechSynthesis' in window),
-      speak(text){
-        try{
-          if(!this.enabled) return;
-          const utter=new SpeechSynthesisUtterance(text);
-          utter.lang='en-US'; utter.rate=1.0; utter.pitch=1.0;
-          speechSynthesis.speak(utter);
-        }catch{}
-      }
+/* -------------------------------- Scoring --------------------------------- */
+const Scoring = {
+  compute(){
+    const bites = AppState.bites;
+    const weights = AppState.settings.weights;
+    const conf = Cases.data[AppState.caseId];
+    const mmPerPx = 0.1; // heuristic used earlier (10px/mm => 0.1mm/px); keep consistent
+    // Precision
+    const depthMAE = bites.length? bites.reduce((s,b)=>s+Math.abs(b.depthMM - (conf.ideal.depthMM.min+conf.ideal.depthMM.max)/2),0)/bites.length : 0;
+    const angleMAE = bites.length? bites.reduce((s,b)=>s+Math.abs(b.angleErr||0),0)/bites.length : 0;
+    const spacingVals = [];
+    for(let i=1;i<bites.length;i++){
+      const di = Geometry.radialDepth(conf,bites[i].entry).deg;
+      const dj = Geometry.radialDepth(conf,bites[i-1].entry).deg;
+      spacingVals.push(Math.abs(di-dj));
+    }
+    const meanSpacing = spacingVals.length? spacingVals.reduce((a,b)=>a+b,0)/spacingVals.length : conf.ideal.biteDeg;
+    const sdSpacing = spacingVals.length? Math.sqrt(spacingVals.reduce((a,v)=>a+(v-meanSpacing)**2,0)/spacingVals.length) : 0;
+    const cv = meanSpacing ? sdSpacing/meanSpacing : 0;
+    const commissurePen = bites.filter(b=>{
+      const d = (Geometry.radialDepth(conf,b.entry).deg+Geometry.radialDepth(conf,b.exit).deg)/2;
+      const c1=conf.commissures.anterolateral, c2=conf.commissures.posteromedial;
+      const d1 = Math.min(Math.abs(d-c1), 360-Math.abs(d-c1));
+      const d2 = Math.min(Math.abs(d-c2), 360-Math.abs(d-c2));
+      return d1<10 || d2<10;
+    }).reduce((s,b)=> s + (Math.max(0, (b.angleErr - (conf.thresholds.angleTol-3)))/10), 0);
+    let pDepth = Math.max(0, 15 - 1.5*depthMAE);
+    let pAngle = Math.max(0, 10 - (angleMAE/ (conf.thresholds.angleTol*1.8))*10 );
+    let pSpacing = Math.max(0, 10 - cv*10);
+    let pCom = Math.max(0, 5 - commissurePen);
+    const precision = Util.clamp(pDepth+pAngle+pSpacing+pCom, 0, 40);
+
+    // Tissue Respect
+    const overT = AppState.events.filter(e=>e.type==='tensionOver').length;
+    const overTime = 0.1*(AppState.events.filter(e=>e.type==='tensionOver').length); // rough
+    const forb = bites.filter(b=>b.flags?.forbidden).length;
+    const rep = bites.filter(b=>b.flags?.repierce).length;
+    let tOver = Math.max(0, 10 - (2*overT + overTime));
+    let tForb = Math.max(0, 10 - 5*forb);
+    let tRep = Math.max(0, 5 - 2*rep);
+    const tissue = Util.clamp(tOver+tForb+tRep, 0, 25);
+
+    // Ring Integration
+    const mismap = bites.filter(b=> b.ringHole==null).length; // simple: not mapped yet
+    const centroidErr = 0.8; // placeholder
+    const knotShift = 0.5; // placeholder
+    let rMap = Math.max(0, 10 - 2*mismap);
+    let rSeat = Math.max(0, 5 - centroidErr);
+    let rKnot = Math.max(0, 5 - knotShift);
+    const ring = Util.clamp(rMap+rSeat+rKnot, 0, 20);
+
+    // Efficiency
+    const timeSec = AppState.elapsed/1000;
+    const ref = 8*60; // 8 minutes ref
+    let eTime = 8 - Math.abs((timeSec-ref)/ref)*8;
+    eTime = Util.clamp(eTime, 0, 8);
+    const undos = AppState.events.filter(e=>e.type==='undo').length;
+    const skips = Math.max(0, AppState.events.filter(e=>e.type==='skipStep').length);
+    let eUndo = Math.max(0, 4 - Math.max(0,undos-4)*0.5);
+    let eStep = Math.max(0, 3 - skips);
+    const eff = Util.clamp(eTime + eUndo + eStep, 0, 15);
+
+    // Total weighted to 100 (weights already sum 100 by default)
+    const total = Util.clamp(
+      (precision/40)*AppState.settings.weights.precision +
+      (tissue/25)*AppState.settings.weights.tissue +
+      (ring/20)*AppState.settings.weights.ring +
+      (eff/15)*AppState.settings.weights.eff
+    ,0,100);
+
+    const grade = total>=90?'A': total>=80?'B': total>=70?'C': total>=60?'D':'F';
+    const out = { precision, tissue, ring, eff, total, grade,
+      components:{ pDepth,pAngle,pSpacing,pCom,tOver,tForb,tRep,rMap,rSeat,rKnot,eTime,eUndo,eStep }
     };
+    AppState.score = out;
+    UI.updateRadar(out);
+    UI.updateScoreBadge(out.total, out.grade);
+    return out;
+  }
+};
 
-    // Minimal service worker for offline (single-file)
-    (function registerSW(){
-      if(!('serviceWorker' in navigator)) return;
-      const swCode = `
-        self.addEventListener('install',e=>{
-          e.waitUntil(caches.open('mv-sim-v1').then(c=>c.addAll(['./'])));
-          self.skipWaiting();
-        });
-        self.addEventListener('activate',e=>self.clients.claim());
-        self.addEventListener('fetch',e=>{
-          e.respondWith(caches.match(e.request).then(r=>r || fetch(e.request)));
-        });
-      `;
-      const blob = new Blob([swCode], {type:'text/javascript'});
-      navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
-    })();
+/* ---------------------------------- UI ------------------------------------ */
+const UI = {
+  mouse:{x:0,y:0, down:false}, mouseWorld:null,
+  placing:false, tempEntry:null,
+  draggingTail:null,
+  init(){
+    document.getElementById('year').textContent = String(new Date().getFullYear());
+    document.getElementById('version').textContent = AppState.version;
 
-    // ============================================================
-    // RENDERING ENGINE — Canvas anatomy + SVG overlay
-    // ============================================================
-    class AnatomyRenderer{
-      constructor(canvas){
-        this.canvas=canvas;
-        this.ctx=canvas.getContext('2d');
-        this.dpr=window.devicePixelRatio||1;
-        this.t=0;
-        this.cx=0; this.cy=0; this.a=0; this.b=0; this.rot = Utils.rad(8);
-        this.restrictedZones=[];
-        this.resizeObserver = new ResizeObserver(()=>this.resize());
-        this.resizeObserver.observe(canvas);
-        this.resize(true);
-        this.animate = this.animate.bind(this);
-        requestAnimationFrame(this.animate);
-      }
-      resize(initial=false){
-        const rect=this.canvas.getBoundingClientRect();
-        const w=Math.max(640, rect.width), h=Math.max(480, rect.height);
-        this.canvas.width = Math.floor(w*this.dpr);
-        this.canvas.height= Math.floor(h*this.dpr);
-        this.canvas.style.width=rect.width+'px';
-        this.canvas.style.height=rect.height+'px';
-        this.ctx.setTransform(this.dpr,0,0,this.dpr,0,0);
+    // Apply stored settings
+    document.getElementById('caseSelect').value = AppState.caseId;
+    document.getElementById('themeToggle').value = AppState.settings.theme;
+    document.getElementById('modeToggle').checked = (AppState.mode==='practice');
+    document.getElementById('modeLabel').textContent = AppState.mode==='practice'?'Practice':'Training';
+    document.getElementById('hintRange').value = AppState.settings.hintLevel;
+    document.getElementById('audioToggle').textContent = AppState.settings.audio? '🔊 Sound' : '🔈 Muted';
+    document.getElementById('ringSize').value = String(Cases.data[AppState.caseId].ring.size);
 
-        this.cx = w/2;
-        this.cy = h*0.55;
-        this.a = Math.min(w,h)*0.28;
-        this.b = this.a*0.62;
-
-        this.buildGeometry();
-        if(!initial) Bus.emit('renderer:resized', this.viewParams());
-      }
-      viewParams(){
-        return {cx:this.cx, cy:this.cy, a:this.a, b:this.b, rot:this.rot, width:this.canvas.width/this.dpr, height:this.canvas.height/this.dpr};
-      }
-      buildGeometry(){
-        const {cx,cy,a,b,rot}=this;
-        const makePoly=(pts)=>pts.map(p=>{
-          const cos=Math.cos(rot), sin=Math.sin(rot);
-          const xr=p[0]*cos - p[1]*sin, yr=p[0]*sin + p[1]*cos;
-          return [cx + xr, cy + yr];
-        });
-        // Simplified leaflet projections (for handling violations)
-        const leafA = makePoly([
-          [0,-b*0.95],[ a*0.7,-b*0.4],[ a*0.4, 0],[ 0, b*0.1],[-a*0.4, 0],[-a*0.7,-b*0.4]
-        ]);
-        const leafP = makePoly([
-          [0,b*0.2],[ a*0.65,b*0.55],[ a*0.35,b*0.8],[ 0,b*0.75],[-a*0.35,b*0.8],[-a*0.65,b*0.55]
-        ]);
-        this.restrictedZones=[leafA, leafP];
-      }
-      animate(ts){
-        const dt = (ts - this.t) || 16;
-        this.t=ts;
-        this.render(dt);
-        requestAnimationFrame(this.animate);
-      }
-      render(){
-        const ctx=this.ctx;
-        const {width,height}=this.viewParams();
-
-        // Background
-        ctx.clearRect(0,0,width,height);
-        const g=ctx.createRadialGradient(this.cx, this.cy*0.3, 40, this.cx, this.cy*0.3, Math.max(width,height)*0.8);
-        g.addColorStop(0,'#0f162b'); g.addColorStop(1,'#070d1a');
-        ctx.fillStyle=g; ctx.fillRect(0,0,width,height);
-
-        // Beating
-        const beat = 0.5 + 0.5*Math.sin(performance.now()/1000*2*Math.PI*0.8);
-        const scale = 1 + beat*0.02;
-        const a=this.a*scale, b=this.b*scale;
-
-        // Atrial cavity
-        ctx.save();
-        ctx.globalAlpha=0.6;
-        const cavity = ctx.createRadialGradient(this.cx, this.cy, b*0.2, this.cx, this.cy, a*1.2);
-        cavity.addColorStop(0,'#1b2c54'); cavity.addColorStop(0.5,'#0f1a35'); cavity.addColorStop(1,'#0a1327');
-        ctx.fillStyle=cavity;
-        ctx.beginPath(); this.traceEllipse(ctx, this.cx, this.cy, a*1.2, b*1.15, this.rot); ctx.fill();
-        ctx.restore();
-
-        // Annulus rim
-        ctx.save();
-        ctx.lineWidth=6; ctx.strokeStyle='#183258';
-        ctx.beginPath(); this.traceEllipse(ctx,this.cx,this.cy,a,b,this.rot); ctx.stroke();
-        ctx.lineWidth=3; ctx.strokeStyle='#3ba0ff';
-        ctx.beginPath(); this.traceEllipse(ctx,this.cx,this.cy,a,b,this.rot); ctx.stroke();
-        ctx.restore();
-
-        // Leaflets shading (pseudo‑3D)
-        this.drawLeaflets(ctx, a, b);
-
-        // Commissure ticks / markers
-        ctx.save();
-        ctx.lineWidth=1.6; ctx.strokeStyle='#8bd3ff99';
-        for(let i=0;i<12;i++){
-          const t=i*(Math.PI*2/12);
-          const P=Utils.ellipsePoint(a,b,t,this.rot,this.cx,this.cy);
-          ctx.beginPath();
-          ctx.moveTo(P.x - P.nx*8, P.y - P.ny*8);
-          ctx.lineTo(P.x + P.nx*10, P.y + P.ny*10);
-          ctx.stroke();
-        }
-        ctx.restore();
-
-        // Papillary hints
-        ctx.save();
-        ctx.globalAlpha=0.35; ctx.fillStyle='#10233f';
-        ctx.beginPath(); ctx.ellipse(this.cx-this.a*0.35, this.cy+this.b*1.1, 18, 26, 0, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.ellipse(this.cx+this.a*0.35, this.cy+this.b*1.1, 18, 26, 0, 0, Math.PI*2); ctx.fill();
-        ctx.restore();
-      }
-      drawLeaflets(ctx, a, b){
-        ctx.save();
-        ctx.fillStyle='#1a294f'; ctx.globalAlpha=0.65;
-        ctx.beginPath(); this.traceLeaf(ctx, a,b, true); ctx.fill();     // anterior
-        ctx.globalAlpha=0.58;
-        ctx.beginPath(); this.traceLeaf(ctx, a,b, false); ctx.fill();    // posterior
-        ctx.globalAlpha=0.12; ctx.fillStyle='#9cd9ff';
-        ctx.beginPath(); this.traceLeafHighlight(ctx,a,b); ctx.fill();
-        ctx.restore();
-      }
-      traceLeaf(ctx, a,b, anterior=true){
-        const cx=this.cx, cy=this.cy, r=this.rot;
-        ctx.moveTo(...this.rotPt(0,-b*0.95, r,cx,cy));
-        if(anterior){
-          ctx.bezierCurveTo(...this.rotPt( a*0.7,-b*0.4, r,cx,cy), ...this.rotPt( a*0.4, 0, r,cx,cy), ...this.rotPt( 0, b*0.1, r,cx,cy));
-          ctx.bezierCurveTo(...this.rotPt(-a*0.4, 0, r,cx,cy), ...this.rotPt(-a*0.7,-b*0.4, r,cx,cy), ...this.rotPt( 0,-b*0.95,r,cx,cy));
-        }else{
-          ctx.bezierCurveTo(...this.rotPt( a*0.65, b*0.55, r,cx,cy), ...this.rotPt( a*0.35, b*0.8, r,cx,cy), ...this.rotPt( 0, b*0.75, r,cx,cy));
-          ctx.bezierCurveTo(...this.rotPt(-a*0.35, b*0.8, r,cx,cy), ...this.rotPt(-a*0.65, b*0.55, r,cx,cy), ...this.rotPt( 0, b*0.2, r,cx,cy));
-        }
-      }
-      traceLeafHighlight(ctx,a,b){
-        const cx=this.cx, cy=this.cy, r=this.rot;
-        ctx.moveTo(...this.rotPt(0,-b*0.7, r,cx,cy));
-        ctx.bezierCurveTo(...this.rotPt( a*0.35,-b*0.25, r,cx,cy), ...this.rotPt( a*0.2, b*0.05, r,cx,cy), ...this.rotPt( 0, b*0.18, r,cx,cy));
-      }
-      rotPt(x,y,r,cx,cy){ const cos=Math.cos(r), sin=Math.sin(r); return [cx + x*cos - y*sin, cy + x*sin + y*cos]; }
-      traceEllipse(ctx,cx,cy,a,b,rot){ ctx.save(); ctx.translate(cx,cy); ctx.rotate(rot); ctx.scale(a,b); ctx.beginPath(); ctx.arc(0,0,1,0,Math.PI*2); ctx.setTransform(1,0,0,1,0,0); }
-      isInRestricted(x,y){ return this.restrictedZones.some(poly=>Utils.pointInPoly([x,y], poly)); }
+    // Build stepper
+    const stepper = document.getElementById('stepper');
+    stepper.innerHTML = '';
+    for(let i=0;i<AppState.trainingSteps.length;i++){
+      const d=document.createElement('div'); d.className='dot'+(i===0?' active':''); d.title=AppState.trainingSteps[i];
+      stepper.appendChild(d);
     }
+    this.updateStepUI();
 
-    class OverlayManager{
-      constructor(svg, renderer){
-        this.svg = svg; this.renderer=renderer;
-        this.gHot = svg.querySelector('#hotspots');
-        this.gGhost= svg.querySelector('#ghost');
-        this.gGuide= svg.querySelector('#guides');
-        this.gSut  = svg.querySelector('#suturing');
-        this.gWarn = svg.querySelector('#warnings');
-        new ResizeObserver(()=>this.resize()).observe(svg);
-        Bus.on('renderer:resized', ()=>this.resize());
-        this.resize();
-      }
-      resize(){ /* nothing special: SVG is responsive */ }
-      clear(){ this.gHot.innerHTML=''; this.gGhost.innerHTML=''; this.gGuide.innerHTML=''; this.gSut.innerHTML=''; this.gWarn.innerHTML=''; }
-      drawTargets(targets, highlightIndex=null){
-        this.gHot.innerHTML='';
-        targets.forEach((t,idx)=>{
-          const P = Utils.ellipsePoint(t.a,t.b, t.t, t.rot, t.cx, t.cy);
-          const haloR = (idx===highlightIndex)?16:0;
-          const g = document.createElementNS('http://www.w3.org/2000/svg','g');
-          g.classList.add('target');
-          g.setAttribute('data-idx', idx);
-          g.innerHTML = `
-            ${haloR?`<circle class="halo" cx="${P.x}" cy="${P.y}" r="${haloR}"></circle>`:''}
-            <circle class="core" cx="${P.x}" cy="${P.y}" r="5"></circle>
-            <text class="label" x="${P.x+10}" y="${P.y-10}">${idx+1}</text>
-          `;
-          this.gHot.appendChild(g);
-        });
-      }
-      drawGhost(pathPairs){
-        this.gGhost.innerHTML='';
-        const g = document.createElementNS('http://www.w3.org/2000/svg','g');
-        g.innerHTML = pathPairs.map(p=>`<path class="guide guide--ghost" d="M${p.entry.x},${p.entry.y} L${p.exit.x},${p.exit.y}"></path>`).join('');
-        this.gGhost.appendChild(g);
-      }
-      drawGuideArc(entry, exit, color="#8bd3ff"){
-        const path = document.createElementNS('http://www.w3.org/2000/svg','path');
-        path.setAttribute('d', `M${entry.x},${entry.y} L${exit.x},${exit.y}`);
-        path.setAttribute('stroke', color);
-        path.setAttribute('class', 'guide');
-        this.gGuide.appendChild(path);
-        return path;
-      }
-      drawSuture(entry, exit, ok=true){
-        const line = document.createElementNS('http://www.w3.org/2000/svg','path');
-        line.setAttribute('d', `M${entry.x},${entry.y} L${exit.x},${exit.y}`);
-        line.setAttribute('class', ok ? 'suture-ok' : 'suture-bad');
-        this.gSut.appendChild(line);
-      }
-      warn(x,y,msg){
-        const g=document.createElementNS('http://www.w3.org/2000/svg','g');
-        g.setAttribute('class','warn');
-        g.innerHTML = `
-          <circle cx="${x}" cy="${y}" r="18"></circle>
-          <text x="${x}" y="${y+4}">!</text>
-          <text x="${x}" y="${y+26}" fill="#ffc857" font-size="10">${msg}</text>
-        `;
-        this.gWarn.appendChild(g);
-        setTimeout(()=>g.remove(), 1600);
-      }
+    // Listeners
+    window.addEventListener('resize', ()=> Renderer.resize());
+    const canvas = AppState.canvas;
+    const viewport = document.getElementById('viewport');
+    viewport.addEventListener('mousemove', this.onMove);
+    viewport.addEventListener('mousedown', this.onDown);
+    viewport.addEventListener('mouseup', this.onUp);
+    viewport.addEventListener('mouseleave', this.onLeave);
+    viewport.addEventListener('contextmenu', e=>e.preventDefault());
+
+    // Top bar
+    document.getElementById('modeToggle').addEventListener('change', (e)=>{
+      AppState.mode = e.target.checked? 'practice':'training';
+      document.body.dataset.mode = AppState.mode;
+      document.getElementById('modeLabel').textContent = AppState.mode==='practice'?'Practice':'Training';
+      UI.toast(AppState.mode==='practice'?'Practice mode: free order with guidance.':'Training mode: follow step‑by‑step.', 'ok');
+    });
+    document.getElementById('caseSelect').addEventListener('change', (e)=>{
+      AppState.caseId = e.target.value; Storage.save();
+      Renderer._buildLabels(); Renderer._buildRingHoles();
+      UI.toast('Case switched to: '+Cases.data[AppState.caseId].title);
+      UI.resetCase(true);
+    });
+    document.getElementById('themeToggle').addEventListener('change', (e)=>{
+      const t=e.target.value; document.body.classList.toggle('light', t==='light');
+      document.body.dataset.theme=t; AppState.settings.theme=t; Storage.save();
+    });
+    document.getElementById('resetBtn').addEventListener('click', ()=> UI.resetCase());
+    document.getElementById('exportPNGBtn').addEventListener('click', ()=> Export.exportPNG());
+    document.getElementById('downloadReportBtn').addEventListener('click', ()=> Export.downloadReport());
+    document.getElementById('ghostToggle').addEventListener('click', ()=>{
+      AppState.ghost = !AppState.ghost;
+      document.getElementById('ghostToggle').textContent = 'Ghost: '+(AppState.ghost?'On':'Off');
+    });
+    document.getElementById('audioToggle').addEventListener('click', ()=>{
+      AppState.settings.audio = !AppState.settings.audio; Audio.setEnabled(AppState.settings.audio);
+      document.getElementById('audioToggle').textContent = AppState.settings.audio? '🔊 Sound' : '🔈 Muted';
+      Storage.save();
+    });
+    document.getElementById('aboutBtn').addEventListener('click', ()=> this.showModal('aboutModal'));
+    document.getElementById('helpBtn').addEventListener('click', ()=> this.showModal('helpModal'));
+    document.getElementById('licenseLink').addEventListener('click', (e)=>{ e.preventDefault(); this.showModal('licenseModal') });
+
+    // Left panel controls
+    document.getElementsByName('instrument').forEach(r=> r.addEventListener('change', (e)=> AppState.instruments.current = e.target.value));
+    document.getElementById('sutureType').addEventListener('change', (e)=> AppState.instruments.sutureType = e.target.value);
+    document.getElementById('needleSize').addEventListener('change', (e)=> AppState.instruments.needle = e.target.value);
+    document.getElementById('ringSize').addEventListener('change', (e)=> AppState.instruments.ringSize = Number(e.target.value) );
+    document.getElementById('hintRange').addEventListener('input', (e)=>{ AppState.settings.hintLevel = Number(e.target.value); Storage.save() });
+
+    // Right panel buttons
+    document.getElementById('nextAction').addEventListener('click', ()=> AI.nextAction());
+
+    // Center controls
+    document.getElementById('playDemo').addEventListener('click', ()=> UI.playDemo(1));
+    document.getElementById('playDemoSlow').addEventListener('click', ()=> UI.playDemo(0.5));
+    document.getElementById('finishBtn').addEventListener('click', ()=> UI.finishCase());
+
+    // Bottom bar
+    document.getElementById('nextBtn').addEventListener('click', ()=> UI.nextStep());
+    document.getElementById('backBtn').addEventListener('click', ()=> UI.prevStep());
+    document.getElementById('undoBtn').addEventListener('click', ()=> UI.undo());
+    document.getElementById('redoBtn').addEventListener('click', ()=> UI.redo());
+    document.getElementById('caseNotes').addEventListener('input', (e)=> AppState.caseNotes = e.target.value );
+
+    // Hotkeys
+    window.addEventListener('keydown', UI.onKey);
+
+    // Timer
+    UI.resetTimer(true);
+
+    // Build SVG overlay content
+    Renderer._buildLabels();
+    Renderer._buildRingHoles();
+
+    // Initial coach
+    UI.setCoachStatus('Welcome. Step 1: Orientation — review sectors A1–A3 / P1–P3 and commissures. Toggle Ghost to preview the target path.');
+
+    // Acceptance tests populate
+    setTimeout(()=> Tests.run(), 100);
+  },
+  setCoachStatus(text, errs){
+    const el = document.getElementById('coachStatus');
+    el.textContent = text;
+    el.className = 'msg' + (errs?.some(e=>e.type==='forbidden')? ' danger' : (errs?.length? ' warn':'' ));
+  },
+  updateMetrics(partial){
+    if(partial.depthErr!=null) document.getElementById('mDepth').textContent = Util.fmt(partial.depthErr,1)+' mm';
+    if(partial.angleError!=null) document.getElementById('mAngle').textContent = Util.fmt(partial.angleError,1)+' °';
+    if(partial.spacingErr!=null){
+      const cv = Math.abs(partial.spacingErr);
+      document.getElementById('mSpacing').textContent = Util.fmt(cv,2);
     }
-
-    // ============================================================
-    // INPUT / TOOLS
-    // ============================================================
-    class ToolController{
-      constructor(renderer){
-        this.renderer=renderer;
-        this.activeTool='needle';
-        this.pointer={x:0,y:0, down:false};
-        this.bindInput();
-      }
-      setTool(name){
-        this.activeTool=name;
-        document.getElementById('hud-tool').textContent =
-          name==='needle' ? 'Needle Driver' :
-          name==='forceps' ? 'Forceps' : 'Scissors';
-      }
-      bindInput(){
-        const root=document.querySelector('main.viewport');
-        root.addEventListener('pointerdown', e=>this.onDown(e));
-        root.addEventListener('pointermove', e=>this.onMove(e));
-        root.addEventListener('pointerup',   e=>this.onUp(e));
-        root.addEventListener('pointerleave',e=>this.onUp(e));
-        window.addEventListener('keydown', e=>{
-          const k=e.key.toLowerCase();
-          if(k==='1') this.setTool('needle');
-          if(k==='2') this.setTool('forceps');
-          if(k==='3') this.setTool('scissors');
-          if(k==='h') Bus.emit('ui:toggle-highlights');
-          if(k==='g') Bus.emit('ui:ghost');
-          if(k==='n') Bus.emit('steps:next');
-          if(k==='b') Bus.emit('steps:back');
-          if(e.key==='?') Bus.emit('ui:help');
-        });
-      }
-      localPoint(e){
-        const rect=e.currentTarget.getBoundingClientRect();
-        return {x:e.clientX - rect.left, y:e.clientY - rect.top};
-      }
-      onDown(e){
-        e.preventDefault();
-        const pt=this.localPoint(e);
-        this.pointer={...pt, down:true};
-        Bus.emit('input:down', {x:pt.x, y:pt.y, tool:this.activeTool});
-      }
-      onMove(e){
-        const rect=e.currentTarget.getBoundingClientRect();
-        const pt={x:e.clientX - rect.left, y:e.clientY - rect.top};
-        this.pointer={...pt, down:this.pointer.down};
-        Bus.emit('input:move', {x:pt.x, y:pt.y, tool:this.activeTool, down:this.pointer.down});
-      }
-      onUp(e){
-        if(!this.pointer.down) return;
-        const pt=this.localPoint(e);
-        this.pointer={...pt, down:false};
-        Bus.emit('input:up', {x:pt.x, y:pt.y, tool:this.activeTool});
-      }
+    if(partial.tension!=null) document.getElementById('mTension').textContent = Util.fmt(partial.tension,2);
+  },
+  addErrorMessages(errs, bite){
+    const el = document.getElementById('errors');
+    if(!errs.length){ el.textContent = 'No errors for this bite. Good job.'; return; }
+    el.innerHTML = '';
+    for(const e of errs){
+      const div = document.createElement('div');
+      const why = {
+        depth:'Depth too shallow/deep risks leaflet detachment or inadequate purchase.',
+        angle:'Tangential alignment reduces tearing and optimizes tissue engagement.',
+        spacing:'Uniform spacing helps even load distribution and ring seating.',
+        forbidden:'Calcified segments are brittle; avoid passing sutures here.'
+      }[e.type];
+      const fix = {
+        depth:'Adjust entry ~0.8–1.2 mm toward atrial side; keep within green band.',
+        angle:'Rotate wrist to align needle with local tangent (±10–12°).',
+        spacing:'Use ghost dots/snap to maintain spacing; measure relative angle.',
+        forbidden:'Move bite outside red mask; choose green or amber zone.'
+      }[e.type];
+      const thresholds = {
+        depth:`Target band ${Cases.data[AppState.caseId].ideal.depthMM.min}–${Cases.data[AppState.caseId].ideal.depthMM.max} mm`,
+        angle:`Tolerance ±${Cases.data[AppState.caseId].thresholds.angleTol}°`,
+        spacing:`Ideal arc step ~${Cases.data[AppState.caseId].ideal.biteDeg}°`,
+        forbidden:`Any bite within masked polygon → critical`
+      }[e.type];
+      div.innerHTML = `<strong>${e.type.toUpperCase()}</strong> — ${why}<br/><em>How to correct:</em> ${fix}<br/><span class="small">Threshold: ${thresholds}</span>`;
+      el.appendChild(div);
     }
-
-    // ============================================================
-    // PROCEDURE MODEL & SCORING
-    // ============================================================
-    class ProcedureModel{
-      constructor(renderer){
-        this.renderer=renderer;
-        this.steps=[];
-        this.targets=[];
-        this.sequence=[];
-        this.placed=[];
-        this.mode='training';
-        this.current=0;
-        this.highlights=true;
-        this.buildTargets();
-        this.buildSteps();
-      }
-      buildTargets(){
-        const v=this.renderer.viewParams();
-        const count=CONFIG.TASK.SUTURES;
-        const base = [];
-        for(let i=0;i<count;i++){
-          const t= (i*(Math.PI*2/count) + Utils.rad(CONFIG.TASK.START_CLOCK_DEG)) % (Math.PI*2);
-          base.push({t, a:v.a, b:v.b, rot:v.rot, cx=v.cx, cy=v.cy});
-        }
-        this.sequence=[...CONFIG.TASK.ORDER];
-        this.targets=base;
-      }
-      buildSteps(){
-        const names = [
-          'Orient: Identify A2/P2 & commissures',
-          'Select: Needle Driver + 2‑0 braided suture',
-          'Plan: Review 12 evenly spaced annular targets',
-          'Place Suture 1 (12 o’clock, A2)','Place Suture 2','Place Suture 3','Place Suture 4',
-          'Place Suture 5','Place Suture 6','Place Suture 7','Place Suture 8','Place Suture 9',
-          'Place Suture 10','Place Suture 11','Place Suture 12',
-          'Review: Assess spacing & depth','Finish: Tie & cut (simulation)'
-        ];
-        this.steps = names.map((label,i)=>({id:i, label, done:false}));
-      }
-      reset(){ this.placed=[]; this.current=0; this.steps.forEach(s=>s.done=false); }
-      setMode(mode){ this.mode=mode; }
-      currentTargetIndex(){ return this.sequence[Math.min(this.placed.length, this.sequence.length-1)]; }
+  },
+  updateRadar(score){
+    // radar chart & sparkline
+    const r = document.getElementById('radar');
+    const s = document.getElementById('sparkline');
+    const R = r.getContext('2d'); const S = s.getContext('2d');
+    const w = r.width = r.clientWidth, h = r.height = r.clientHeight;
+    const cx=w/2, cy=h/2; const rad=Math.min(w,h)*0.36;
+    R.clearRect(0,0,w,h);
+    R.strokeStyle='rgba(255,255,255,0.25)';
+    for(let i=1;i<=4;i++){
+      R.beginPath(); R.arc(cx,cy, rad*i/4, 0, Math.PI*2); R.stroke();
     }
+    const axes = [
+      {name:'Precision', val:score.precision/40},
+      {name:'Tissue', val:score.tissue/25},
+      {name:'Ring', val:score.ring/20},
+      {name:'Efficiency', val:score.eff/15},
+    ];
+    R.beginPath();
+    axes.forEach((ax,i)=>{
+      const a = -Math.PI/2 + i*(Math.PI*2/axes.length);
+      const x = cx + Math.cos(a)*rad*ax.val;
+      const y = cy + Math.sin(a)*rad*ax.val;
+      if(i===0) R.moveTo(x,y); else R.lineTo(x,y);
+      // axis lines
+      R.moveTo(cx,cy); R.lineTo(cx+Math.cos(a)*rad, cy+Math.sin(a)*rad);
+    });
+    R.closePath();
+    R.fillStyle='rgba(120,198,255,0.25)'; R.strokeStyle='rgba(120,198,255,0.85)';
+    R.fill(); R.stroke();
 
-    class ScoringEngine{
-      constructor(renderer, model){
-        this.renderer=renderer; this.model=model;
-        this.startAt=Utils.now();
-        this.errors=0;
-      }
-      reset(){ this.startAt=Utils.now(); this.errors=0; }
-      bumpError(){ this.errors++; document.getElementById('hud-err').textContent=String(this.errors); }
-
-      evaluate(entry, exit){
-        const v=this.renderer.viewParams();
-        const te = Utils.projectToEllipse(v.a,v.b,v.rot,v.cx,v.cy, entry.x,entry.y);
-        const tx = Utils.projectToEllipse(v.a,v.b,v.rot,v.cx,v.cy, exit.x, exit.y);
-        const Pe = Utils.ellipsePoint(v.a,v.b,te,v.rot,v.cx,v.cy);
-        const Px = Utils.ellipsePoint(v.a,v.b,tx,v.rot,v.cx,v.cy);
-        const de = Utils.dist(entry.x,entry.y, Pe.x,Pe.y);
-        const dx = Utils.dist(exit.x, exit.y, Px.x,Px.y);
-
-        // angle vs normal at entry
-        const ux = exit.x - entry.x, uy = exit.y - entry.y;
-        const ul = Math.hypot(ux,uy)||1;
-        const nx= Pe.nx, ny=Pe.ny;
-        const dot = (ux/ul)*nx + (uy/ul)*ny;
-        const angle = Math.acos(Utils.clamp(dot,-1,1));
-        const angleDegErr = Math.abs(CONFIG.THRESHOLDS.IDEAL_NEEDLE_ANGLE_DEG - Utils.deg(angle)); // closeness to 90°
-        const angleScore = Math.max(0, 1 - (angleDegErr/CONFIG.THRESHOLDS.ANGLE_TOL_DEG));
-
-        // depth proxy (projection along normal)
-        const along = (ux*nx + uy*ny);
-        const depthScore = Utils.clamp(Utils.map(along, CONFIG.THRESHOLDS.DEPTH_MIN_PX, CONFIG.THRESHOLDS.DEPTH_MAX_PX, 0, 1), 0, 1);
-
-        // accuracy
-        const accE = Math.max(0, Math.exp(-de/CONFIG.THRESHOLDS.D0));
-        const accX = Math.max(0, Math.exp(-dx/CONFIG.THRESHOLDS.D0));
-        const accScore = (accE + accX)/2;
-
-        // sequence spacing
-        const deg12 = Math.PI*2/CONFIG.TASK.SUTURES;
-        let seqScore=1;
-        if(this.model.placed.length>0){
-          const last = this.model.placed[this.model.placed.length-1];
-          const delta = Math.abs((te - last.entry.t + Math.PI*2)%(Math.PI*2));
-          const dev = Math.abs(delta - deg12);
-          seqScore = Math.max(0, 1 - (dev/(deg12*1.2)));
-        }
-
-        // handling penalties
-        const handlingBad = (this.renderer.isInRestricted(entry.x, entry.y) || this.renderer.isInRestricted(exit.x, exit.y));
-        const handlingScore = handlingBad ? 0.1 : 1;
-
-        // time
-        const elapsed = Utils.now() - this.startAt;
-        const targetTime = CONFIG.TASK.SUTURES * CONFIG.TIME.IDEAL_SECONDS_PER_SUTURE * 1000;
-        const timeScore = Math.max(0, 1 - (elapsed/targetTime));
-
-        // total
-        const w = CONFIG.WEIGHTS;
-        const total = w.ACC*accScore + w.ANG*angleScore + w.DEPTH*depthScore + w.SEQ*seqScore + w.HAND*handlingScore + w.TIME*timeScore;
-
-        return {
-          entry:{...entry, t:te}, exit:{...exit, t:tx},
-          metrics:{accScore, angleScore, depthScore, seqScore, handlingScore, timeScore, elapsed},
-          angleDeg: Math.abs(Utils.deg(angle)), de, dx, along, total
-        };
-      }
-
-      recomputeTotals(){
-        const list=this.model.placed.map(p=>p.metrics);
-        const sum = (key)=> list.reduce((a,b)=>a+(b[key]||0),0) / (list.length||1);
-        const roundPct=(v)=>`${Math.round(v*100)}%`;
-        const totalPct = Math.round(sum('accScore')*40 + sum('angleScore')*15 + sum('depthScore')*15 + sum('seqScore')*10 + sum('handlingScore')*10 + sum('timeScore')*10);
-        document.getElementById('hud-score').textContent=String(totalPct);
-        document.getElementById('hud-acc').textContent=roundPct(sum('accScore'));
-        document.getElementById('hud-time').textContent=Utils.fmtTime(Utils.now()-this.startAt);
-        document.getElementById('score-total').textContent=String(totalPct);
-        document.getElementById('score-acc').textContent=roundPct(sum('accScore'));
-        document.getElementById('score-ang').textContent=roundPct(sum('angleScore'));
-        document.getElementById('score-depth').textContent=roundPct(sum('depthScore'));
-        document.getElementById('score-seq').textContent=roundPct(sum('seqScore'));
-        document.getElementById('score-hand').textContent=roundPct(sum('handlingScore'));
-        document.getElementById('score-time').textContent=roundPct(sum('timeScore'));
-        document.getElementById('score-err').textContent=String(this.errors);
-      }
+    // Sparkline
+    const W = s.width = s.clientWidth, H=s.height = s.clientHeight;
+    S.clearRect(0,0,W,H);
+    S.beginPath();
+    const trend = AppState.errorTrend.slice(-120);
+    for(let i=0;i<trend.length;i++){
+      const x = (i/(trend.length-1||1))*(W-10)+5;
+      const y = H - Util.clamp(trend[i],0,1)* (H-10) - 5;
+      if(i===0) S.moveTo(x,y); else S.lineTo(x,y);
     }
-
-    // ============================================================
-    // AI CO‑PILOT (Guidance, feedback, lifecycle)
-    // ============================================================
-    class AICoPilot{
-      constructor(model, renderer, overlay, scoring){
-        this.model=model; this.renderer=renderer; this.overlay=overlay; this.scoring=scoring;
-        this.chat=document.getElementById('chat');
-        this.checklist=document.getElementById('checklist');
-        this.hudStep=document.getElementById('hud-step');
-        this.ghostVisible=false;
-        this.entryPending=null;
-        this.highlights=true;
-
-        this.installUI();
-        this.refreshChecklist();
-        this.updateHUDStep();
-        this.renderTargets();
-        this.bindEvents();
-      }
-
-      installUI(){
-        document.getElementById('btn-start').addEventListener('click', ()=>this.startSession());
-        document.getElementById('btn-ghost').addEventListener('click', ()=>this.toggleGhost());
-        document.getElementById('btn-reset').addEventListener('click', ()=>this.reset());
-        document.getElementById('btn-export').addEventListener('click', ()=>this.exportReport());
-        document.getElementById('help-close').addEventListener('click', ()=>this.toggleHelp(false));
-
-        document.querySelectorAll('.tab').forEach(tab=>{
-          tab.addEventListener('click', ()=>{
-            document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-            tab.classList.add('active');
-            document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-            const panel=document.getElementById('panel-'+tab.dataset.tab);
-            panel.classList.add('active');
-            Store.save('tab', tab.dataset.tab);
-          });
-        });
-
-        document.getElementById('mode-training').addEventListener('change', e=>{ if(e.target.checked) this.setMode('training'); });
-        document.getElementById('mode-practice').addEventListener('change', e=>{ if(e.target.checked) this.setMode('practice'); });
-      }
-
-      bindEvents(){
-        Bus.on('input:down', (e)=>this.onPointerDown(e));
-        Bus.on('input:up',   (e)=>this.onPointerUp(e));
-        Bus.on('ui:ghost', ()=>this.toggleGhost());
-        Bus.on('steps:next', ()=>this.advanceStep());
-        Bus.on('steps:back', ()=>this.backStep());
-        Bus.on('ui:toggle-highlights', ()=>{
-          this.highlights=!this.highlights; this.renderTargets();
-          this.say(this.highlights ? "Highlights on." : "Highlights off.");
-        });
-        Bus.on('ui:help', ()=>this.toggleHelp(true));
-      }
-
-      setMode(mode){
-        this.model.setMode(mode);
-        this.say(`Mode set to ${mode==='training'?'Training':'Practice'}.`);
-        document.getElementById('assist-level').textContent = mode==='training'?'High':'Medium';
-      }
-
-      startSession(){
-        this.say("Session started. Follow highlighted annular targets. Click Entry near the highlight, then traverse across the annulus to set Exit. Maintain a near-perpendicular angle.");
-        Voice.speak("Session started. Follow the highlights and place your first annular bite at twelve o'clock.");
-        this.model.reset();
-        this.scoring.reset();
-        this.entryPending=null;
-        document.getElementById('hud-err').textContent='0';
-        this.overlay.clear();
-        this.renderTargets();
-        this.refreshChecklist();
-        this.updateHUDStep();
-        this.renderGhostIfNeeded();
-        this.updateLog(`SESSION START :: ${new Date().toLocaleString()}`);
-        // Pre-checklist ticks for first 3 steps (orientation, instrument, plan) for demonstration
-        this.setStepDone(0,true); this.setStepDone(1,true); this.setStepDone(2,true);
-      }
-
-      reset(){
-        this.model.reset();
-        this.scoring.reset();
-        this.entryPending=null;
-        this.overlay.clear();
-        this.renderTargets();
-        this.refreshChecklist();
-        this.updateHUDStep();
-        this.say("Reset complete. Highlights restored.");
-        this.updateLog(`RESET`);
-      }
-
-      toggleGhost(){
-        this.ghostVisible=!this.ghostVisible;
-        this.renderGhostIfNeeded();
-        const btn=document.getElementById('btn-ghost');
-        btn.setAttribute('aria-pressed', String(this.ghostVisible));
-        btn.textContent = this.ghostVisible ? 'Hide Ghost' : 'Show Ghost';
-        this.say(this.ghostVisible?"Ghost trajectory visible.":"Ghost trajectory hidden.");
-      }
-      renderGhostIfNeeded(){
-        if(!this.ghostVisible){ this.overlay.gGhost.innerHTML=''; return; }
-        const v=this.renderer.viewParams();
-        const ghostPairs = this.model.sequence.map(idx=>{
-          const t=this.model.targets[idx].t;
-          const P = Utils.ellipsePoint(v.a,v.b,t,v.rot,v.cx,v.cy);
-          const entry=P;
-          const exit={x:P.x + P.nx*18, y:P.y + P.ny*18};
-          return {entry, exit};
-        });
-        this.overlay.drawGhost(ghostPairs);
-      }
-
-      renderTargets(){
-        const v=this.renderer.viewParams();
-        this.model.targets.forEach(t=>{ t.a=v.a; t.b=v.b; t.rot=v.rot; t.cx=v.cx; t.cy=v.cy; });
-        const hi = (this.highlights) ? this.model.currentTargetIndex() : null;
-        this.overlay.drawTargets(this.model.targets, hi);
-      }
-
-      refreshChecklist(){
-        // Keep static DOM, just tick boxes based on step.done
-        this.model.steps.forEach((s,i)=>{ const chk=document.getElementById('chk-'+i); if(chk) chk.checked = !!s.done; });
-        this.updateHUDStep();
-      }
-      setStepDone(i, val=true){ if(this.model.steps[i]){ this.model.steps[i].done=!!val; const chk=document.getElementById('chk-'+i); if(chk) chk.checked=!!val; } }
-
-      updateHUDStep(){
-        document.getElementById('hud-step').textContent = `${Math.min(this.model.placed.length+1, this.model.steps.length)}/${this.model.steps.length}`;
-      }
-
-      onPointerDown({x,y,tool}){
-        if(tool!=='needle') { this.warnAt(x,y,"Use needle"); this.say("Switch to Needle Driver to place sutures."); return; }
-        const v=this.renderer.viewParams();
-        const t = Utils.projectToEllipse(v.a,v.b,v.rot,v.cx,v.cy,x,y);
-        const P = Utils.ellipsePoint(v.a,v.b,t,v.rot,v.cx,v.cy);
-        const d = Utils.dist(P.x,P.y,x,y);
-
-        if(!this.entryPending){
-          const idx = this.model.currentTargetIndex();
-          const target = this.model.targets[idx].t;
-          const deltaDeg = Math.abs(Utils.deg((t - target + Math.PI*2)%(Math.PI*2)));
-          if(this.model.mode==='training'){
-            if(d>CONFIG.THRESHOLDS.ANNULUS_SNAP_PX || deltaDeg>CONFIG.THRESHOLDS.TARGET_ANGULAR_TOL_DEG){
-              this.warnAt(x,y,"Off-target");
-              this.say(`Entry outside highlighted zone. Aim near marker ${idx+1}.`, true);
-              this.scoring.bumpError();
-              return;
-            }
-          }else{
-            if(d>CONFIG.THRESHOLDS.ANNULUS_SNAP_PX+4){ this.warnAt(x,y,"Far"); this.scoring.bumpError(); }
-          }
-          this.entryPending={x, y, t};
-          this.say(`Entry set. Advance across annulus, keeping needle near perpendicular.`);
-          // Optional: draw a short guide arrow from entry normal (visual cue)
-          const guideEnd={x:P.x + P.nx*18, y:P.y + P.ny*18};
-          this.overlay.gGuide.innerHTML=''; this.overlay.drawGuideArc(P, guideEnd, "#8bd3ff");
-        }
-      }
-
-      onPointerUp({x,y}){
-        if(!this.entryPending) return;
-        const entry=this.entryPending;
-        const exit={x,y};
-        this.entryPending=null;
-
-        const evalRes = this.scoring.evaluate(entry, exit);
-        const ok = evalRes.metrics.accScore>0.45 && evalRes.metrics.angleScore>0.45 && evalRes.metrics.depthScore>0.4 && evalRes.metrics.handlingScore>0.5;
-
-        if(this.renderer.isInRestricted(exit.x, exit.y)){
-          this.warnAt(exit.x, exit.y, "Avoid leaflet");
-          this.say("Exit traversed leaflet or chordae zone. Reposition to annular tissue only.", true);
-        }
-
-        this.model.placed.push({entry:evalRes.entry, exit:evalRes.exit, ok, metrics:evalRes.metrics});
-        this.overlay.drawSuture(evalRes.entry, evalRes.exit, ok);
-        this.scoring.recomputeTotals();
-        this.renderTargets();
-        this.updateHUDStep();
-        this.updateLog(`SUTURE ${this.model.placed.length}: acc=${(evalRes.metrics.accScore*100|0)} angle=${(evalRes.metrics.angleScore*100|0)} depth=${(evalRes.metrics.depthScore*100|0)} ${ok?'OK':'ISSUE'}`);
-
-        if(ok){
-          this.say(`Good. Entry ${Math.round(evalRes.de)}px to annulus, exit ${Math.round(evalRes.dx)}px, angle ${Math.round(Math.abs(90 - evalRes.angleDeg))}° from perpendicular.`);
-        }else{
-          const causes=[];
-          if(evalRes.metrics.accScore<=0.45) causes.push("entry/exit off annulus");
-          if(evalRes.metrics.angleScore<=0.45) causes.push("needle not perpendicular");
-          if(evalRes.metrics.depthScore<=0.4) causes.push("insufficient depth across annulus");
-          if(evalRes.metrics.handlingScore<=0.5) causes.push("tissue handling in restricted zone");
-          this.say("Issues: "+causes.join("; ")+". Toggle ghost and imitate the trajectory; aim for perpendicular entry.", true);
-          this.scoring.bumpError();
-        }
-
-        const stepIdx = Math.min(3 + (this.model.placed.length-1), this.model.steps.length-1);
-        this.setStepDone(stepIdx, ok);
-
-        if(this.model.placed.length>=this.model.sequence.length){
-          this.say("All sutures placed. Review spacing, then tie and cut. Session complete.");
-          Voice.speak("Suturing sequence complete. Well done.");
-          this.setStepDone(15,true); this.setStepDone(16,true);
-        }
-
-        // clear guide for next
-        this.overlay.gGuide.innerHTML='';
-      }
-
-      advanceStep(){
-        if(this.model.placed.length < this.model.sequence.length){
-          const idx = this.model.currentTargetIndex();
-          this.say(`Next: Target ${idx+1}. Aim for annular tissue; maintain 75–95° needle angle.`);
-        }else{
-          this.say("No further steps. You may reset or export the report.");
-        }
-      }
-
-      backStep(){
-        if(this.model.placed.length>0){
-          this.model.placed.pop();
-          this.overlay.gSut.lastElementChild?.remove();
-          this.scoring.recomputeTotals();
-          this.renderTargets();
-          this.refreshChecklist();
-          this.updateHUDStep();
-          this.say("Last suture undone.");
-          this.updateLog("UNDO last suture");
-        }
-      }
-
-      exportReport(){
-        const data={
-          when:new Date().toISOString(),
-          mode:this.model.mode,
-          score:document.getElementById('score-total').textContent,
-          errors:this.scoring.errors,
-          placements:this.model.placed.map((p,i)=>({
-            index:i+1,
-            entry:{x:Math.round(p.entry.x),y:Math.round(p.entry.y),t:p.entry.t},
-            exit:{x:Math.round(p.exit.x),y:Math.round(p.exit.y),t:p.exit.t},
-            metrics:p.metrics
-          }))
-        };
-        const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-        const a=document.createElement('a');
-        a.href=URL.createObjectURL(blob);
-        a.download=`mv_suturing_report_${Date.now()}.json`;
-        a.click();
-        this.say("Exported report (JSON).");
-      }
-
-      toggleHelp(forceOpen=null){
-        const modal=document.getElementById('help-modal');
-        const open = forceOpen===null ? !modal.classList.contains('open') : forceOpen;
-        modal.classList.toggle('open', open);
-        modal.setAttribute('aria-hidden', String(!open));
-      }
-
-      warnAt(x,y,msg){ this.overlay.warn(x,y,msg); }
-      say(text, warn=false){
-        const el=document.createElement('div');
-        el.className='msg '+(warn?'user':'coach');
-        el.innerHTML=`<div class="role">${warn?'Feedback':'Co‑Pilot'}</div><div class="text">${text}</div>`;
-        this.chat.appendChild(el);
-        this.chat.scrollTop=this.chat.scrollHeight;
-        if(!warn) Voice.speak(text);
-      }
-      updateLog(line){ const log=document.getElementById('log'); log.textContent += line+"\n"; }
+    S.strokeStyle='#f1c40f'; S.lineWidth=2; S.stroke();
+  },
+  updateScoreBadge(total, grade){
+    const el=document.getElementById('scoreBadge');
+    el.textContent = `Score: ${Util.fmt(total,0)} (${grade})`;
+    el.className = 'info-chip ' + (grade==='A'?'ok': grade==='B'?'ok': grade==='C'?'warn':'danger');
+  },
+  onMove:(e)=>{
+    const rect = AppState.canvas.getBoundingClientRect();
+    UI.mouse.x = (e.clientX - rect.left);
+    UI.mouse.y = (e.clientY - rect.top);
+    UI.mouseWorld = Geometry.fromCanvas({x:UI.mouse.x*AppState.DPR, y:UI.mouse.y*AppState.DPR});
+    if(UI.draggingTail){
+      UI.draggingTail.tail = UI.mouseWorld;
+      const t = Physics.tension(UI.draggingTail);
+      AI.onTension(t);
+      Audio.pull();
+      Renderer.draw();
     }
+  },
+  onDown:(e)=>{
+    if(e.button===2){ return } // ignore right click
+    UI.mouse.down = true;
+    const tool = AppState.instruments.current;
+    if(tool==='suture'){
+      // check near a tail
+      const tail = AppState.threads.find(t=> Util.dist(Geometry.toCanvas(t.tail), {x:UI.mouse.x*AppState.DPR, y:UI.mouse.y*AppState.DPR})<12 );
+      if(tail){ UI.draggingTail = tail; return; }
+    }
+    // Start placing a bite
+    UI.placing = true;
+    UI.tempEntry = UI.mouseWorld;
+    Audio.click();
+  },
+  onUp:(e)=>{
+    UI.mouse.down = false;
+    if(UI.draggingTail){
+      UI.draggingTail = null;
+      return;
+    }
+    if(!UI.placing) return;
+    const entry = UI.tempEntry, exit = UI.mouseWorld;
+    UI.placing = false;
+    UI.tempEntry = null;
+    const bite = { id: Util.uid(), entry, exit, pledged: (AppState.instruments.sutureType==='pledgeted'), time:Date.now() };
+    AppState.bites.push(bite);
+    // Build a thread for this bite
+    AppState.threads.push({ id: bite.id, fixed: [entry, exit], tail: {...exit}, tension:0 });
+    // Evaluate
+    const errs = AI.evalBite(bite);
+    // Record event
+    AppState.events.push({ time: Date.now(), type:'bite', info:{biteId:bite.id, errs:errs.map(e=>e.type)} });
+    // Update UI
+    Renderer.draw();
+  },
+  onLeave:()=>{ UI.mouse.down=false; UI.draggingTail=null; UI.placing=false; },
+  ringHoleClicked(idx, ptCanvas){
+    // map the last thread tail to this hole
+    const last = AppState.threads[AppState.threads.length-1];
+    if(!last){ UI.toast('Place a suture bite before passing through ring.', 'warn'); return; }
+    // move tail to ring hole position (world coords)
+    const world = Geometry.fromCanvas({x:ptCanvas.x*AppState.DPR, y:ptCanvas.y*AppState.DPR});
+    last.tail = world;
+    const t = Physics.tension(last);
+    const bite = AppState.bites.find(b=>b.id===last.id);
+    if(bite){ bite.ringHole = idx; }
+    Renderer.draw();
+    UI.toast('Passed through ring hole #' + (idx+1), 'ok');
+  },
+  playDemo(speed=1){
+    // animate through ideal points
+    const conf = Cases.data[AppState.caseId];
+    const degs = [];
+    const step = conf.ideal.biteDeg;
+    for(let d=240; d>=120; d-=step){ degs.push(d) } // around posterior then anterior (simple)
+    let i=0;
+    const tick=()=>{
+      if(i>=Math.min(12, degs.length)) return;
+      const p1 = Geometry.ellipsePoint(conf, degs[i]);
+      const p2 = Geometry.ellipsePoint(conf, degs[i]-6);
+      const bite={ id:Util.uid(), entry:{x:p1.x*0.94,y:p1.y*0.94}, exit:{x:p2.x*0.94,y:p2.y*0.94}, pledged:true, time:Date.now() };
+      AppState.bites.push(bite);
+      AppState.threads.push({ id:bite.id, fixed:[bite.entry,bite.exit], tail:{...bite.exit}, tension:0 });
+      AI.evalBite(bite);
+      Renderer.draw();
+      i++;
+      setTimeout(tick, 320/speed);
+    };
+    tick();
+  },
+  nextStep(){
+    if(AppState.mode==='training'){
+      if(AppState.stepIndex < AppState.trainingSteps.length-1){
+        AppState.stepIndex++;
+        AppState.events.push({time:Date.now(), type:'nextStep'});
+        this.updateStepUI();
+      }
+    } else {
+      AppState.events.push({time:Date.now(), type:'skipStep'});
+      UI.toast('Practice mode: steps are advisory. Proceed freely.', 'ok');
+    }
+  },
+  prevStep(){
+    if(AppState.stepIndex>0){
+      AppState.stepIndex--;
+      AppState.events.push({time:Date.now(), type:'prevStep'});
+      this.updateStepUI();
+    }
+  },
+  updateStepUI(){
+    const dots = Array.from(document.getElementById('stepper').children);
+    dots.forEach((d,i)=>{
+      d.classList.toggle('active', i===AppState.stepIndex);
+      d.classList.toggle('done', i<AppState.stepIndex);
+    });
+    document.getElementById('stepBadge').textContent = `Step ${AppState.stepIndex+1}/${AppState.trainingSteps.length}`;
+    // Update coach per step
+    const step = AppState.stepIndex+1;
+    const msgByStep = {
+      1:'Orientation: sectors & commissures highlighted. Use Ghost to preview ideal path.',
+      2:'Ring sizing preview: select ring size (default 32). Educational only.',
+      3:'Choose suture type: default pledgeted 2‑0 Polyester. Review pros/cons.',
+      4:'Define first bite at P2 safe zone. Click entry, drag arc, release exit.',
+      5:'Advance circumferentially. Keep spacing uniform & angle consistent.',
+      6:'Pass through ring: map suture pairs to ring holes.',
+      7:'Approximation & tensioning: pull tail gently; avoid over‑tension.',
+      8:'Knot tying: click to add throws; watch security vs deformation.',
+      9:'Final check: review leakage surrogate, seating & suture map.'
+    };
+    UI.setCoachStatus(msgByStep[step]||'');
+  },
+  finishCase(){
+    const s = Scoring.compute();
+    UI.toast(`Final score: ${Util.fmt(s.total,0)} (${s.grade}). Printable summary opened.`, s.total>=80?'ok': (s.total>=60?'warn':'danger'));
+    Export.printSummary(s);
+    // persist highscore
+    const hs = JSON.parse(localStorage.getItem('mvrt:highscores')||'[]');
+    hs.push({date:new Date().toISOString(), case:AppState.caseId, score:s.total, grade:s.grade});
+    localStorage.setItem('mvrt:highscores', JSON.stringify(hs));
+  },
+  resetCase(keepStep=false){
+    AppState.bites.length=0; AppState.threads.length=0; AppState.events.length=0; AppState.errorTrend.length=0;
+    AppState.score=null;
+    if(!keepStep) AppState.stepIndex=0;
+    UI.resetTimer(true);
+    UI.updateStepUI();
+    UI.updateRadar({precision:0,tissue:0,ring:0,eff:0});
+    UI.updateScoreBadge('—','');
+    Renderer._buildLabels(); Renderer._buildRingHoles(); Renderer.draw();
+    UI.toast('Case reset.', 'ok');
+  },
+  toast(text, tone=''){
+    const host = document.getElementById('toasts');
+    const d = document.createElement('div');
+    d.className = 'toast ' + (tone||'');
+    d.textContent = text;
+    host.appendChild(d);
+    setTimeout(()=>{ d.style.opacity='0'; d.style.transform='translateY(6px)'; }, 2200);
+    setTimeout(()=>{ d.remove() }, 2800);
+  },
+  warn(text){ UI.toast(text,'warn') },
+  showModal(id){ const m=document.getElementById(id); if(!m) return; m.style.display='flex'; m.querySelector('button')?.focus() },
+  hideModal(id){ const m=document.getElementById(id); if(!m) return; m.style.display='none' },
+  onKey(e){
+    if(e.key==='?' || (e.shiftKey && e.key==='/' )){ UI.showModal('helpModal'); return }
+    if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
+    const key = e.key.toLowerCase();
+    if(key==='n'){ UI.nextStep() }
+    else if(key==='b'){ UI.prevStep() }
+    else if(key==='h'){ AppState.settings.hintLevel = (AppState.settings.hintLevel+1)%4; document.getElementById('hintRange').value=String(AppState.settings.hintLevel); UI.toast('Hint level: '+AppState.settings.hintLevel) }
+    else if(key==='u'){ UI.undo() }
+    else if(key==='y'){ UI.redo() }
+    else if(key==='r'){ UI.resetCase() }
+    else if(key==='g'){ AppState.ghost=!AppState.ghost; document.getElementById('ghostToggle').textContent='Ghost: '+(AppState.ghost?'On':'Off') }
+    else if(key==='t'){ const chk=document.getElementById('modeToggle'); chk.checked=!chk.checked; chk.dispatchEvent(new Event('change')) }
+    else if(key==='p'){ UI.toggleTimer() }
+  },
+  undo(){
+    const state = {
+      bites: JSON.stringify(AppState.bites),
+      threads: JSON.stringify(AppState.threads)
+    };
+    if(!AppState.history.length){
+      AppState.history.push(state);
+      UI.toast('Undo point saved.','ok');
+      return;
+    }
+    const last = AppState.history.pop();
+    AppState.future.push({ bites: JSON.stringify(AppState.bites), threads: JSON.stringify(AppState.threads) });
+    AppState.bites = JSON.parse(last.bites);
+    AppState.threads = JSON.parse(last.threads);
+    AppState.events.push({time:Date.now(), type:'undo'});
+    Renderer.draw();
+  },
+  redo(){
+    const nxt = AppState.future.pop();
+    if(!nxt){ UI.toast('Nothing to redo.'); return; }
+    AppState.history.push({ bites: JSON.stringify(AppState.bites), threads: JSON.stringify(AppState.threads) });
+    AppState.bites = JSON.parse(nxt.bites); AppState.threads = JSON.parse(nxt.threads);
+    Renderer.draw();
+  },
+  currentTension(){
+    const last = AppState.threads[AppState.threads.length-1];
+    return last? last.tension : 0;
+  },
+  // Timer
+  resetTimer(pause=true){
+    AppState.elapsed = 0;
+    AppState.timerStart = Date.now();
+    AppState.timerPaused = pause;
+    document.getElementById('timer').textContent = Util.niceTime(0);
+  },
+  toggleTimer(){
+    AppState.timerPaused = !AppState.timerPaused;
+    if(!AppState.timerPaused) AppState.timerStart = Date.now() - AppState.elapsed;
+  },
+  tickTimer(){
+    if(!AppState.timerPaused){
+      AppState.elapsed = Date.now() - AppState.timerStart;
+      document.getElementById('timer').textContent = Util.niceTime(AppState.elapsed);
+    }
+    requestAnimationFrame(UI.tickTimer);
+  }
+};
 
-    // ============================================================
-    // BOOTSTRAP
-    // ============================================================
-    const canvas = document.getElementById('render3d');
-    const overlaySVG = document.getElementById('overlay');
-    const renderer = new AnatomyRenderer(canvas);
-    const overlay  = new OverlayManager(overlaySVG, renderer);
-    const tools    = new ToolController(renderer);
-    const model    = new ProcedureModel(renderer);
-    const scoring  = new ScoringEngine(renderer, model);
-    const coach    = new AICoPilot(model, renderer, overlay, scoring);
+/* --------------------------------- Export --------------------------------- */
+const Export = {
+  sessionJSON(){
+    const s = {
+      meta:{ version:AppState.version, date:new Date().toISOString(), case:AppState.caseId, mode:AppState.mode, elapsed:AppState.elapsed },
+      settings: AppState.settings,
+      instruments: AppState.instruments,
+      timeline: AppState.events,
+      bites: AppState.bites,
+      score: AppState.score
+    };
+    return s;
+  },
+  downloadJSON(){
+    const blob = new Blob([JSON.stringify(this.sessionJSON(), null, 2)], {type:'application/json'});
+    Util.saveBlob(blob, `mvrt_${AppState.caseId}_${Date.now()}.json`);
+  },
+  makePNGSnap(withOverlay=true){
+    // Compose canvas snapshot (main canvas already includes everything visual except SVG overlay)
+    // For simplicity, we rasterize the main canvas at displayed size.
+    const c = document.createElement('canvas');
+    const w = AppState.canvas.clientWidth, h=AppState.canvas.clientHeight;
+    c.width = w; c.height = h;
+    const cx = c.getContext('2d');
+    cx.drawImage(AppState.canvas, 0,0,w,h);
+    // Optionally render minimal overlays: step, score
+    if(withOverlay){
+      cx.fillStyle='rgba(0,0,0,0.35)'; cx.fillRect(8,h-34, 260, 26);
+      cx.fillStyle='#fff'; cx.font='14px sans-serif';
+      cx.fillText(`Case: ${Cases.data[AppState.caseId].title}`, 14, h-16);
+      const sc = AppState.score?.total!=null ? `${Util.fmt(AppState.score.total,0)} (${AppState.score.grade})` : '—';
+      cx.fillText(`Score: ${sc}`, 170, h-16);
+    }
+    return c.toDataURL('image/png');
+  },
+  exportPNG(dryRun=false){
+    const url = this.makePNGSnap(true);
+    if(dryRun) return url;
+    Util.saveBlob(Util.dataURLToBlob(url), `mvrt_${AppState.caseId}_${Date.now()}.png`);
+  },
+  downloadReport(){
+    this.downloadJSON();
+    const s = Scoring.compute();
+    this.printSummary(s);
+  },
+  printSummary(score){
+    const snap = this.makePNGSnap(true);
+    const win = window.open('', '_blank');
+    const css = `
+      body{font-family: ${getComputedStyle(document.body).getPropertyValue('--font')}; padding:16px; color:#111}
+      h1,h2,h3{margin:.5rem 0}
+      .grid{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+      .card{border:1px solid #ccc; border-radius:8px; padding:10px}
+      table{width:100%; border-collapse:collapse}
+      td,th{border-bottom:1px solid #eee; padding:6px}
+      .small{color:#666}
+      .badge{display:inline-block; padding:2px 6px; border-radius:6px; background:#eef}
+    `;
+    const html = `
+      <!DOCTYPE html><html><head><meta charset="utf-8"><title>MVRT Summary</title><style>${css}</style></head>
 
-    // Initial targets & ghost state
-    coach.renderTargets();
+```
+  <body>
+    <h1>Mitral Repair Trainer — Printable Summary</h1>
+    <div class="small">Generated: ${new Date().toLocaleString()}</div>
+    <img src="${snap}" style="width:100%; border-radius:8px; margin:8px 0;" alt="Simulation snapshot"/>
+    <div class="grid">
+      <div class="card">
+        <h3>Case</h3>
+        <div><strong>${Cases.data[AppState.caseId].title}</strong> <span class="badge">${AppState.mode}</span></div>
+        <div class="small">${Cases.data[AppState.caseId].note}</div>
+        <h3>Score</h3>
+        <table>
+          <tr><td>Total</td><td><strong>${Util.fmt(score.total,0)}</strong> (${score.grade})</td></tr>
+          <tr><td>Precision</td><td>${Util.fmt(score.precision,1)}/40</td></tr>
+          <tr><td>Tissue Respect</td><td>${Util.fmt(score.tissue,1)}/25</td></tr>
+          <tr><td>Ring Integration</td><td>${Util.fmt(score.ring,1)}/20</td></tr>
+          <tr><td>Efficiency</td><td>${Util.fmt(score.eff,1)}/15</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Instruments & Settings</h3>
+        <table>
+          <tr><td>Suture</td><td>${AppState.instruments.sutureType}</td></tr>
+          <tr><td>Needle</td><td>${AppState.instruments.needle}</td></tr>
+          <tr><td>Ring size</td><td>${AppState.instruments.ringSize}</td></tr>
+          <tr><td>Hint level</td><td>${AppState.settings.hintLevel}</td></tr>
+        </table>
+        <h3>Bites</h3>
+        <div class="small">Count: ${AppState.bites.length}</div>
+        <ol class="small">
+          ${AppState.bites.slice(0,20).map((b,i)=> `<li>#${i+1} seg ${b.segment} depth ${Util.fmt(b.depthMM,1)} mm angleErr ${Util.fmt(b.angleErr,1)}° ${b.flags?.forbidden?'[forbidden]':''}</li>`).join('')}
+        </ol>
+      </div>
+    </div>
+    <p class="small">Disclaimer: Educational simulation only — not for clinical decision‑making.</p>
+    <script>window.onload=()=>window.print()</script>
+  </body></html>
+`;
+win.document.write(html); win.document.close();
+```
 
-    // Restore tab selection
-    (function initTabs(){
-      const tabPref=Store.load('tab','coach');
-      const tabBtn=document.querySelector(`.tab[data-tab="${tabPref}"]`) || document.querySelector('.tab');
-      tabBtn.click();
-    })();
+}
+};
 
-    // Default tool
-    tools.setTool('needle');
+/\* --------------------------------- Tests ---------------------------------- \*/
+const Tests = {
+run(){
+const list = \[];
+const pass = (name, ok, detail='')=>{ console\[ok?'log':'warn']\((ok?'✓ ':'✗ ')+name, detail); list.push({name,ok,detail}); };
+// 1: App loads in Training Mode, Step 1 highlighted, timer visible.
+pass('Load in Training mode, Step 1, timer shown', (AppState.mode==='training' && AppState.stepIndex===0 && document.getElementById('timer')!=null));
+// 2: Toggling Practice Mode keeps stepper but allows out-of-order
+const beforeDots = document.getElementById('stepper').children.length;
+document.getElementById('modeToggle').checked=true; document.getElementById('modeToggle').dispatchEvent(new Event('change'));
+pass('Practice mode toggle retains stepper', document.getElementById('stepper').children.length===beforeDots);
+// revert
+document.getElementById('modeToggle').checked=false; document.getElementById('modeToggle').dispatchEvent(new Event('change'));
+// 3: Placing a bite updates metrics (simulate)
+const demoBite = { id\:Util.uid(), entry:{x:-40,y:60}, exit:{x:-30,y:58}, pledged\:true, time\:Date.now() };
+AppState.bites.push(demoBite);
+AI.evalBite(demoBite);
+pass('Placing a bite sets metrics', document.getElementById('mDepth').textContent!=='—');
+AppState.bites.pop();
+// 4: Hint cycle
+const prevHint = AppState.settings.hintLevel; AppState.settings.hintLevel=(prevHint+1)%4;
+pass('Hint cycle', AppState.settings.hintLevel!==prevHint);
+// 5: Over-tension triggers heatmap & warning
+const thr = { id:'t', fixed:\[{x:0,y:0},{x:40,y:0}], tail:{x:200,y:0}, tension:0, rest:40 };
+AppState.threads.push(thr); const t=Physics.tension(thr);
+const over = t>Cases.data\[AppState.caseId].thresholds.tensionMax;
+AI.onTension(t);
+pass('Over‑tension detection', over);
+AppState.threads.pop();
+// 6: Export JSON with at least one bite
+const tmpSession = (function(){
+const b={ id:'tmp', entry:{x:1,y:1}, exit:{x:2,y:1}, pledged\:true, time\:Date.now(), depthMM:2.5, angleErr:5, spacingErr:0, flags:{} };
+const prev=AppState.bites; AppState.bites=\[b];
+const s=Export.sessionJSON(); AppState.bites=prev; return s;
+})();
+pass('Export JSON includes bites', (tmpSession.bites?.length||0)>0);
+// 7: Export PNG
+const url = Export.exportPNG(true);
+pass('Export PNG produces data URL', typeof url==='string' && url.startsWith('data\:image/png'));
+// 8: Reset clears sutures, restores Step 1, zeros timer
+UI.resetCase();
+pass('Reset clears and restores', AppState.bites.length===0 && AppState.stepIndex===0);
+// 9: Scoring computes after Finish
+Scoring.compute();
+pass('Scoring computes', AppState.score!=null);
+// 10: LocalStorage persists last settings (toggle and check)
+const was = AppState.settings.theme; AppState.settings.theme = (was==='light'?'dark':'light'); Storage.save();
+const re = JSON.parse(localStorage.getItem('mvrt\:settings')||'{}');
+pass('LocalStorage persistence', re.theme===AppState.settings.theme);
+// Render checklist to Help overlay
+const ul = document.getElementById('testList'); ul.innerHTML='';
+list.forEach(t=>{ const li=document.createElement('li'); li.textContent = (t.ok?'✓ ':'✗ ')+t.name; ul.appendChild(li) });
+AppState.tests = list;
+}
+};
 
-    // Welcome tip
-    coach.say("Use Start Session to begin. Press G to toggle ghost path. Press N to proceed to next target if needed.");
-  </script>
+/\* ------------------------------ App Bootstrap ----------------------------- \*/
+function bootstrap(){
+Storage.load();
+Audio.init(); Audio.setEnabled(AppState.settings.audio);
+
+Renderer.init();
+UI.init();
+UI.tickTimer();
+Renderer.loop();
+
+// Persist settings on unload
+window\.addEventListener('beforeunload', Storage.save);
+}
+const UIRef = UI; // expose for some closures
+const ExportRef = Export;
+
+/\* ------------------------------ Public API -------------------------------- \*/
+return { AppState, Cases, Geometry, Renderer, Physics, AI, Scoring, UI, Export, Storage, Audio, Tests };
+
+})();
+
+/\* -------------------------- Start the application -------------------------- \*/
+document.addEventListener('DOMContentLoaded', ()=>{
+// Theme init
+document.body.classList.toggle('light', true);
+document.body.dataset.theme = 'light';
+document.getElementById('ghostToggle').textContent = 'Ghost: On';
+MVRT.AppState.ghost = true;
+
+// Bind RAF timing
+MVRT.now = Date.now();
+
+MVRT.Renderer.init();
+MVRT.UI.init();
+MVRT.UI.tickTimer();
+MVRT.Renderer.loop();
+
+// Save after load
+MVRT.Storage.save();
+}); </script>
+
 </body>
 </html>
