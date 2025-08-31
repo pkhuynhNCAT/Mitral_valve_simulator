@@ -6,90 +6,109 @@
     name="viewport"
     content="width=device-width, initial-scale=1, viewport-fit=cover"/>
   <title>MitralSim Pro — Module 1.1 · Mitral Apparatus Overview</title>
-  <meta name="description" content="Super‑realistic, web‑based, 3D overview of the mitral apparatus (annulus, anterior/posterior leaflets, commissures) with cinematic rendering, annotations, and guided steps."/>
+  <meta name="description" content="Super‑realistic, optimized 3D overview of the mitral apparatus (annulus, anterior/posterior leaflets, commissures) with cinematic rendering, annotations, guided steps, and identify mode."/>
   <link rel="stylesheet" href="../assets/css/style.css"/>
 
-  <!-- 📦 Three.js (ESM) + examples -->
+  <!-- Three.js + JSM modules (ESM) -->
   <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"></script>
   <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js"></script>
+  <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/environments/RoomEnvironment.js"></script>
+
+  <!-- Postprocessing -->
   <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/EffectComposer.js"></script>
   <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/RenderPass.js"></script>
   <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/UnrealBloomPass.js"></script>
-  <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/ShaderPass.js"></script>
   <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/OutlinePass.js"></script>
+  <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/SSAOPass.js"></script>
+  <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/ShaderPass.js"></script>
   <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/shaders/FXAAShader.js"></script>
-  <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/environments/RoomEnvironment.js"></script>
 
   <style>
-    /* ---- Module‑specific design polish ---- */
+    /* -------- Module 1.1: Cinematic, polished UI (complements global style.css) -------- */
     :root{
-      --panelGrad: linear-gradient(180deg, rgba(33,38,45,.8), rgba(22,27,34,.85));
-      --glass: rgba(24, 28, 36, .6);
+      --glass: rgba(20,24,32,.55);
+      --glass-strong: rgba(20,24,32,.75);
+      --aqua: #7fb6ff;
+      --mint: #a6e3a1;
+      --rose: #ff6b86;
+      --amber: #ffd666;
     }
-    body { background: radial-gradient(1200px 700px at 70% -10%, #142031, #0d1117 60%); }
-    .topbar .inner { backdrop-filter: blur(10px); }
-    .page { grid-template-columns: 380px 1fr; gap: 18px; }
 
-    /* Cinematic canvas wrap */
+    body{
+      background:
+        radial-gradient(1600px 900px at 70% -20%, #142032 0%, #0d1117 55%, #090d14 100%),
+        linear-gradient(180deg, #0c121b 0%, #0b0f16 100%);
+    }
+
+    .page { grid-template-columns: 400px 1fr; gap: 18px; }
+
     .canvas-wrap{
-      background: radial-gradient(1200px 800px at 50% -20%, #0f1b29, #070a0f 55%, #05070a);
-      border: 1px solid var(--outline);
-      box-shadow: 0 40px 120px rgba(0,0,0,.65), inset 0 0 0 1px rgba(255,255,255,.02);
+      border:1px solid var(--outline);
+      border-radius:12px;
+      background: radial-gradient(1400px 1000px at 50% -30%, #0e1a29, #070a10 60%, #05070a);
+      box-shadow:
+        0 40px 140px rgba(0,0,0,.65),
+        inset 0 0 0 1px rgba(255,255,255,.03);
+      position: relative;
     }
 
-    /* Annotations & overlays */
+    /* HUD + overlay */
     #overlay { position:absolute; inset:0; pointer-events:none; }
-    .callout {
-      position:absolute; max-width:280px; color:#e8f0ff; font-size:12px; line-height:1.35;
-      padding:10px 12px; border-radius:12px; border:1px solid rgba(120,140,170,.35);
-      background: linear-gradient(180deg, rgba(16,22,30,.9), rgba(11,15,22,.88));
-      box-shadow: 0 3px 18px rgba(0,0,0,.45);
+    #hud-svg { position:absolute; inset:0; pointer-events: none; }
+
+    .hud-badge{
+      position:absolute; top:10px; right:10px; z-index:3;
+      background: var(--glass);
+      border: 1px solid var(--outline);
+      color: #cbe0ff;
+      padding: 8px 10px; border-radius: 10px; font-size: 12px;
+      backdrop-filter: blur(10px);
+      display:flex; gap:10px; align-items:center;
     }
-    .callout .title{ font-weight:700; margin-bottom:4px; font-size:12px; letter-spacing:.3px }
-    .callout .meta { color:#9db0c7; font-size:11px }
-    .pin {
-      position:absolute; width:10px; height:10px; border-radius:50%;
-      background: radial-gradient(9px 9px at 40% 35%, #76d0ff, #2274ff 60%, #1b3fa0 100%);
+    .hud-dot{ width:10px; height:10px; border-radius:50%; background: radial-gradient(circle at 40% 40%, #7de3ff, #247fff); box-shadow: 0 0 14px rgba(64,169,255,.45) }
+
+    .callout{
+      position: absolute; max-width: 300px;
+      color: #eaf6ff; font-size: 12px; line-height: 1.35;
+      padding: 10px 12px; border-radius: 12px;
+      border:1px solid rgba(120,140,170,.35);
+      background: linear-gradient(180deg, rgba(12,16,24,.92), rgba(9,12,18,.9));
+      box-shadow: 0 6px 24px rgba(0,0,0,.45);
+      transform: translate(12px, -12px);
+    }
+    .callout .t{ font-weight: 700; margin-bottom: 4px; letter-spacing:.3px }
+    .callout .m{ color:#a8bdde; font-size:11px }
+
+    .pin{
+      position:absolute; width:11px; height:11px; border-radius:50%;
+      background: radial-gradient(10px 10px at 40% 35%, #76d0ff, #2274ff 60%, #1b3fa0 100%);
       box-shadow: 0 0 0 4px rgba(64,169,255,.18), 0 0 16px rgba(64,169,255,.35);
     }
 
-    /* Control tiles */
-    .toolrow { display:flex; gap:8px; flex-wrap:wrap }
+    /* Sidebar extras */
+    .toolrow{ display:flex; gap:8px; flex-wrap:wrap }
     .toolbtn{
-      border:1px solid var(--outline); border-radius:10px; background:var(--panelGrad); color:var(--ink);
-      padding:8px 10px; font-size:12px; cursor:pointer; transition: transform .08s ease, box-shadow .15s ease;
+      border:1px solid var(--outline); border-radius:10px; background:linear-gradient(180deg, rgba(32,38,48,.85), rgba(18,22,30,.85));
+      color:var(--ink); padding:8px 10px; font-size:12px;
+      cursor:pointer; transition: transform .08s ease, box-shadow .12s ease, outline-color .2s ease;
     }
-    .toolbtn:hover{ box-shadow:0 6px 18px rgba(0,0,0,.35); transform: translateY(-1px); }
-    .toolbtn[data-active="1"]{ outline:2px solid #4cc9f0; outline-offset:-2px }
+    .toolbtn:hover{ box-shadow:0 8px 22px rgba(0,0,0,.35); transform: translateY(-1px); }
+    .toolbtn[data-active="1"]{ outline:2px solid var(--aqua); outline-offset:-2px }
+    .switch{ display:flex; gap:10px; align-items:center }
+    .switch input{ width:18px; height:18px }
 
-    .switch { display:flex; align-items:center; gap:10px; }
-    .switch input{ width:18px; height:18px; }
+    /* Controls */
+    .range{ -webkit-appearance:none; width:100%; height:6px; border-radius:8px; background:#162234; outline:none }
+    .range::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:14px; height:14px; border-radius:50%; border:2px solid #0c1b2a; background:#59c2ff; cursor:pointer }
+    .mini{ font-size:11px; color:var(--muted) }
 
     /* KPIs */
-    .kpis2 { display:grid; grid-template-columns: repeat(3,1fr); gap:10px }
-    .kpis2 .k { background:var(--panel); border:1px solid var(--outline); border-radius:12px; padding:10px; }
-    .kpis2 .k .label { color:var(--muted); font-size:11px }
-    .kpis2 .k .value { font-family: var(--mono); font-size:18px }
+    .kpis3{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px }
+    .kpi3{ background: var(--panel); border:1px solid var(--outline); border-radius:10px; padding:10px }
+    .kpi3 .label{ color:var(--muted); font-size:11px }
+    .kpi3 .value{ font-family: var(--mono); font-size:18px }
 
-    /* Stepper */
-    .step { padding:10px; border:1px dashed var(--outline); border-radius:10px; background:rgba(18,22,30,.45) }
-    .step .t{ font-weight:700; margin-bottom:4px }
-    .step .d{ color:var(--muted); font-size:12px }
-    .hl { color:#a6e3a1 }
-
-    /* Pretty sliders */
-    .range { -webkit-appearance: none; width: 100%; height: 6px; border-radius: 8px; background:#1a2533; outline: none; }
-    .range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width:14px; height:14px; border-radius:50%; background:#4cc9f0; border:2px solid #0b1a2a; cursor:pointer }
-    .mini-caption{ font-size:11px; color:var(--muted); margin-top:2px }
-
-    /* Outline color indicator */
-    .swatch { width:12px; height:12px; border-radius:3px; border:1px solid var(--outline); display:inline-block; translate: 0 2px; }
-
-    /* Floating HUD badge */
-    .hud {
-      position:absolute; top:10px; right:10px; background:rgba(20,24,32,.55); border:1px solid var(--outline);
-      color:#93b7ff; padding:8px 10px; border-radius:10px; font-size:12px; backdrop-filter: blur(8px);
-    }
+    .legend .tag b{ color:#eaf6ff }
   </style>
 </head>
 <body>
@@ -102,6 +121,7 @@
       <span class="badge">Commissures</span>
       <div style="flex:1"></div>
       <span class="badge">Cinematic 3D</span>
+      <span class="badge">Optimized</span>
     </div>
   </div>
 
@@ -116,9 +136,9 @@
           <button id="btnIdentify" class="toolbtn">Identify</button>
         </div>
         <div class="small" style="margin-top:6px">
-          <b>Guided:</b> step‑by‑step with highlights ·
+          <b>Guided:</b> step tour with focus and highlights ·
           <b>Explore:</b> free navigation + labels ·
-          <b>Identify:</b> click requested landmark (no hints).
+          <b>Identify:</b> requested structure (no hints) → scored.
         </div>
       </div>
 
@@ -126,26 +146,36 @@
         <h4>Cinematic Controls</h4>
         <div class="list small">
           <div class="row">
-            <label style="width:38%">Bloom</label>
-            <input id="rngBloom" class="range" type="range" min="0" max="2.0" step="0.02" value="0.8"/>
+            <label style="width:38%">Exposure</label>
+            <input id="rngExposure" class="range" type="range" min="0.6" max="1.8" value="1.0" step="0.02"/>
           </div>
-          <div class="mini-caption">Highlights the glossy tissue sheen</div>
+          <div class="mini">ACES tonemapping exposure</div>
+          <div class="row" style="margin-top:10px">
+            <label style="width:38%">Bloom</label>
+            <input id="rngBloom" class="range" type="range" min="0.0" max="1.8" value="0.75" step="0.02"/>
+          </div>
+          <div class="mini">Moist tissue highlights</div>
+          <div class="row" style="margin-top:10px">
+            <label style="width:38%">SSAO</label>
+            <input id="rngSSAO" class="range" type="range" min="0.0" max="1.2" value="0.35" step="0.02"/>
+          </div>
+          <div class="mini">Subsurface creases and depth</div>
           <div class="row" style="margin-top:10px">
             <label style="width:38%">Outline</label>
-            <input id="rngOutline" class="range" type="range" min="0" max="0.06" step="0.002" value="0.032"/>
+            <input id="rngOutline" class="range" type="range" min="0.0" max="0.08" value="0.035" step="0.002"/>
           </div>
-          <div class="mini-caption">Selection glow thickness</div>
+          <div class="mini">Selection edge thickness</div>
           <div class="row" style="margin-top:10px">
             <label style="width:38%">Pulse</label>
-            <input id="rngPulse" class="range" type="range" min="0" max="1" step="0.02" value="0.35"/>
+            <input id="rngPulse" class="range" type="range" min="0.0" max="1.2" value="0.35" step="0.02"/>
           </div>
-          <div class="mini-caption">Subtle leaflet motion amplitude</div>
+          <div class="mini">Subtle leaflet motion amplitude</div>
         </div>
       </div>
 
       <div class="panel">
         <h4>Layers</h4>
-        <div class="list small" id="layers">
+        <div id="layers" class="list small">
           <label class="switch"><input data-layer="annulus" type="checkbox" checked> Mitral Annulus</label>
           <label class="switch"><input data-layer="leafletA" type="checkbox" checked> Anterior Leaflet</label>
           <label class="switch"><input data-layer="leafletP" type="checkbox" checked> Posterior Leaflet</label>
@@ -153,6 +183,7 @@
           <label class="switch"><input data-layer="coaptation" type="checkbox" checked> Coaptation Line</label>
           <label class="switch"><input data-layer="labels" type="checkbox" checked> Floating Labels</label>
           <label class="switch"><input data-layer="backdrop" type="checkbox" checked> Backdrop Volume</label>
+          <label class="switch"><input data-layer="rim" type="checkbox" checked> Rim Light</label>
         </div>
       </div>
 
@@ -166,7 +197,7 @@
           <button class="toolbtn" data-focus="commPM">Focus P‑M Comm.</button>
           <button class="toolbtn" data-focus="reset">Reset</button>
         </div>
-        <div class="small" style="margin-top:8px">
+        <div class="mini" style="margin-top:8px">
           <b>Orbit</b> drag · <b>Pan</b> shift+drag · <b>Zoom</b> wheel · Hotkeys:
           <kbd>1</kbd> Annulus <kbd>2</kbd> A‑leaflet <kbd>3</kbd> P‑leaflet <kbd>4</kbd>/<kbd>5</kbd> Commissures
         </div>
@@ -176,7 +207,7 @@
         <h4>Step Guide</h4>
         <div id="stepBox" class="step">
           <div class="t">Step 1 — Mitral Annulus</div>
-          <div class="d">The annulus is an elliptical fibrous ring. It is saddle‑shaped with highest points anteriorly/posteriorly.</div>
+          <div class="d">Elliptical fibrous ring with a saddle profile. Hover to highlight; click to pin label.</div>
         </div>
         <div class="row" style="margin-top:8px">
           <button id="btnPrev" class="btn secondary">◀ Prev</button>
@@ -185,11 +216,27 @@
       </div>
 
       <div class="panel">
+        <h4>Legend</h4>
+        <div class="legend">
+          <span class="tag"><b style="color:#9fe3ff">Cyan</b>: Coaptation line</span>
+          <span class="tag"><b style="color:#78b99a">Light‑green</b>: Anterior leaflet</span>
+          <span class="tag"><b style="color:#86b79d">Green</b>: Posterior leaflet</span>
+          <span class="tag"><b style="color:#2c8a51">Teal</b>: Annulus</span>
+          <span class="tag"><b style="color:#f0d47f">Gold</b>: Commissures</span>
+          <span class="tag"><b>Glow</b>: Selected structure</span>
+        </div>
+      </div>
+
+      <div class="panel">
         <h4>KPIs</h4>
-        <div class="kpis2">
-          <div class="k"><div class="label">Hovered</div><div id="kHovered" class="value">—</div></div>
-          <div class="k"><div class="label">Identify Score</div><div id="kScore" class="value">0</div></div>
-          <div class="k"><div class="label">Outline</div><div class="value"><span id="swOut" class="swatch" style="background:#7fb6ff"></span></div></div>
+        <div class="kpis3">
+          <div class="kpi3"><div class="label">Hovered</div><div id="kHovered" class="value">—</div></div>
+          <div class="kpi3"><div class="label">Identify Score</div><div id="kScore" class="value">0</div></div>
+          <div class="kpi3"><div class="label">GPU Scale</div><div id="kGPU" class="value">1.0x</div></div>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button id="btnPerf" class="btn secondary">Performance Mode</button>
+          <button id="btnHQ" class="btn secondary">Hi‑Q Mode</button>
         </div>
       </div>
     </aside>
@@ -197,11 +244,12 @@
     <!-- Main -->
     <main>
       <div id="canvasWrap" class="canvas-wrap">
+        <div class="hud-badge"><span class="hud-dot"></span> Module 1.1 · Mitral Apparatus Overview</div>
+        <svg id="hud-svg" width="100%" height="100%"></svg>
         <div id="overlay"></div>
-        <div class="hud">Module 1.1 · Overview</div>
       </div>
       <div class="row" style="margin-top:10px; gap:12px">
-        <div class="chip"><b>Task:</b> <span id="task">Explore the mitral annulus, leaflets, and commissures. Hover to highlight; click to pin a label.</span></div>
+        <div class="chip"><b>Task:</b> <span id="task">Follow the guided steps or explore. Click a structure to pin a label.</span></div>
         <div class="chip"><b>Status:</b> <span id="status">Ready</span></div>
       </div>
     </main>
@@ -209,44 +257,61 @@
 
   <div class="footer small">© 2025 MitralSim Pro — Educational prototype · Not a medical device.</div>
 
-  <!-- ██████████████████████████████████████████████████████████████████████ -->
-  <!--                                SCRIPT                                  -->
-  <!-- ██████████████████████████████████████████████████████████████████████ -->
+  <!-- ───────────────────────────── SCRIPT ───────────────────────────── -->
   <script type="module">
     import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
     import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+    import { RoomEnvironment } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/environments/RoomEnvironment.js';
     import { EffectComposer } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/EffectComposer.js';
     import { RenderPass } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/RenderPass.js';
     import { UnrealBloomPass } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/UnrealBloomPass.js';
     import { OutlinePass } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/OutlinePass.js';
+    import { SSAOPass } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/SSAOPass.js';
     import { ShaderPass } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/ShaderPass.js';
     import { FXAAShader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/shaders/FXAAShader.js';
-    import { RoomEnvironment } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/environments/RoomEnvironment.js';
 
-    // -------------------- DOM refs --------------------
+    // ======= DOM =======
     const wrap = document.getElementById('canvasWrap');
     const overlay = document.getElementById('overlay');
+    const hudSVG = document.getElementById('hud-svg');
     const stepBox = document.getElementById('stepBox');
     const statusEl = document.getElementById('status');
     const taskEl = document.getElementById('task');
     const kHovered = document.getElementById('kHovered');
-    const kScore   = document.getElementById('kScore');
-    const swOut    = document.getElementById('swOut');
+    const kScore = document.getElementById('kScore');
+    const kGPU = document.getElementById('kGPU');
 
-    // -------------------- Renderer & Scene --------------------
-    const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
-    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio||1));
+    const btnGuide = document.getElementById('btnGuide');
+    const btnExplore = document.getElementById('btnExplore');
+    const btnIdentify = document.getElementById('btnIdentify');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const btnPerf = document.getElementById('btnPerf');
+    const btnHQ = document.getElementById('btnHQ');
+
+    const rngExposure = document.getElementById('rngExposure');
+    const rngBloom = document.getElementById('rngBloom');
+    const rngSSAO = document.getElementById('rngSSAO');
+    const rngOutline = document.getElementById('rngOutline');
+    const rngPulse = document.getElementById('rngPulse');
+
+    // ======= Renderer =======
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference:'high-performance' });
+    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
     renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.physicallyCorrectLights = true;
     wrap.appendChild(renderer.domElement);
 
+    // ======= Scene & Camera =======
     const scene = new THREE.Scene();
     scene.fog = new THREE.FogExp2(0x070a10, 0.08);
-
     const camera = new THREE.PerspectiveCamera(45, wrap.clientWidth/wrap.clientHeight, 0.02, 50);
-    camera.position.set(0.9, 1.0, 2.9);
+    camera.position.set(0.95, 1.05, 3.0);
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true; controls.dampingFactor = 0.08;
@@ -255,54 +320,44 @@
 
     // PBR environment
     const pmrem = new THREE.PMREMGenerator(renderer);
-    scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), .7).texture;
+    scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.75).texture;
 
-    // Lights
+    // ======= Lights =======
     scene.add(new THREE.AmbientLight(0x52606e, .45));
-    const key = new THREE.DirectionalLight(0xffffff, .85);
-    key.position.set(2.5, 3.5, 3.0);
+    const key = new THREE.DirectionalLight(0xffffff, 1.0);
+    key.position.set(2.6, 3.6, 3.1);
     key.castShadow = true; key.shadow.mapSize.set(1024,1024);
     key.shadow.camera.near = 0.1; key.shadow.camera.far = 12;
     scene.add(key);
 
     const fill = new THREE.DirectionalLight(0x99aaff, .35); fill.position.set(-2.2, 1.2, -2.0); scene.add(fill);
-    const rim  = new THREE.DirectionalLight(0x3344aa, .3); rim.position.set(0.5, 1.8, -1.5); scene.add(rim);
+    const rim  = new THREE.DirectionalLight(0x3344aa, .35); rim.position.set(0.5, 1.8, -1.7); scene.add(rim);
 
-    // Ground catch (soft shadow plane)
-    const ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(8,8),
-      new THREE.ShadowMaterial({ color: 0x000000, opacity: .18 })
-    );
-    ground.rotation.x = -Math.PI/2; ground.position.y = -0.25; ground.receiveShadow = true; scene.add(ground);
-
-    // -------------------- Post‑processing --------------------
+    // ======= Postprocessing =======
     const composer = new EffectComposer(renderer);
-    const renderPass = new RenderPass(scene, camera);
-    composer.addPass(renderPass);
+    const renderPass = new RenderPass(scene, camera); composer.addPass(renderPass);
+
+    const ssaoPass = new SSAOPass(scene, camera, wrap.clientWidth, wrap.clientHeight);
+    ssaoPass.kernelRadius = 12; ssaoPass.minDistance = 0.0008; ssaoPass.maxDistance = 0.12; ssaoPass.output = 0;
+    ssaoPass.enabled = true; composer.addPass(ssaoPass);
 
     const outlinePass = new OutlinePass(new THREE.Vector2(wrap.clientWidth, wrap.clientHeight), scene, camera);
-    outlinePass.edgeStrength = 3.0;
-    outlinePass.edgeGlow = .6;
-    outlinePass.edgeThickness = 0.032 / 0.016; // relative to FXAA resolution
-    outlinePass.pulsePeriod = 2.5;
-    outlinePass.visibleEdgeColor.set('#7fb6ff');
-    outlinePass.hiddenEdgeColor.set('#2a5bb7');
-    composer.addPass(outlinePass);
+    outlinePass.edgeStrength = 3.0; outlinePass.edgeGlow = .6; outlinePass.edgeThickness = 0.035/0.016;
+    outlinePass.visibleEdgeColor.set('#7fb6ff'); outlinePass.hiddenEdgeColor.set('#2a5bb7'); composer.addPass(outlinePass);
+
+    const bloomPass = new UnrealBloomPass(new THREE.Vector2(wrap.clientWidth, wrap.clientHeight), 0.75, 0.32, 0.85);
+    composer.addPass(bloomPass);
 
     const fxaaPass = new ShaderPass(FXAAShader);
     fxaaPass.material.uniforms['resolution'].value.set(1/(wrap.clientWidth*renderer.getPixelRatio()), 1/(wrap.clientHeight*renderer.getPixelRatio()));
     composer.addPass(fxaaPass);
 
-    const bloomPass = new UnrealBloomPass(new THREE.Vector2(wrap.clientWidth, wrap.clientHeight), 0.8, 0.32, 0.85);
-    composer.addPass(bloomPass);
+    // ======= Root groups =======
+    const root = new THREE.Group(); scene.add(root);
 
-    // -------------------- Scene content root --------------------
-    const root = new THREE.Group();
-    scene.add(root);
-
-    // Backdrop volumetric shell (subtle gradient)
+    // Backdrop (toggleable)
     const backdrop = new THREE.Mesh(
-      new THREE.SphereGeometry(10, 48, 32),
+      new THREE.SphereGeometry(12, 48, 32),
       new THREE.ShaderMaterial({
         side: THREE.BackSide, transparent:true, depthWrite:false,
         uniforms: {
@@ -323,65 +378,52 @@
           void main(){
             float h = normalize(vPos).y * 0.5 + 0.5;
             vec3 col = mix(c1, c2, h);
-            gl_FragColor = vec4(mix(col, fogC, 0.2), 0.95);
+            gl_FragColor = vec4(mix(col, fogC, 0.2), 0.96);
           }
         `
       })
     );
     root.add(backdrop);
 
-    // -------------------- Mitral Apparatus Geometry --------------------
-    const groupValve = new THREE.Group(); groupValve.position.set(0,0.0,0); root.add(groupValve);
+    // Ground (soft shadows)
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(8,8),
+      new THREE.ShadowMaterial({ color: 0x000000, opacity: .15 })
+    );
+    ground.rotation.x = -Math.PI/2; ground.position.y = -0.28; ground.receiveShadow = true; scene.add(ground);
 
-    // Annulus — elliptical, mildly saddle shaped torus
-    const annulus = makeAnnulus();
-    annulus.name = 'Mitral Annulus';
-    groupValve.add(annulus);
+    // ======= Valve assembly =======
+    const valve = new THREE.Group(); valve.position.set(0,0,0); root.add(valve);
 
-    // Leaflets — physical material with sheen to mimic moist tissue
-    const leafletA = makeLeaflet(+1, 0x78b99a, 'Anterior Leaflet');
-    const leafletP = makeLeaflet(-1, 0x86b79d, 'Posterior Leaflet');
-    groupValve.add(leafletA, leafletP);
+    // Annulus (elliptical torus with saddle)
+    const annulus = makeAnnulus(); annulus.name = 'Mitral Annulus'; valve.add(annulus);
 
-    // Coaptation line — thin ribbon at leaflet edges
-    const coaptation = makeCoaptationLine();
-    coaptation.name = 'Coaptation Line';
-    groupValve.add(coaptation);
+    // Leaflets
+    const leafletA = makeLeaflet(+1, 0x78b99a, 'Anterior Leaflet'); valve.add(leafletA);
+    const leafletP = makeLeaflet(-1, 0x86b79d, 'Posterior Leaflet'); valve.add(leafletP);
 
-    // Commissures — anterolateral (AL, left viewer side) & posteromedial (PM, right rear)
+    // Coaptation line (cyan)
+    const coaptation = makeCoaptationLine(); coaptation.name = 'Coaptation Line'; valve.add(coaptation);
+
+    // Commissures (arc sectors near ~60° and ~240°)
     const commissures = new THREE.Group(); commissures.name = 'Commissures';
-    const commAL = makeCommissure( 0.85,  0.75, 'Anterolateral Commissure');
-    const commPM = makeCommissure(-2.25, -2.35, 'Posteromedial Commissure');
-    commissures.add(commAL, commPM);
-    groupValve.add(commissures);
+    const commAL = makeCommissure(Math.PI/3, 0.22, 'Anterolateral Commissure');
+    const commPM = makeCommissure((4*Math.PI)/3, 0.22, 'Posteromedial Commissure');
+    commissures.add(commAL, commPM); valve.add(commissures);
 
-    // Labels anchors (for overlay)
+    // Pinned label anchors
     const anchors = [
-      { obj: annulus,   title:'Mitral Annulus', meta:'Elliptical, saddle‑shaped fibrous ring' },
-      { obj: leafletA,  title:'Anterior Leaflet (A)', meta:'Broad, near LVOT/AMC; smooth edge' },
-      { obj: leafletP,  title:'Posterior Leaflet (P)', meta:'Scalloped (P1–P3); shorter height' },
-      { obj: commAL,    title:'Anterolateral Commissure', meta:'Junction A1–P1' },
-      { obj: commPM,    title:'Posteromedial Commissure', meta:'Junction A3–P3' }
+      { obj: annulus,  title:'Mitral Annulus', meta:'Elliptical, saddle‑shaped fibrous ring' },
+      { obj: leafletA, title:'Anterior Leaflet (A)', meta:'Broad leaflet; near LVOT/AMC; smooth free edge' },
+      { obj: leafletP, title:'Posterior Leaflet (P)', meta:'Scalloped leaflet (P1–P3); shorter height' },
+      { obj: commAL,   title:'Anterolateral Commissure', meta:'Junction A1–P1' },
+      { obj: commPM,   title:'Posteromedial Commissure', meta:'Junction A3–P3' }
     ];
 
-    // Picking registry
-    const pickables = new Set([annulus, leafletA, leafletP, commAL, commPM, coaptation]);
-
-    // -------------------- Materials & helpers --------------------
+    // ======= Materials & geometry helpers =======
     function makeAnnulus(){
-      // Base torus → elliptic scale; sculpt y to saddle using custom shader
-      const geo = new THREE.TorusGeometry(0.62, 0.05, 48, 320);
-      const mat = new THREE.MeshPhysicalMaterial({
-        color: 0x2c8a51, metalness:0.05, roughness:0.4, transmission:0.0, thickness:0.2,
-        clearcoat: 0.6, clearcoatRoughness: 0.3, sheen: 1.0, sheenRoughness: 0.9, sheenColor: new THREE.Color(0x99f0c8),
-        envMapIntensity: 0.38
-      });
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.scale.set(1.25, 1.0, 1.05);
-      mesh.rotation.x = Math.PI/2;
-      mesh.castShadow = true; mesh.receiveShadow = true;
-
-      // Subtle saddle shape by per-vertex displacement
+      const geo = new THREE.TorusGeometry(0.62, 0.05, 56, 360);
+      // Sculpt saddle
       const pos = geo.attributes.position;
       for(let i=0;i<pos.count;i++){
         const x = pos.getX(i), z = pos.getZ(i);
@@ -390,39 +432,64 @@
         pos.setY(i, pos.getY(i) + saddle);
       }
       pos.needsUpdate = true;
+
+      const mat = new THREE.MeshPhysicalMaterial({
+        color: 0x2c8a51,
+        metalness: 0.08, roughness: 0.38,
+        sheen: 1.0, sheenRoughness: 0.9, sheenColor: new THREE.Color(0x99f0c8),
+        clearcoat: 0.65, clearcoatRoughness: 0.3,
+        envMapIntensity: 0.45
+      });
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.scale.set(1.25, 1.0, 1.05);
+      mesh.rotation.x = Math.PI/2;
+      mesh.castShadow = true; mesh.receiveShadow = true;
       return mesh;
     }
 
     function makeLeaflet(sign=+1, baseColor=0x7fbba0, name='Leaflet'){
-      const w=1.35, h=0.52, segX=64, segY=24;
+      const w=1.4, h=0.55, segX=84, segY=28;
       const geo = new THREE.PlaneGeometry(w, h, segX, segY);
       geo.rotateX(-Math.PI/2);
-      // slight posterior/anterior offset for hinge
       geo.translate(0, 0.22 + sign*0.07, 0.0);
-
-      // sculpt: bulge + scallop + hinge curvature
       const pos = geo.attributes.position;
-      const norm = new Float32Array(pos.count*3); // later for custom shading if needed
+      const aniso = new Float32Array(pos.count*3);
       for(let i=0;i<pos.count;i++){
         const x = pos.getX(i), z = pos.getZ(i);
-        const bulge   = Math.exp(-Math.abs(x)*0.9) * 0.09 * sign;
-        const scallop = Math.sin((x*1.8) + (sign>0?0.2:-0.1))*0.03 * sign;
+        const bulge   = Math.exp(-Math.abs(x)*0.9) * 0.095 * sign;
+        const scallop = Math.sin((x*1.9) + (sign>0?0.2:-0.1))*0.032 * sign;
         const hinge   = -0.015 * Math.sign(sign) * (z>0?1:-1);
         pos.setY(i, pos.getY(i) + bulge + scallop + hinge);
-        // store a pseudo anisotropy vector in "norm"
-        norm[i*3+0] = Math.cos(x*2.0); norm[i*3+1] = 0.0; norm[i*3+2] = Math.sin(x*2.0);
+        aniso[i*3+0] = Math.cos(x*2.0); aniso[i*3+1] = 0.0; aniso[i*3+2] = Math.sin(x*2.0);
       }
-      geo.setAttribute('aniso', new THREE.BufferAttribute(norm, 3));
+      geo.setAttribute('aniso', new THREE.BufferAttribute(aniso, 3));
       pos.needsUpdate = true;
 
       const mat = new THREE.MeshPhysicalMaterial({
         color: baseColor,
-        metalness: 0.05, roughness: 0.45,
-        clearcoat: 0.8, clearcoatRoughness: 0.22,
-        sheen: 1.0, sheenRoughness: 0.6, sheenColor: new THREE.Color(0xcfeee0),
-        transmission: 0.08, thickness: 0.25, ior: 1.35,
-        side: THREE.DoubleSide, envMapIntensity: 0.5
+        metalness: 0.06, roughness: 0.46,
+        clearcoat: 0.85, clearcoatRoughness: 0.22,
+        sheen: 1.0, sheenRoughness: 0.55, sheenColor: new THREE.Color(0xd9f2e8),
+        transmission: 0.08, thickness: 0.28, ior: 1.35,
+        side: THREE.DoubleSide, envMapIntensity: 0.55
       });
+
+      // Subtle time‑varying micro‑roughness (onBeforeCompile)
+      mat.onBeforeCompile = (shader)=>{
+        shader.uniforms.uTime = { value: 0 };
+        shader.uniforms.uAmp = { value: 0.12 };
+        shader.fragmentShader = shader.fragmentShader.replace(
+          `#include <roughnessmap_fragment>`,
+          `
+          #include <roughnessmap_fragment>
+          // Add micro variation
+          float n = fract(sin(dot(vViewPosition.xy, vec2(12.9898,78.233))) * 43758.5453);
+          float w = 0.5 + 0.5*sin(uTime*1.2 + vViewPosition.x*6.0 + n*6.2831);
+          roughnessFactor = clamp(roughnessFactor * (1.0 - uAmp*0.15*w), 0.02, 1.0);
+          `
+        );
+        leafletUniforms.push(shader.uniforms);
+      };
 
       const mesh = new THREE.Mesh(geo, mat);
       mesh.name = name; mesh.castShadow = true; mesh.receiveShadow = true;
@@ -430,95 +497,116 @@
     }
 
     function makeCoaptationLine(){
-      // very thin circular line slightly inside annulus radius
-      const r = 0.60; const pts = [];
-      for(let i=0;i<=200;i++){
-        const t = i/200 * Math.PI*2;
+      const r = 0.595; const pts = [];
+      for(let i=0;i<=220;i++){
+        const t = i/220 * Math.PI*2;
         pts.push(new THREE.Vector3(Math.cos(t)*r, 0.222 + 0.002*Math.sin(2*t), Math.sin(t)*r));
       }
       const geo = new THREE.BufferGeometry().setFromPoints(pts);
-      const mat = new THREE.LineBasicMaterial({ color:0x9fe3ff, transparent:true, opacity:0.68 });
-      const line = new THREE.Line(geo, mat); line.name='Coaptation Line';
-      return line;
+      const mat = new THREE.LineBasicMaterial({ color:0x9fe3ff, transparent:true, opacity:0.75 });
+      return new THREE.Line(geo, mat);
     }
 
-    function makeCommissure(a0, a1, label){
-      // small arc on annulus, glowing material
-      const r=0.64, tube=0.018;
-      const start=a0, end=a1; // radians
+    function makeCommissure(centerAngle, halfWidth, label){
+      // Ring sector highlighting commissure region
+      const r=0.64, tube=0.02;
+      const start = centerAngle - halfWidth*0.5, end = centerAngle + halfWidth*0.5;
       const shape = new THREE.Shape();
       shape.absarc(0,0,r+tube, start, end, false);
       const hole = new THREE.Path(); hole.absarc(0,0,r-tube, end, start, true);
       shape.holes.push(hole);
-      const geo = new THREE.ShapeGeometry(shape, 60);
+      const geo = new THREE.ShapeGeometry(shape, 72);
       const mat = new THREE.MeshPhysicalMaterial({
         color: 0xf0d47f,
         emissive: 0x332000,
-        roughness: 0.45, metalness: 0.35, clearcoat: 0.6, clearcoatRoughness: 0.3
+        roughness: 0.44, metalness: 0.35,
+        clearcoat: 0.65, clearcoatRoughness: 0.3
       });
       const mesh = new THREE.Mesh(geo, mat);
-      mesh.rotation.x = Math.PI/2;
-      mesh.position.y = 0.223;
-      mesh.name = label;
-      mesh.castShadow = true; mesh.receiveShadow = true;
+      mesh.rotation.x = Math.PI/2; mesh.position.y = 0.223;
+      mesh.name = label; mesh.castShadow = true; mesh.receiveShadow = true;
       return mesh;
     }
 
-    // -------------------- Micro‑animation (lifelike) --------------------
-    const motion = { t:0, pulseAmp: 0.35 };
+    // ======= Subtle motion =======
+    const motion = { t: 0, pulseAmp: 0.35 };
+    const leafletUniforms = [];
     function animateLeaflets(dt){
       motion.t += dt;
-      const a = motion.pulseAmp * 0.0025; // amplitude in meters
-      const yA = a * Math.sin(motion.t*2.1);
-      const yP = a * Math.sin(motion.t*2.1 + Math.PI);
+      const a = motion.pulseAmp * 0.0028; // meters
+      const yA = a * Math.sin(motion.t*2.0);
+      const yP = a * Math.sin(motion.t*2.0 + Math.PI);
       leafletA.position.y = 0.29 + yA;
       leafletP.position.y = 0.15 + yP;
-      // subtle rim shimmer
-      const cc = 0.6 + 0.1*Math.sin(motion.t*1.8);
+
+      // Shader time for micro‑roughness
+      leafletUniforms.forEach(u => u.uTime.value = motion.t);
+
+      // Clearcoat shimmer
+      const cc = 0.62 + 0.1*Math.sin(motion.t*1.6);
       leafletA.material.clearcoat = cc; leafletP.material.clearcoat = cc;
     }
 
-    // -------------------- Overlay labels --------------------
+    // ======= Overlay (SVG connectors + HTML callouts) =======
     const pinned = [];
     function screenXY(vec3){
       const v = vec3.clone().project(camera);
-      const x = (v.x * 0.5 + 0.5) * wrap.clientWidth;
-      const y = (-v.y * 0.5 + 0.5) * wrap.clientHeight;
-      return {x,y, on: (v.z<1)};
+      return {
+        x: (v.x * 0.5 + 0.5) * wrap.clientWidth,
+        y: (-v.y * 0.5 + 0.5) * wrap.clientHeight,
+        on: v.z < 1
+      };
     }
-    function addCalloutAt(obj, title, meta){
-      const box = document.createElement('div'); box.className='callout';
-      const h = document.createElement('div'); h.className='title'; h.textContent = title; box.appendChild(h);
-      if(meta){ const m=document.createElement('div'); m.className='meta'; m.textContent=meta; box.appendChild(m); }
-      overlay.appendChild(box);
-      pinned.push({ obj, box });
 
-      // also add a pin dot
-      const dot = document.createElement('div'); dot.className='pin'; overlay.appendChild(dot);
-      pinned[pinned.length-1].dot = dot;
+    function addCalloutAt(obj, title, meta){
+      const center = new THREE.Vector3(); obj.getWorldPosition(center);
+      const {x,y} = screenXY(center);
+
+      const box = document.createElement('div'); box.className='callout';
+      const t = document.createElement('div'); t.className='t'; t.textContent = title; box.appendChild(t);
+      if(meta){ const m = document.createElement('div'); m.className='m'; m.textContent = meta; box.appendChild(m); }
+      overlay.appendChild(box);
+
+      const pin = document.createElement('div'); pin.className = 'pin'; overlay.appendChild(pin);
+
+      // connector line via SVG
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      line.setAttribute('stroke', '#7fb6ff'); line.setAttribute('fill','none'); line.setAttribute('stroke-width','1.4');
+      line.setAttribute('opacity','0.85'); hudSVG.appendChild(line);
+
+      pinned.push({ obj, box, pin, line });
+      layoutPinned();
     }
-    function clearOverlay(){ overlay.innerHTML=''; pinned.length = 0; }
-    function updateOverlay(){
-      pinned.forEach((p,i)=>{
-        const center = new THREE.Vector3();
-        p.obj.getWorldPosition(center);
-        const {x,y,on} = screenXY(center);
-        p.box.style.left = (x + 12) + 'px';
-        p.box.style.top  = (y - 12) + 'px';
-        p.box.style.opacity = on? '1':'0';
-        p.dot.style.left = (x - 5) + 'px';
-        p.dot.style.top  = (y - 5) + 'px';
-        p.dot.style.opacity = on? '1':'0';
+
+    function clearOverlay(){
+      overlay.innerHTML = ''; while(hudSVG.firstChild) hudSVG.removeChild(hudSVG.firstChild);
+      pinned.length = 0;
+    }
+
+    function layoutPinned(){
+      pinned.forEach(p=>{
+        const c = new THREE.Vector3(); p.obj.getWorldPosition(c);
+        const s = screenXY(c);
+        // position pin
+        p.pin.style.left = (s.x-5)+'px'; p.pin.style.top = (s.y-5)+'px'; p.pin.style.opacity = s.on ? '1':'0';
+        // position box
+        p.box.style.left = (s.x+12)+'px'; p.box.style.top = (s.y-12)+'px'; p.box.style.opacity = s.on ? '1':'0';
+        // update line (curved)
+        const bx = s.x+8, by = s.y-8;
+        const ex = s.x+140, ey = s.y-50; // end point near box (approx)
+        const cx = (bx+ex)/2, cy = (by+ey)/2 - 20; // control for curve
+        p.line.setAttribute('d', `M ${bx} ${by} Q ${cx} ${cy} ${ex} ${ey}`);
       });
     }
 
-    // Seed a few key labels initially (can be toggled via "labels" layer)
+    // Seed initial floating labels
     anchors.forEach(a => addCalloutAt(a.obj, a.title, a.meta));
 
-    // -------------------- Interactions & hover highlight --------------------
+    // ======= Picking & hover =======
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
     let hovered = null;
+    const pickables = new Set([annulus, leafletA, leafletP, commAL, commPM, coaptation]);
 
     function setHovered(obj){
       if(hovered === obj) return;
@@ -535,232 +623,196 @@
 
     renderer.domElement.addEventListener('click', ()=>{
       if(!hovered) return;
-      // pin a label if clicked
       addCalloutAt(hovered, hovered.name, hintFor(hovered));
       statusEl.textContent = 'Pinned: ' + hovered.name;
-      score(2); // small exploration score
+      if(mode.mode==='explore') addScore(2);
+      if(mode.mode==='identify'){
+        if(rootOf(hovered) === mode.expect){ addScore(10); statusEl.textContent = 'Identify ✓'; }
+        else { addScore(-6); statusEl.textContent = 'Identify ✗'; }
+        setTimeout(requestIdentify, 600);
+      }
     });
+
+    function priority(o){
+      const n = rootOf(o).name || '';
+      if(n.includes('Commissure')) return 0;
+      if(n.includes('Annulus')) return 1;
+      if(n.includes('Leaflet')) return 2;
+      if(n.includes('Coaptation')) return 3;
+      return 4;
+    }
+    function rootOf(o){ while(o.parent && o.parent!==scene && !pickables.has(o)) o=o.parent; return o; }
+
+    function updateHover(){
+      raycaster.setFromCamera(mouse, camera);
+      const hits = raycaster.intersectObjects(Array.from(pickables), true);
+      if(hits.length){
+        hits.sort((a,b)=> priority(a.object)-priority(b.object));
+        setHovered(rootOf(hits[0].object));
+      }else setHovered(null);
+    }
 
     function hintFor(obj){
       switch(obj){
-        case annulus: return 'Elliptical, saddle profile; sutures/repairs reference line.';
-        case leafletA: return 'Broader leaflet; near LVOT/AMC; higher height.';
-        case leafletP: return 'Scalloped P1–P3; shorter height.';
-        case coaptation: return 'Approximation line where leaflets meet.';
+        case annulus: return 'Elliptical, saddle profile; reference for sutures and ring placement.';
+        case leafletA: return 'Broader leaflet; adjacent to LVOT/AMC; higher height.';
+        case leafletP: return 'Scalloped P1–P3; shorter height; often prolapse sites.';
+        case coaptation: return 'Approximation line of leaflets.';
         default:
-          if(obj && obj.name && obj.name.includes('Commissure')){
-            return 'Leaflet junction: A–P transition.';
-          }
+          if(obj && obj.name && obj.name.includes('Commissure')) return 'Leaflet junction (A–P transition).';
           return '';
       }
     }
 
-    // Picking update (each frame)
-    function updateHover(){
-      raycaster.setFromCamera(mouse, camera);
-      const intersects = raycaster.intersectObjects(Array.from(pickables), true);
-      if(intersects.length>0){
-        // prefer commissure arcs > annulus > leaflets > line
-        intersects.sort((a,b)=>{
-          const p = priority(a.object), q = priority(b.object);
-          return p-q;
-        });
-        setHovered(getRoot(intersects[0].object));
-      }else{
-        setHovered(null);
-      }
-    }
-    function priority(o){
-      const name = getRoot(o).name || '';
-      if(name.includes('Commissure')) return 0;
-      if(name.includes('Annulus'))    return 1;
-      if(name.includes('Leaflet'))    return 2;
-      if(name.includes('Coaptation')) return 3;
-      return 4;
-    }
-    function getRoot(o){ while(o.parent && o.parent!==scene && !pickables.has(o)) o=o.parent; return o; }
-
-    // -------------------- Camera focus helpers --------------------
+    // ======= Camera presets =======
     const tmpV = new THREE.Vector3();
-    function focusObject(obj, dist=2.2, elev=0.7){
+    function focusObject(obj, dist=2.2, elev=0.7, dur=0.6){
       obj.getWorldPosition(tmpV);
-      // simple tween
-      const start = camera.position.clone();
-      const startT = controls.target.clone();
+      const start = camera.position.clone(), startT = controls.target.clone();
       const endT = tmpV.clone();
-      const dir = tmpV.clone().add(new THREE.Vector3(dist*.3, elev, dist*.5));
-      const end = dir;
-      let t=0;
-      const animateFocus = (dt)=>{
-        t += dt*1.4;
-        const k = Math.min(1, t);
-        camera.position.lerpVectors(start, end, easeInOutCubic(k));
-        controls.target.lerpVectors(startT, endT, easeInOutCubic(k));
-        if(k>=1) tickers.delete(animateFocus);
+      const end = tmpV.clone().add(new THREE.Vector3(dist*.3, elev, dist*.5));
+      let t=0; const tween = (dt)=>{ t += dt/dur; const k = Math.min(1, t);
+        const e = easeInOutCubic(k);
+        camera.position.lerpVectors(start, end, e);
+        controls.target.lerpVectors(startT, endT, e);
+        if(k>=1) loopFns.delete(tween);
       };
-      tickers.add(animateFocus);
+      loopFns.add(tween);
     }
     function easeInOutCubic(x){ return x<0.5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3) / 2; }
 
-    // Quick camera buttons
     document.querySelectorAll('[data-focus]').forEach(btn=>{
       btn.addEventListener('click', ()=>{
         const where = btn.getAttribute('data-focus');
-        if(where==='annulus')   focusObject(annulus, 2.0, 0.6);
-        if(where==='anterior')  focusObject(leafletA, 2.2, 0.7);
-        if(where==='posterior') focusObject(leafletP, 2.2, 0.65);
-        if(where==='commAL')    focusObject(commAL, 2.1, 0.55);
-        if(where==='commPM')    focusObject(commPM, 2.1, 0.55);
-        if(where==='reset') { controls.target.set(0,0.18,0); camera.position.set(0.9,1.0,2.9); }
+        if(where==='annulus')   focusObject(annulus, 2.0, 0.62);
+        if(where==='anterior')  focusObject(leafletA, 2.2, 0.68);
+        if(where==='posterior') focusObject(leafletP, 2.2, 0.66);
+        if(where==='commAL')    focusObject(commAL, 2.1, 0.6);
+        if(where==='commPM')    focusObject(commPM, 2.1, 0.6);
+        if(where==='reset'){ controls.target.set(0,0.18,0); camera.position.set(0.95,1.05,3.0); }
         controls.update();
       });
     });
 
     window.addEventListener('keydown', (e)=>{
-      if(e.key==='1') focusObject(annulus, 2.0, 0.6);
-      if(e.key==='2') focusObject(leafletA, 2.2, 0.7);
-      if(e.key==='3') focusObject(leafletP, 2.2, 0.65);
-      if(e.key==='4') focusObject(commAL, 2.1, 0.55);
-      if(e.key==='5') focusObject(commPM, 2.1, 0.55);
+      if(e.key==='1') focusObject(annulus, 2.0, 0.62);
+      if(e.key==='2') focusObject(leafletA, 2.2, 0.68);
+      if(e.key==='3') focusObject(leafletP, 2.2, 0.66);
+      if(e.key==='4') focusObject(commAL, 2.1, 0.6);
+      if(e.key==='5') focusObject(commPM, 2.1, 0.6);
     });
 
-    // -------------------- Step Guide (Guided mode) --------------------
-    const steps = [
-      { id:'annulus',  title:'Step 1 — Mitral Annulus',      desc:'Elliptical, saddle‑shaped fibrous ring. Hover to inspect; click to pin a label.', focus: annulus },
-      { id:'anterior', title:'Step 2 — Anterior Leaflet (A)', desc:'Broader leaflet adjacent to the LVOT/AMC. Smooth curved free edge.', focus: leafletA },
-      { id:'posterior',title:'Step 3 — Posterior Leaflet (P)',desc:'Scalloped leaflet (P1–P3) with shorter height.', focus: leafletP },
-      { id:'comm',     title:'Step 4 — Commissures',          desc:'Anterolateral (A1–P1) and Posteromedial (A3–P3) leaflet junctions.', focus: commAL }
-    ];
-    let stepIndex = 0;
-
-    function renderStep(){
-      const s = steps[stepIndex];
-      stepBox.innerHTML = `<div class="t">${s.title}</div><div class="d">${s.desc}</div>`;
-      focusObject(s.focus, 2.2, 0.65);
-      // glow emphasis target
-      outlinePass.selectedObjects = [s.focus];
-      statusEl.textContent = 'Guided: ' + s.title;
-    }
-
-    document.getElementById('btnPrev').addEventListener('click', ()=>{
-      stepIndex = Math.max(0, stepIndex-1); renderStep();
-    });
-    document.getElementById('btnNext').addEventListener('click', ()=>{
-      stepIndex = Math.min(steps.length-1, stepIndex+1); renderStep();
-    });
-
-    // -------------------- Modes: Guided / Explore / Identify --------------------
-    const btnGuide = document.getElementById('btnGuide');
-    const btnExplore = document.getElementById('btnExplore');
-    const btnIdentify = document.getElementById('btnIdentify');
-    const modes = { mode:'guided', score:0 };
-
+    // ======= Modes & steps =======
+    const mode = { mode:'guided', score:0, expect:null };
     btnGuide.addEventListener('click', ()=> setMode('guided'));
     btnExplore.addEventListener('click', ()=> setMode('explore'));
     btnIdentify.addEventListener('click', ()=> setMode('identify'));
 
+    const steps = [
+      { id:'annulus',  title:'Step 1 — Mitral Annulus',      desc:'Elliptical, saddle‑shaped fibrous ring. Hover to inspect; click to pin a label.', focus: annulus },
+      { id:'anterior', title:'Step 2 — Anterior Leaflet (A)', desc:'Broad leaflet adjacent to the LVOT/AMC. Smooth curved free edge.', focus: leafletA },
+      { id:'posterior',title:'Step 3 — Posterior Leaflet (P)',desc:'Scalloped leaflet (P1–P3) with shorter height.', focus: leafletP },
+      { id:'comm',     title:'Step 4 — Commissures',          desc:'Anterolateral (A1–P1) and posteromedial (A3–P3) junctions of the leaflets.', focus: commAL }
+    ];
+    let stepIndex = 0;
+
+    btnPrev.addEventListener('click', ()=> { stepIndex = Math.max(0, stepIndex-1); renderStep(); });
+    btnNext.addEventListener('click', ()=> { stepIndex = Math.min(steps.length-1, stepIndex+1); renderStep(); });
+
     function setMode(m){
-      modes.mode = m;
+      mode.mode = m;
       btnGuide.dataset.active = (m==='guided')?'1':'0';
       btnExplore.dataset.active = (m==='explore')?'1':'0';
       btnIdentify.dataset.active = (m==='identify')?'1':'0';
-      if(m==='guided'){
-        stepIndex=0; renderStep();
-        taskEl.textContent = 'Follow the step guide. Hover to highlight; click to pin labels.';
-      } else if(m==='explore'){
-        outlinePass.selectedObjects = [];
-        statusEl.textContent = 'Exploration mode';
-        taskEl.textContent = 'Free explore. Toggle layers, adjust look, pin labels anywhere.';
-      } else {
-        // identify: random target requested
-        requestIdentify();
-      }
+      if(m==='guided'){ stepIndex=0; outlinePass.selectedObjects = []; renderStep(); taskEl.textContent = 'Guided tour. Follow the steps.'; statusEl.textContent='Guided'; }
+      if(m==='explore'){ outlinePass.selectedObjects = []; taskEl.textContent = 'Explore freely. Toggle layers and cinematic settings. Click to pin labels.'; statusEl.textContent='Exploring'; }
+      if(m==='identify'){ taskEl.textContent = 'Identify the requested structure (no hints).'; statusEl.textContent='Identify Mode'; requestIdentify(); }
+    }
+
+    function renderStep(){
+      const s = steps[stepIndex];
+      stepBox.innerHTML = `<div class="t">${s.title}</div><div class="d">${s.desc}</div>`;
+      focusObject(s.focus, 2.2, 0.66);
+      outlinePass.selectedObjects = [s.focus];
+      statusEl.textContent = 'Guided: ' + s.title;
     }
 
     function requestIdentify(){
-      const items = [annulus, leafletA, leafletP, commAL, commPM];
-      const pick = items[Math.floor(Math.random()*items.length)];
-      modes.expect = pick;
-      outlinePass.selectedObjects = []; // no hint
-      taskEl.textContent = 'Identify: ' + (pick.name);
-      statusEl.textContent = 'Click the structure that matches the requested name (no outline hint).';
-      focusObject(pick, 2.3, 0.7);
+      const candidates = [annulus, leafletA, leafletP, commAL, commPM];
+      const pick = candidates[Math.floor(Math.random()*candidates.length)];
+      mode.expect = pick;
+      // No outline hint; camera cues only
+      focusObject(pick, 2.25, 0.68);
+      taskEl.textContent = 'Identify: ' + pick.name;
     }
 
-    function score(delta){
-      modes.score = Math.max(0, modes.score + delta);
-      kScore.textContent = modes.score.toFixed(0);
-    }
+    function addScore(d){ mode.score = Math.max(0, mode.score + d); kScore.textContent = mode.score.toFixed(0); }
 
-    // In identify mode, clicking a correct structure increases score, else decreases
-    renderer.domElement.addEventListener('click', ()=>{
-      if(modes.mode!=='identify' || !hovered) return;
-      if(getRoot(hovered) === modes.expect){
-        statusEl.textContent = 'Correct ✓';
-        score(10);
-      } else {
-        statusEl.textContent = 'Incorrect ✗';
-        score(-6);
-      }
-      // queue next
-      setTimeout(requestIdentify, 500);
-    });
-
-    // -------------------- Layer toggles --------------------
+    // ======= Layer toggles =======
     document.getElementById('layers').addEventListener('change', (e)=>{
       if(!(e.target instanceof HTMLInputElement)) return;
-      const key = e.target.dataset.layer, v = e.target.checked;
-      if(key==='annulus') annulus.visible = v;
-      if(key==='leafletA') leafletA.visible = v;
-      if(key==='leafletP') leafletP.visible = v;
-      if(key==='commissures') commissures.visible = v;
-      if(key==='coaptation') coaptation.visible = v;
-      if(key==='labels'){ if(!v) clearOverlay(); else { overlay.innerHTML=''; anchors.forEach(a=> addCalloutAt(a.obj, a.title, a.meta)); } }
-      if(key==='backdrop') backdrop.visible = v;
+      const k = e.target.dataset.layer, v = e.target.checked;
+      if(k==='annulus') annulus.visible = v;
+      if(k==='leafletA') leafletA.visible = v;
+      if(k==='leafletP') leafletP.visible = v;
+      if(k==='commissures') commissures.visible = v;
+      if(k==='coaptation') coaptation.visible = v;
+      if(k==='backdrop') backdrop.visible = v;
+      if(k==='rim') rim.visible = v;
+      if(k==='labels'){ if(!v) clearOverlay(); else { clearOverlay(); anchors.forEach(a=> addCalloutAt(a.obj, a.title, a.meta)); } }
     });
 
-    // Cinematic sliders
-    const rngBloom = document.getElementById('rngBloom');
-    const rngOutline = document.getElementById('rngOutline');
-    const rngPulse = document.getElementById('rngPulse');
-    rngBloom.addEventListener('input', ()=> bloomPass.strength = parseFloat(rngBloom.value));
-    rngOutline.addEventListener('input', ()=>{
-      const t = parseFloat(rngOutline.value);
-      outlinePass.edgeThickness = t / 0.016;
+    // ======= Cinematic sliders =======
+    rngExposure.addEventListener('input', ()=> { renderer.toneMappingExposure = parseFloat(rngExposure.value); });
+    rngBloom.addEventListener('input', ()=> { bloomPass.strength = parseFloat(rngBloom.value); });
+    rngSSAO.addEventListener('input', ()=> { ssaoPass.kernelRadius = 8 + 18*parseFloat(rngSSAO.value); ssaoPass.minDistance = 0.0006 + 0.0006*parseFloat(rngSSAO.value); });
+    rngOutline.addEventListener('input', ()=> { outlinePass.edgeThickness = parseFloat(rngOutline.value)/0.016; });
+    rngPulse.addEventListener('input', ()=> { motion.pulseAmp = parseFloat(rngPulse.value); });
+
+    // ======= Performance toggles =======
+    btnPerf.addEventListener('click', ()=>{
+      const r = Math.max(0.75, Math.min(1.25, (renderer.getPixelRatio()||1)*0.8));
+      renderer.setPixelRatio(r);
+      kGPU.textContent = r.toFixed(2)+'x';
+      resizeComposer();
+      statusEl.textContent = 'Performance mode';
     });
-    rngPulse.addEventListener('input', ()=> motion.pulseAmp = parseFloat(rngPulse.value));
+    btnHQ.addEventListener('click', ()=>{
+      const r = Math.min(2, (renderer.getPixelRatio()||1)*1.25);
+      renderer.setPixelRatio(r);
+      kGPU.textContent = r.toFixed(2)+'x';
+      resizeComposer();
+      statusEl.textContent = 'Hi‑Q mode';
+    });
 
-    // swatch color indicator (outline)
-    swOut.style.background = '#7fb6ff';
-
-    // -------------------- Ticker / loop --------------------
-    const tickers = new Set();
+    // ======= Main loop =======
+    const loopFns = new Set();
     let last = performance.now();
-    function loop(now){
+    renderer.setAnimationLoop((now)=>{
       const dt = Math.min(0.033, (now - last)/1000); last = now;
-      tickers.forEach(fn=> fn(dt));
+      loopFns.forEach(fn => fn(dt));
       animateLeaflets(dt);
       updateHover();
-      updateOverlay();
+      layoutPinned();
       controls.update();
       composer.render();
-      requestAnimationFrame(loop);
-    }
-    requestAnimationFrame(loop);
+    });
 
-    // Guided by default
+    // ======= Guided mode default =======
     setMode('guided');
     renderStep();
 
-    // -------------------- Resize handling --------------------
-    window.addEventListener('resize', ()=>{
+    // ======= Resize =======
+    window.addEventListener('resize', resizeComposer);
+    function resizeComposer(){
       const w = wrap.clientWidth, h=wrap.clientHeight;
       camera.aspect = w/h; camera.updateProjectionMatrix();
       renderer.setSize(w,h);
       composer.setSize(w,h);
       outlinePass.setSize(w,h);
       fxaaPass.material.uniforms['resolution'].value.set(1/(w*renderer.getPixelRatio()), 1/(h*renderer.getPixelRatio()));
-    });
+      ssaoPass.setSize(w,h);
+    }
 
   </script>
 </body>
