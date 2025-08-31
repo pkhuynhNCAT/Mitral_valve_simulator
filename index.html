@@ -96,46 +96,344 @@
        SECTION 02: HEAD • DESIGN TOKENS & GLOBAL CSS
        ========================= -->
   <style>
+    /* ---------- Design Tokens ---------- */
     :root {
-      /* Color system */
-      --bg-0:#05070c; --bg-1:#0b1220; --bg-2:#111a2e;
-      --fg-0:#ffffff; --fg-1:#cbd5e1; --muted:#8b9bb3;
-      --accent:#00d1ff; --accent-2:#ff2d55; --ok:#2ecc71; --warn:#ffb020; --bad:#ff4d4f;
-      /* Sizing & radius */
-      --r:12px; --gap:12px; --pad:16px; --shadow:0 10px 30px rgba(0,0,0,.3);
+      /* Color system (dark by default) */
+      --bg-0: #05070c;   /* page background (deep) */
+      --bg-1: #0b1220;   /* app background */
+      --bg-2: #111a2e;   /* bars & panels base */
+      --surface-1: #0f1830;
+      --surface-2: #14213d;
+      --surface-3: #1a2a4f;
+
+      --fg-0: #ffffff;   /* primary text */
+      --fg-1: #cbd5e1;   /* secondary text */
+      --fg-2: #9fb0c9;   /* tertiary text */
+      --muted: #8b9bb3;
+
+      --accent:   #00d1ff;  /* cyan */
+      --accent-2: #ff2d55;  /* rose */
+      --ok:   #2ecc71;
+      --warn: #ffb020;
+      --bad:  #ff4d4f;
+
+      /* FX / outlines */
+      --focus: color-mix(in oklab, var(--accent) 80%, white);
+      --glow: 0 0 0 2px color-mix(in oklab, var(--accent) 40%, transparent),
+               0 0 0 6px color-mix(in oklab, var(--accent) 20%, transparent);
+
+      /* Spacing scale */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 20px;
+      --space-6: 24px;
+
+      /* Radii */
+      --r-xs: 8px;
+      --r-sm: 10px;
+      --r:    12px;
+      --r-lg: 18px;
+
+      /* Shadows (elevation) */
+      --shadow-1: 0 6px 16px rgba(0,0,0,.28);
+      --shadow-2: 0 10px 30px rgba(0,0,0,.32);
+      --shadow-3: 0 14px 42px rgba(0,0,0,.40);
+
       /* Typography */
       --font-ui: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
       --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-    }
-    html,body { height:100%; background:var(--bg-1); color:var(--fg-1); font:14px/1.5 var(--font-ui); margin:0; }
-    a { color: var(--accent); text-decoration: none; }
-    .visually-hidden { position:absolute !important; height:1px; width:1px; overflow:hidden; clip:rect(1px,1px,1px,1px); white-space:nowrap; }
-    /* Layout shell */
-    #app { display:grid; grid-template-rows:auto 1fr auto; height:100vh; }
-    .topbar, .bottombar { display:flex; align-items:center; gap:var(--gap); padding:var(--pad); background:var(--bg-2); box-shadow:var(--shadow); z-index:20; }
-    .main { display:grid; grid-template-columns: 320px 1fr 380px; gap:var(--gap); padding:var(--gap); }
-    .panel { background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.00)); border:1px solid rgba(255,255,255,.08); border-radius:var(--r); padding:var(--pad); }
-    .chip { display:inline-flex; align-items:center; gap:8px; padding:6px 10px; background:rgba(255,255,255,.06); border-radius:999px; }
-    button { background:#14213d; color:var(--fg-0); border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:10px 14px; cursor:pointer; }
-    button.primary { background:var(--accent); color:#001018; font-weight:700; }
-    button.ghost { background:transparent; border-color:rgba(255,255,255,.18); }
-    /* Canvas + overlay stacking */
-    .stage { position:relative; background:#04070f; border-radius:var(--r); overflow:hidden; }
-    #gl { width:100%; height:100%; display:block; }
-    .overlay { position:absolute; inset:0; pointer-events:none; }
-    .legend { position:absolute; right:16px; top:16px; backdrop-filter: blur(8px); }
-    .hud { position:absolute; left:16px; bottom:16px; }
-    .tooltip { position: fixed; inset:auto auto 20px 20px; max-width:360px; }
-    /* Step list */
-    .steps li { list-style:none; margin:0 0 10px; padding:10px; border-radius:10px; background:rgba(255,255,255,.04); }
-    .steps li.active { outline:2px solid var(--accent); background:rgba(0,209,255,.08); }
-    /* Score card */
-    .score-grid { display:grid; grid-template-columns:1fr auto; gap:8px; }
-    progress { width:100%; height:8px; }
-    /* High-contrast toggle hook */
-    .high-contrast { filter: contrast(1.2) saturate(1.1); }
-  </style>
 
+      /* Fluid type scale */
+      --fs-xs: clamp(12px, .78rem, 13px);
+      --fs-sm: clamp(13px, .88rem, 14px);
+      --fs-md: clamp(14px, .95rem + .1vw, 16px);
+      --fs-lg: clamp(16px, 1rem + .4vw, 18px);
+      --fs-xl: clamp(18px, 1.05rem + .8vw, 22px);
+
+      /* Motion & timing */
+      --dur-1: 120ms;
+      --dur-2: 200ms;
+      --dur-3: 320ms;
+      --ease: cubic-bezier(.2, .8, .2, 1);
+
+      /* Layout */
+      --rail-left-min: 260px;
+      --rail-left-max: 360px;
+      --rail-right-min: 300px;
+      --rail-right-max: 420px;
+    }
+
+    /* Light theme overrides (auto if user prefers light) */
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg-1: #f8fafc;
+        --bg-2: #eef2f7;
+        --surface-1: #ffffff;
+        --surface-2: #f3f6fb;
+        --surface-3: #e9eef7;
+
+        --fg-0: #0b1220;
+        --fg-1: #182338;
+        --fg-2: #3a4a65;
+        --muted: #5d6f8d;
+
+        --accent: #007aff;
+        --accent-2: #ff2d55;
+
+        --shadow-1: 0 4px 14px rgba(12,20,40,.14);
+        --shadow-2: 0 8px 24px rgba(12,20,40,.18);
+        --shadow-3: 0 14px 42px rgba(12,20,40,.22);
+      }
+    }
+
+    /* High-contrast helper (toggled by .high-contrast on #app) */
+    #app.high-contrast {
+      filter: contrast(1.15) saturate(1.08);
+    }
+
+    /* ---------- Base / Reset ---------- */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { height: 100%; }
+    html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg-1);
+      color: var(--fg-1);
+      font: 14px/1.5 var(--font-ui);
+      accent-color: var(--accent);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overscroll-behavior: contain;
+    }
+    ::selection { background: color-mix(in oklab, var(--accent) 30%, transparent); color: var(--fg-0); }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .visually-hidden {
+      position: absolute !important;
+      height: 1px; width: 1px;
+      overflow: hidden; clip: rect(1px,1px,1px,1px);
+      white-space: nowrap;
+    }
+
+    /* ---------- Layout Shell ---------- */
+    #app {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      height: 100vh;
+      background: linear-gradient(180deg, var(--bg-1), var(--bg-0));
+    }
+    .topbar, .bottombar {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-4);
+      background: linear-gradient(180deg, color-mix(in oklab, var(--bg-2) 90%, transparent), var(--surface-1));
+      border-bottom: 1px solid color-mix(in oklab, var(--fg-2) 10%, transparent);
+      box-shadow: var(--shadow-2);
+      z-index: 20;
+    }
+    .bottombar { border-top: 1px solid color-mix(in oklab, var(--fg-2) 10%, transparent); border-bottom: none; }
+
+    .main {
+      min-height: 0; /* allow center to shrink within grid */
+      display: grid;
+      grid-template-columns:
+        clamp(var(--rail-left-min), 26vw, var(--rail-left-max))
+        1fr
+        clamp(var(--rail-right-min), 28vw, var(--rail-right-max));
+      gap: var(--space-3);
+      padding: var(--space-3);
+    }
+    /* Responsive collapse of rails on narrow viewports */
+    @media (max-width: 1200px) {
+      .main {
+        grid-template-columns: 1fr;
+      }
+      .main > aside[aria-label="Instruments"],
+      .main > aside[aria-label="AI Co‑Pilot"] {
+        order: 1;
+      }
+      .main > .stage { order: 0; }
+    }
+
+    /* ---------- Panels & Common UI ---------- */
+    .panel {
+      background: linear-gradient(180deg, color-mix(in oklab, var(--surface-1) 86%, transparent), color-mix(in oklab, var(--surface-2) 80%, transparent));
+      border: 1px solid color-mix(in oklab, var(--fg-2) 12%, transparent);
+      border-radius: var(--r);
+      padding: var(--space-4);
+      box-shadow: var(--shadow-1);
+      backdrop-filter: blur(6px) saturate(1.02);
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      background: color-mix(in oklab, var(--surface-3) 65%, transparent);
+      border: 1px solid color-mix(in oklab, var(--fg-2) 14%, transparent);
+      color: var(--fg-1);
+      border-radius: 999px;
+      font-size: var(--fs-sm);
+      line-height: 1;
+    }
+
+    button, select {
+      font: 600 14px/1 var(--font-ui);
+      color: var(--fg-0);
+      background: var(--surface-2);
+      border: 1px solid color-mix(in oklab, var(--fg-2) 18%, transparent);
+      border-radius: var(--r-sm);
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: transform var(--dur-1) var(--ease), background var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease);
+    }
+    button:hover, select:hover { background: color-mix(in oklab, var(--surface-2) 80%, var(--accent) 20%); }
+    button:active { transform: translateY(1px) scale(.995); }
+    button:disabled { opacity: .6; cursor: not-allowed; }
+
+    button.primary {
+      background: var(--accent);
+      color: #001018;
+      border-color: color-mix(in oklab, var(--accent) 70%, #000);
+      box-shadow: 0 4px 16px color-mix(in oklab, var(--accent) 28%, transparent);
+    }
+    button.primary:hover { box-shadow: 0 6px 20px color-mix(in oklab, var(--accent) 36%, transparent); }
+
+    button.ghost {
+      background: transparent;
+      color: var(--fg-1);
+      border-color: color-mix(in oklab, var(--fg-2) 24%, transparent);
+    }
+
+    /* Accessible focus ring */
+    :focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+      box-shadow: var(--glow);
+    }
+
+    /* ---------- Stage (Canvas + Overlays) ---------- */
+    .stage {
+      position: relative;
+      background: radial-gradient(120% 100% at 50% 0%, #0a0f1e, #04070f);
+      border-radius: var(--r);
+      overflow: hidden;
+      min-height: 380px;
+      box-shadow: var(--shadow-3);
+      isolation: isolate; /* keeps glows inside */
+    }
+    #gl { width: 100%; height: 100%; display: block; touch-action: none; user-select: none; }
+    .overlay { position: absolute; inset: 0; pointer-events: none; }
+    .legend { position: absolute; right: 16px; top: 16px; backdrop-filter: blur(8px); }
+    .hud { position: absolute; left: 16px; bottom: 16px; }
+    .tooltip {
+      position: fixed; inset: auto auto 20px 20px; max-width: 360px;
+      pointer-events: none;
+      background: color-mix(in oklab, var(--surface-1) 92%, transparent);
+      border: 1px solid color-mix(in oklab, var(--fg-2) 16%, transparent);
+      border-radius: var(--r);
+      padding: var(--space-4);
+      box-shadow: var(--shadow-2);
+      color: var(--fg-1);
+      font-size: var(--fs-sm);
+    }
+
+    /* ---------- Lists / Steps ---------- */
+    .steps { margin: 0; padding-left: 0; counter-reset: step; }
+    .steps li {
+      list-style: none;
+      margin: 0 0 var(--space-3);
+      padding: var(--space-3);
+      border-radius: var(--r-sm);
+      background: color-mix(in oklab, var(--surface-3) 50%, transparent);
+      border: 1px solid color-mix(in oklab, var(--fg-2) 14%, transparent);
+      position: relative;
+    }
+    .steps li::before {
+      counter-increment: step;
+      content: counter(step);
+      position: absolute;
+      left: -10px; top: -10px;
+      width: 28px; height: 28px; border-radius: 50%;
+      display: grid; place-items: center;
+      font-weight: 700; font-size: 12px;
+      color: #001018;
+      background: var(--accent);
+      border: 2px solid color-mix(in oklab, var(--accent) 70%, #000);
+      box-shadow: 0 6px 18px color-mix(in oklab, var(--accent) 30%, transparent);
+    }
+    .steps li.active {
+      outline: 2px solid var(--accent);
+      background: color-mix(in oklab, var(--accent) 12%, var(--surface-3));
+    }
+
+    /* ---------- Score & Telemetry ---------- */
+    .score-grid { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
+    progress { width: 100%; height: 8px; border: none; background: color-mix(in oklab, var(--surface-3) 60%, transparent); border-radius: 999px; overflow: hidden; }
+    progress::-webkit-progress-bar { background: transparent; }
+    progress::-webkit-progress-value { background: var(--accent); }
+    progress::-moz-progress-bar { background: var(--accent); }
+
+    /* ---------- Form Inputs ---------- */
+    select {
+      background: var(--surface-2);
+      color: var(--fg-0);
+      padding-right: 34px;
+    }
+
+    /* ---------- Dialog ---------- */
+    dialog.panel {
+      border: none; /* panel already has border */
+      padding: 0; /* use panel padding */
+      max-width: min(720px, 92vw);
+    }
+    dialog::backdrop {
+      background: rgba(2, 8, 24, .6);
+      backdrop-filter: blur(3px);
+    }
+
+    /* ---------- Micro-animations ---------- */
+    @keyframes pulse {
+      0%   { transform: scale(1);   opacity: .8; }
+      70%  { transform: scale(1.06); opacity: .2; }
+      100% { transform: scale(1.08); opacity: 0; }
+    }
+    .pulse { animation: pulse 1200ms var(--ease) infinite; }
+
+    /* Respect reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
+    }
+
+    /* ---------- Scrollbars (nice-to-have) ---------- */
+    *::-webkit-scrollbar { width: 10px; height: 10px; }
+    *::-webkit-scrollbar-thumb {
+      background: color-mix(in oklab, var(--surface-3) 80%, transparent);
+      border: 2px solid transparent; border-radius: 999px; background-clip: padding-box;
+    }
+    *::-webkit-scrollbar-thumb:hover { background: color-mix(in oklab, var(--accent) 24%, var(--surface-3)); }
+
+    /* ---------- Typography helpers ---------- */
+    h1, h2, h3, h4 { color: var(--fg-0); margin: 0 0 var(--space-3); line-height: 1.2; }
+    h1 { font-size: var(--fs-xl); }
+    h2 { font-size: var(--fs-lg); }
+    h3 { font-size: var(--fs-md); }
+    h4 { font-size: var(--fs-sm); }
+    small { font-size: var(--fs-xs); color: var(--fg-2); }
+
+    /* ---------- Utility classes ---------- */
+    .grid { display: grid; gap: var(--space-3); }
+    .row { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
+    .mt-0 { margin-top: 0 !important; }
+    .mb-0 { margin-bottom: 0 !important; }
+    .w-100 { width: 100% !important; }
+  </style>
   <!-- =========================
        SECTION 03: HEAD • EMBEDDED SVG ICON SPRITE
        ========================= -->
