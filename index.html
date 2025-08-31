@@ -1,2061 +1,432 @@
-<!DOCTYPE html>
-
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Mitral Repair Trainer — Single‑File Web App</title>
-<meta name="description" content="Educational mitral valve repair suturing simulation with AI co‑pilot. Single‑file, offline-capable." />
-<style>
-/* =============================================================================
-   Mitral Repair Trainer (MVRT)
-   Single-file offline web app for educational simulation of mitral annuloplasty suturing.
+  <!-- =========================
+       SECTION 01: HEAD • META & SEO
+       ========================= -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Mitral Valve Repair Simulator — Training & Assessment</title>
+  <meta name="description" content="Web-based, high-fidelity mitral valve repair & replacement simulation for training and assessment with AI co-pilot guidance." />
+  <meta name="theme-color" content="#0b1220" />
+  <!-- Preload fonts (optional, system stack recommended), favicon/data URL placeholders -->
+  <!-- <link rel="preload" as="font" href="data:font/woff2;base64,..." crossorigin> -->
 
-README (short):
+  <!-- =========================
+       SECTION 02: HEAD • DESIGN TOKENS & GLOBAL CSS
+       ========================= -->
+  <style>
+    :root {
+      /* Color system */
+      --bg-0:#05070c; --bg-1:#0b1220; --bg-2:#111a2e;
+      --fg-0:#ffffff; --fg-1:#cbd5e1; --muted:#8b9bb3;
+      --accent:#00d1ff; --accent-2:#ff2d55; --ok:#2ecc71; --warn:#ffb020; --bad:#ff4d4f;
+      /* Sizing & radius */
+      --r:12px; --gap:12px; --pad:16px; --shadow:0 10px 30px rgba(0,0,0,.3);
+      /* Typography */
+      --font-ui: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    }
+    html,body { height:100%; background:var(--bg-1); color:var(--fg-1); font:14px/1.5 var(--font-ui); margin:0; }
+    a { color: var(--accent); text-decoration: none; }
+    .visually-hidden { position:absolute !important; height:1px; width:1px; overflow:hidden; clip:rect(1px,1px,1px,1px); white-space:nowrap; }
+    /* Layout shell */
+    #app { display:grid; grid-template-rows:auto 1fr auto; height:100vh; }
+    .topbar, .bottombar { display:flex; align-items:center; gap:var(--gap); padding:var(--pad); background:var(--bg-2); box-shadow:var(--shadow); z-index:20; }
+    .main { display:grid; grid-template-columns: 320px 1fr 380px; gap:var(--gap); padding:var(--gap); }
+    .panel { background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.00)); border:1px solid rgba(255,255,255,.08); border-radius:var(--r); padding:var(--pad); }
+    .chip { display:inline-flex; align-items:center; gap:8px; padding:6px 10px; background:rgba(255,255,255,.06); border-radius:999px; }
+    button { background:#14213d; color:var(--fg-0); border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:10px 14px; cursor:pointer; }
+    button.primary { background:var(--accent); color:#001018; font-weight:700; }
+    button.ghost { background:transparent; border-color:rgba(255,255,255,.18); }
+    /* Canvas + overlay stacking */
+    .stage { position:relative; background:#04070f; border-radius:var(--r); overflow:hidden; }
+    #gl { width:100%; height:100%; display:block; }
+    .overlay { position:absolute; inset:0; pointer-events:none; }
+    .legend { position:absolute; right:16px; top:16px; backdrop-filter: blur(8px); }
+    .hud { position:absolute; left:16px; bottom:16px; }
+    .tooltip { position: fixed; inset:auto auto 20px 20px; max-width:360px; }
+    /* Step list */
+    .steps li { list-style:none; margin:0 0 10px; padding:10px; border-radius:10px; background:rgba(255,255,255,.04); }
+    .steps li.active { outline:2px solid var(--accent); background:rgba(0,209,255,.08); }
+    /* Score card */
+    .score-grid { display:grid; grid-template-columns:1fr auto; gap:8px; }
+    progress { width:100%; height:8px; }
+    /* High-contrast toggle hook */
+    .high-contrast { filter: contrast(1.2) saturate(1.1); }
+  </style>
 
-* Two modes: Training (guided) and Practice (assisted).
-* Place annular bites around the mitral annulus, pass through virtual ring, tension and tie.
-* Rule-based AI co‑pilot evaluates depth, angle, spacing, commissure proximity, tension, forbidden zones, ring mapping.
-* Live metrics & scoring; export JSON & PNG; printable report; localStorage persistence.
-* All rendering is on a main <canvas> with an inline <svg> overlay. No external assets.
-* Accessibility: ARIA labels, focus outlines, hotkeys cheat sheet, high contrast theme toggle.
-* HARD LIMITATIONS: This is an educational simulation only. Not clinical advice or a real surgical device.
+  <!-- =========================
+       SECTION 03: HEAD • EMBEDDED SVG ICON SPRITE
+       ========================= -->
+  <svg width="0" height="0" class="visually-hidden" aria-hidden="true">
+    <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path fill="currentColor" d="M6 5h4v14H6zM14 5h4v14h-4z"/></symbol>
+    <symbol id="i-hand" viewBox="0 0 24 24"><path fill="currentColor" d="M5 8l2-2 4 4 6-6 2 2-8 8z"/></symbol>
+    <symbol id="i-warning" viewBox="0 0 24 24"><path fill="currentColor" d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2V9h2v5z"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><path fill="currentColor" d="M4 7h4l2-2h4l2 2h4v12H4z"/></symbol>
+    <!-- Add more as needed -->
+  </svg>
 
-Keyboard shortcuts:
-N Next step, B Back step, H Cycle hints, U Undo, Y Redo, R Reset, G Ghost overlay, T Toggle Training/Practice, P Pause/Resume timer, ? Help
-
-LocalStorage keys:
-
-* mvrt\:lastCase, mvrt\:settings, mvrt\:highscores
-
-\============================================================================= \*/
-
-/\* ----------------------------- CSS Variables ------------------------------ \*/
-\:root{
-\--bg: #0e1116;
-\--panel: #151a21;
-\--panel-2: #1b222b;
-\--text: #e9eef5;
-\--muted: #aab6c5;
-\--accent: #78c6ff;
-\--accent-2:#9ef8df;
-\--danger:#ff6b6b;
-\--warn:#f1c40f;
-\--ok:#2ecc71;
-\--border:#2a3441;
-\--shadow: rgba(0,0,0,0.35);
-\--callout:#264653;
-\--btn:#1f2732;
-\--btn-hover:#273140;
-\--link:#a1d1ff;
-\--heat:#ff3b30AA;
-\--safe:#1abc9c;
-\--caution:#f39c12;
-\--forbid:#e74c3c;
-
-\--code:#0d1117;
-\--ring:#c9d3df;
-
-\--font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
-\--mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
-}
-
-body.light{
-\--bg:#f5f7fb;
-\--panel:#ffffff;
-\--panel-2:#f1f5fb;
-\--text:#0c1117;
-\--muted:#4b5563;
-\--accent:#0077ff;
-\--accent-2:#0bb;
-\--danger:#c0392b;
-\--warn:#b8860b;
-\--ok:#167e56;
-\--border:#d5dde7;
-\--shadow: rgba(0,0,0,0.15);
-\--btn:#eef3fb;
-\--btn-hover:#e3ecfa;
-\--link:#0a66c2;
-\--heat:#e74c3c94;
-\--safe:#12a57b;
-\--caution:#bd7d0a;
-\--forbid:#b32424;
-\--code:#0d1117;
-\--ring:#65758b;
-}
-
-/\* ----------------------------- Base & Layout ------------------------------ \*/
-\*{box-sizing\:border-box}
-html,body{height:100%}
-body{
-margin:0;
-background\:var(--bg);
-color\:var(--text);
-font-family\:var(--font);
--webkit-font-smoothing\:antialiased;
--moz-osx-font-smoothing\:grayscale;
-}
-
-a{color\:var(--link);text-decoration\:none}
-a\:hover
-
-\#app{
-display\:grid;
-grid-template-rows: auto 1fr auto;
-min-height:100vh;
-}
-
-header{
-position\:sticky; top:0; z-index:8;
-display\:flex; align-items\:center; gap:.75rem;
-padding:.5rem .75rem;
-background\:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0)) , var(--panel);
-border-bottom:1px solid var(--border);
-box-shadow:0 2px 8px var(--shadow);
-}
-.header-left{display\:flex; align-items\:center; gap:.75rem; flex:1}
-.header-right{display\:flex; align-items\:center; gap:.5rem}
-.app-title{
-font-weight:700; letter-spacing:.2px; white-space\:nowrap;
-display\:flex; align-items\:center; gap:.5rem;
-}
-.app-title .logo{
-width:28px;height:28px;border-radius:6px;
-background: radial-gradient(60% 60% at 30% 30%, #fff3, transparent 60%),
-linear-gradient(135deg, var(--accent), var(--accent-2));
-box-shadow:0 2px 10px var(--shadow), inset 0 0 0 1px #0002;
-}
-
-select, button, .toggle, input\[type="number"]{
-background\:var(--btn); color\:var(--text);
-border:1px solid var(--border);
-border-radius:.5rem; padding:.45rem .6rem;
-font-size:.95rem;
-}
-button\:hover{background\:var(--btn-hover)}
-button\:active{transform\:translateY(1px)}
-button\[disabled]{opacity:.6;cursor\:not-allowed}
-.toggle{display\:inline-flex; gap:.35rem; align-items\:center; cursor\:pointer;}
-.toggle input{accent-color\:var(--accent)}
-.kbd{
-font-family\:var(--mono); font-size:.8rem; padding:.1rem .35rem;
-border-radius:.35rem; background\:var(--panel-2); border:1px solid var(--border);
-}
-
-.info-chip{
-font-weight:600; padding:.35rem .5rem;
-border-radius:.4rem; background\:var(--panel-2); border:1px solid var(--border);
-}
-.info-chip.ok{color:#fff;background\:linear-gradient(180deg, #2ecc7022, #2ecc70AA); border-color:#2ecc70AA}
-.info-chip.warn{background\:linear-gradient(180deg, #f1c40f22, #f1c40fAA)}
-.info-chip.danger{background\:linear-gradient(180deg, #ff6b6b22, #ff6b6bAA)}
-
-main{
-display\:grid; grid-template-columns: 300px 1fr 350px; gap:.75rem;
-padding:.75rem;
-}
-@media(min-width:1800px){ main{ grid-template-columns: 340px 1fr 380px; } }
-@media(max-width:1400px){ main{ grid-template-columns: 270px 1fr 330px; } }
-
-.panel{
-background\:var(--panel); border:1px solid var(--border); border-radius:.75rem;
-box-shadow:0 8px 24px var(--shadow);
-display\:flex; flex-direction\:column; overflow\:hidden; min-height:200px;
-}
-.panel h3{
-margin:0; padding:.6rem .75rem; font-size:1rem; letter-spacing:.2px;
-border-bottom:1px solid var(--border); background\:var(--panel-2);
-}
-.panel .content{padding:.7rem .75rem; overflow\:auto; height:100%}
-
-fieldset{
-border:1px dashed var(--border); border-radius:.5rem; padding:.5rem .65rem; margin:.5rem 0;
-}
-legend{padding:0 .35rem; font-weight:600; color\:var(--muted)}
-
-.controls-row{display\:flex; gap:.5rem; flex-wrap\:wrap; align-items\:center; margin:.35rem 0}
-.controls-col{display\:flex; flex-direction\:column; gap:.35rem; margin:.35rem 0}
-label{font-size:.9rem; color\:var(--muted)}
-.small{font-size:.85rem; color\:var(--muted)}
-hr.sep{border\:none; border-top:1px solid var(--border); margin:.5rem 0}
-
-.canvas-wrap{
-position\:relative; display\:grid; grid-template-rows: auto 1fr; gap:.3rem;
-height: calc(100vh - 220px);
-}
-\#viewport{
-position\:relative; flex:1; overflow\:hidden; border-radius:.75rem;
-background: radial-gradient(120% 120% at 50% 50%, #fff1 0%, transparent 70%), var(--panel);
-border:1px solid var(--border);
-}
-\#sim{
-position\:absolute; inset:0; display\:block; width:100%; height:100%;
-background: transparent;
-}
-\#overlay{
-position\:absolute; inset:0; pointer-events\:none;
-}
-.overlay-group{pointer-events\:none}
-.hit{ pointer-events\:auto; cursor\:pointer }
-
-.badge{
-display\:inline-flex; align-items\:center; gap:.35rem;
-padding:.2rem .45rem; border-radius:.35rem; background\:var(--panel-2);
-border:1px solid var(--border); font-size:.9rem; font-weight:600;
-}
-\#ghostToggle{margin-left:.4rem}
-
-.coach{
-display\:flex; flex-direction\:column; gap:.45rem;
-}
-.coach .msg{
-background\:var(--panel-2); border:1px solid var(--border); border-left:4px solid var(--accent);
-padding:.55rem .6rem; border-radius:.5rem;
-}
-.coach .msg.warn{border-left-color\:var(--warn)}
-.coach .msg.danger{border-left-color\:var(--danger)}
-.metric-grid{display\:grid; grid-template-columns:1fr 1fr; gap:.4rem}
-.metric{
-background\:var(--panel-2); border:1px solid var(--border); border-radius:.5rem; padding:.35rem .5rem;
-}
-.metric .val{ font-family\:var(--mono); font-weight:700; font-size:1rem}
-
-footer{
-padding:.6rem .8rem; font-size:.9rem; color\:var(--muted);
-border-top:1px solid var(--border); background\:var(--panel);
-display\:flex; align-items\:center; justify-content\:space-between; gap:.5rem;
-}
-
-/\* Bottom bar stepper \*/
-\#bottomBar{
-position\:sticky; bottom:0; z-index:7;
-display\:flex; align-items\:center; justify-content\:space-between; gap:.75rem;
-padding:.5rem .75rem; background\:var(--panel);
-border-top:1px solid var(--border); box-shadow:0 -2px 8px var(--shadow);
-}
-.stepper{display\:flex; align-items\:center; gap:.4rem; flex-wrap\:wrap}
-.dot{
-width:14px;height:14px;border-radius:50%; border:1px solid var(--border);
-background: linear-gradient(180deg, #fff2, #0000);
-}
-.dot.active{background\:var(--accent); border-color\:transparent; box-shadow:0 0 0 3px #4ba3ff55}
-.dot.done{background\:linear-gradient(180deg, #2ecc7044, #2ecc70aa); border-color:#2ecc70aa}
-.dot.warn{background\:linear-gradient(180deg, #f1c40f44, #f1c40faa); border-color:#f1c40faa}
-
-.icon{
-display\:inline-block; width:16px;height:16px; vertical-align\:middle;
-background: radial-gradient(40% 40% at 30% 30%, #fff6, #fff0),
-linear-gradient(160deg,#9aa6b2,#596273);
-mask: var(--mask) no-repeat center / contain;
-}
-
-/\* Tooltips \*/
-.tooltip{position\:relative}
-.tooltip\:hover::after{
-content\:attr(data-tip);
-position\:absolute; bottom\:calc(100% + 6px); left:50%; transform\:translateX(-50%);
-background:#000d; color:#fff; padding:.25rem .45rem; border-radius:.35rem; font-size:.8rem; white-space\:nowrap;
-}
-
-/\* Toasts \*/
-\#toasts{ position\:fixed; right:.75rem; bottom:3.5rem; display\:flex; flex-direction\:column; gap:.35rem; z-index:9999; }
-.toast{
-background\:var(--panel-2); border:1px solid var(--border); border-left:4px solid var(--accent);
-padding:.45rem .55rem; border-radius:.5rem; max-width:420px; box-shadow:0 8px 24px var(--shadow);
-}
-.toast.warn{ border-left-color\:var(--warn) }
-.toast.danger{ border-left-color\:var(--danger) }
-
-/\* Modal \*/
-.modal-backdrop{ position\:fixed; inset:0; background:#0009; display\:none; align-items\:center; justify-content\:center; z-index:10000; }
-.modal{ background\:var(--panel); border:1px solid var(--border); border-radius:.75rem; width\:min(860px, 92vw); max-height:86vh; display\:flex; flex-direction\:column; overflow\:hidden; }
-.modal header{ position\:sticky; top:0; border-bottom:1px solid var(--border); background\:var(--panel-2) }
-.modal .body{ padding:.75rem; overflow\:auto }
-.modal footer{ padding:.6rem .75rem; border-top:1px solid var(--border); display\:flex; gap:.5rem; justify-content\:flex-end }
-
-/\* Focus rings \*/
-button\:focus, select\:focus, \[tabindex="0"]\:focus, input\:focus{ outline:2px solid var(--accent); outline-offset:2px }
-
-/\* Radar & sparkline canvases \*/
-\#radar,#sparkline{ width:100%; height:180px; display\:block; background\:linear-gradient(180deg, #fff1, #0000) }
-
-/\* Help overlay \*/
-\#helpOverlay{ display\:none }
-.help-kbd{ display\:inline-flex; align-items\:center; gap:.4rem; flex-wrap\:wrap }
-.help-kbd .kbd{ margin:.15rem }
-
-/\* Collapsible sections \*/
-details summary{ cursor\:pointer; padding:.2rem 0; color\:var(--muted); font-weight:600 }
-details summary::-webkit-details-marker{ display\:none }
-details\[open] summary{ color\:var(--text) }
-
-/\* Audio mute chip \*/
-.mute-chip{ cursor\:pointer }
-
-/\* Case notes \*/
-\#caseNotes{ width:100%; min-height:70px; resize\:vertical; }
-
-/\* Ghost toggle chip \*/
-\#ghostToggle{ cursor\:pointer }
-
-/\* Legend swatches \*/
-.swatch{ display\:inline-block; width:14px; height:14px; border-radius:3px; margin-right:6px; border:1px solid var(--border) }
-.sw-safe{ background\:linear-gradient(180deg, #1abc9c55, #1abc9c) }
-.sw-caution{ background\:linear-gradient(180deg, #f39c1255, #f39c12) }
-.sw-forbid{ background\:linear-gradient(180deg, #e74c3c55, #e74c3c) }
-.sw-ideal{ background\:repeating-linear-gradient(90deg, #6aa9ff 0 4px, transparent 4px 8px), #6aa9ff22; border:1px dashed #6aa9ff }
-
-/\* Mini hemodynamic gauge \*/
-\#gauge{ width:100%; height:110px; display\:block; }
-
-/\* Visually hidden (for screen readers / a11y) \*/
-.visually-hidden{ position\:absolute !important; height:1px; width:1px; overflow\:hidden; clip\:rect(1px, 1px, 1px, 1px); white-space\:nowrap; }
-
-/\* ----------------------------- End CSS ------------------------------------ \*/ </style>
-
+  <!-- =========================
+       SECTION 04: HEAD • AUDIO & HAPTICS PLACEHOLDERS
+       ========================= -->
+  <!-- Optional: base64 audio or blank sources to be filled later -->
+  <audio id="snd-ok" preload="auto"></audio>
+  <audio id="snd-warn" preload="auto"></audio>
+  <audio id="snd-bad" preload="auto"></audio>
 </head>
-<body class="light" data-theme="light" data-mode="training" aria-live="polite">
-<div id="app" role="application" aria-label="Mitral Repair Trainer">
-  <header>
-    <div class="header-left">
-      <div class="logo" aria-hidden="true"></div>
-      <div class="app-title" aria-label="App title">Mitral Repair Trainer</div>
-      <span class="small">Educational simulation only — not for clinical use.</span>
-    </div>
-    <div class="header-right" role="toolbar" aria-label="Top controls">
-      <label class="toggle tooltip" data-tip="Toggle between guided Training and assisted Practice">
-        <input id="modeToggle" type="checkbox" aria-label="Toggle Practice mode" />
-        <span id="modeLabel">Training</span>
-      </label>
-      <select id="caseSelect" aria-label="Case selector">
-        <option value="standard">Standard annulus</option>
-        <option value="dilated">Dilated annulus</option>
-        <option value="calcified">Calcified posterior band</option>
-      </select>
-      <select id="themeToggle" aria-label="Theme">
-        <option value="light">Light</option>
-        <option value="dark">Dark</option>
-      </select>
-      <button id="resetBtn" class="tooltip" data-tip="R">Reset Case</button>
-      <button id="exportPNGBtn" class="tooltip" data-tip="Export current view as PNG">Export PNG</button>
-      <button id="downloadReportBtn" class="tooltip" data-tip="Download session JSON & open printable summary">Download Report</button>
-      <span class="badge tooltip" id="ghostToggle" data-tip="G">Ghost: Off</span>
-      <span class="badge tooltip mute-chip" id="audioToggle" data-tip="Toggle sounds (muted by default)">🔈 Muted</span>
-      <span class="info-chip" id="timer" aria-live="polite">00:00</span>
-      <span class="info-chip" id="stepBadge" aria-live="polite">Step 1/9</span>
-      <span class="info-chip ok" id="scoreBadge" aria-live="polite">Score: —</span>
-      <button id="aboutBtn" aria-label="About">About</button>
-      <button id="helpBtn" aria-label="Help">?</button>
-    </div>
-  </header>
 
-  <main>
-    <!-- Left: Tools & Legend -->
-    <aside class="panel" id="leftPanel" aria-label="Tools and Legend" aria-expanded="true">
-      <h3>Tools &amp; Legend</h3>
-      <div class="content">
-        <fieldset>
-          <legend>Instruments</legend>
-          <div class="controls-row" role="radiogroup" aria-label="Instrument chooser">
-            <label><input type="radio" name="instrument" value="needle" checked /> Needle driver</label>
-            <label><input type="radio" name="instrument" value="forceps" /> Forceps</label>
-            <label><input type="radio" name="instrument" value="suture" /> Suture management</label>
-          </div>
-          <div class="controls-row">
-            <label>Suture type</label>
-            <select id="sutureType" aria-label="Suture type">
-              <option value="pledgeted" selected>2‑0 Polyester (pledgeted)</option>
-              <option value="nonpledgeted">2‑0 Polyester (non‑pledgeted)</option>
-            </select>
-          </div>
-          <div class="controls-row">
-            <label>Needle size</label>
-            <select id="needleSize" aria-label="Needle size">
-              <option value="MH">MH (taper)</option>
-              <option value="SH">SH (taper)</option>
-              <option value="FS-2">FS‑2 (reverse cutting)</option>
-            </select>
-          </div>
-          <div class="controls-row">
-            <label>Ring size</label>
-            <select id="ringSize" aria-label="Ring size">
-              <option>28</option><option>30</option><option selected>32</option><option>34</option><option>36</option>
-            </select>
-          </div>
-          <div class="small">Hotkeys: <span class="kbd">N</span> Next <span class="kbd">B</span> Back <span class="kbd">H</span> Hints <span class="kbd">U</span> Undo <span class="kbd">Y</span> Redo <span class="kbd">R</span> Reset <span class="kbd">G</span> Ghost <span class="kbd">T</span> Mode <span class="kbd">P</span> Timer</div>
-        </fieldset>
+<body>
+  <!-- =========================
+       SECTION 05: APP SHELL & ACCESSIBILITY LANDMARKS
+       ========================= -->
+  <a class="visually-hidden" href="#main">Skip to main content</a>
+  <div id="app" class="" role="application" aria-label="Mitral Valve Simulator">
 
-```
-    <fieldset>
-      <legend>Legend</legend>
-      <div class="controls-col small">
-        <div><span class="swatch sw-safe"></span>Safe zone (green)</div>
-        <div><span class="swatch sw-caution"></span>Caution (amber)</div>
-        <div><span class="swatch sw-forbid"></span>Forbidden (red)</div>
-        <div><span class="swatch sw-ideal"></span>Target suture path (dashed) & ideal bite markers (blue)</div>
+    <!-- =========================
+         SECTION 06: UI • TOP BAR / MODE SWITCH
+         ========================= -->
+    <header class="topbar" aria-label="Top bar">
+      <div class="chip" aria-label="App title">MitralSim <small>v0.1</small></div>
+      <div class="chip">Scenario:
+        <select id="scenario">
+          <option value="suturing-basic">Posterior leaflet interrupted suturing</option>
+          <option value="ring-annuloplasty">Ring annuloplasty (sim)</option>
+          <option value="replacement">MV replacement (sim)</option>
+        </select>
       </div>
-      <hr class="sep" />
-      <div class="small">Annular sectors: A1‑A2‑A3 (anterior), P1‑P2‑P3 (posterior)</div>
-    </fieldset>
-
-    <fieldset>
-      <legend>Settings</legend>
-      <label class="small">Hint level</label>
-      <input id="hintRange" type="range" min="0" max="3" step="1" value="2" aria-label="Hint level" />
-      <label class="small">Scoring weights</label>
-      <div class="controls-col small">
-        <div>Precision <input id="wPrecision" type="number" min="0" max="60" value="40" style="width:72px" /></div>
-        <div>Tissue Respect <input id="wTissue" type="number" min="0" max="60" value="25" style="width:72px" /></div>
-        <div>Ring Integration <input id="wRing" type="number" min="0" max="60" value="20" style="width:72px" /></div>
-        <div>Efficiency <input id="wEff" type="number" min="0" max="60" value="15" style="width:72px" /></div>
+      <div class="chip">Mode:
+        <select id="mode">
+          <option value="training">Training</option>
+          <option value="practice">Practice</option>
+          <option value="assessment">Assessment</option>
+        </select>
       </div>
-    </fieldset>
-
-    <fieldset>
-      <legend>Hemodynamic surrogate (illustrative)</legend>
-      <canvas id="gauge" aria-label="Qualitative hemodynamic surrogate gauge"></canvas>
-      <div class="small">Even spacing & appropriate tension slightly improve this gauge.</div>
-    </fieldset>
-  </div>
-</aside>
-
-<!-- Center: Simulation Viewport -->
-<section class="panel" aria-label="Simulation viewport">
-  <h3>
-    Atrial View — Annuloplasty Suturing
-    <span class="small"> | Ghost overlay shows a perfect reference; hints guide placement.</span>
-  </h3>
-  <div class="content canvas-wrap">
-    <div id="viewport" aria-label="Canvas viewport" role="region">
-      <canvas id="sim" aria-label="Mitral anatomy and instruments canvas"></canvas>
-      <svg id="overlay" viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Interactive overlay">
-        <g class="overlay-group" id="labels"></g>
-        <g class="overlay-group" id="callouts"></g>
-        <g class="overlay-group" id="hitLayer"></g>
-      </svg>
-    </div>
-    <div class="controls-row" style="justify-content:space-between">
-      <div class="small">Interaction: Click to set entry, drag to arc needle, release to set exit. Drag suture tail to tension. Drag to ring holes to pass.</div>
-      <div>
-        <button id="playDemo">Play Demo</button>
-        <button id="playDemoSlow">Play Demo 0.5×</button>
-        <button id="finishBtn" class="tooltip" data-tip="Compute final score and summary">Finish</button>
+      <div style="margin-left:auto; display:flex; gap:8px;">
+        <label class="chip"><input id="toggle-contrast" type="checkbox" /> High contrast</label>
+        <button id="open-onboarding" class="ghost">Help</button>
+        <button id="take-screenshot" title="Save snapshot"><svg width="18" height="18"><use href="#i-camera"/></svg></button>
       </div>
-    </div>
-  </div>
-</section>
+    </header>
 
-<!-- Right: AI Co-pilot -->
-<aside class="panel" aria-label="AI Co‑pilot">
-  <h3>AI Co‑pilot</h3>
-  <div class="content coach" id="coach">
-    <div class="msg" id="coachStatus" aria-live="polite">Welcome. Training mode is active. Step 1: Orientation — explore the annulus sectors. Press <span class="kbd">N</span> to advance.</div>
-    <details open>
-      <summary>Hints &amp; rationale</summary>
-      <div id="hints" class="small">
-        Keep bites within the green band, align needle with local annular tangent, and maintain even spacing. Stricter thresholds near commissures.
-      </div>
-    </details>
-    <details open>
-      <summary>Real‑time metrics</summary>
-      <div class="metric-grid" id="metrics">
-        <div class="metric"><div class="small">Depth error</div><div class="val" id="mDepth">—</div></div>
-        <div class="metric"><div class="small">Angle error</div><div class="val" id="mAngle">—</div></div>
-        <div class="metric"><div class="small">Spacing CV</div><div class="val" id="mSpacing">—</div></div>
-        <div class="metric"><div class="small">Tension</div><div class="val" id="mTension">—</div></div>
-      </div>
-    </details>
-    <details open>
-      <summary>Errors &amp; fixes</summary>
-      <div id="errors" class="small">No errors yet. Proceed when ready.</div>
-    </details>
-    <div class="controls-row">
-      <button id="nextAction">Next recommended action</button>
-    </div>
-    <hr class="sep" />
-    <details>
-      <summary>Score overview</summary>
-      <canvas id="radar" aria-label="Score radar chart"></canvas>
-      <canvas id="sparkline" aria-label="Error trend sparkline"></canvas>
-    </details>
-  </div>
-</aside>
-```
-
-  </main>
-
-  <!-- Bottom bar -->
-
-  <div id="bottomBar" role="region" aria-label="Stepper and controls">
-    <div class="stepper" id="stepper" aria-label="Training steps">
-      <!-- 9 dots, generated by JS -->
-    </div>
-    <div class="controls-row">
-      <button id="backBtn" class="tooltip" data-tip="B">Back</button>
-      <button id="nextBtn" class="tooltip" data-tip="N">Next</button>
-      <button id="undoBtn" class="tooltip" data-tip="U">Undo</button>
-      <button id="redoBtn" class="tooltip" data-tip="Y">Redo</button>
-      <label class="visually-hidden" for="caseNotes">Case notes</label>
-      <input id="caseNotes" placeholder="Case notes…" aria-label="Case notes" />
-    </div>
-  </div>
-
-  <footer>
-    <div>© <span id="year"></span> Mitral Repair Trainer • <a href="#" id="licenseLink">License &amp; disclaimer</a></div>
-    <div class="small">Educational simulation only — not for clinical decision‑making.</div>
-  </footer>
-</div>
-
-<!-- Toasts -->
-
-<div id="toasts" aria-live="polite"></div>
-
-<!-- Modal Backdrops -->
-
-<div class="modal-backdrop" id="aboutModal">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
-    <header><h3 id="aboutTitle" style="margin:.4rem .6rem">About</h3></header>
-    <div class="body small">
-      <p><strong>Mitral Repair Trainer</strong> — single‑file educational simulation (v<span id="version"></span>).</p>
-      <p>Author: <em>Your Name Here</em>. All content is for training only and not a clinical device. No external dependencies; runs offline.</p>
-      <p>Feedback style: concise, supportive, corrective. Data stays in your browser (localStorage).</p>
-      <details>
-        <summary>Changelog (high level)</summary>
-        <ul>
-          <li>Initial release: training & practice modes, AI co‑pilot, scoring, exports, replay.</li>
+    <main id="main" class="main" aria-label="Main workspace">
+      <!-- =========================
+           SECTION 07: UI • LEFT RAIL — INSTRUMENTS & TOOLS
+           ========================= -->
+      <aside class="panel" aria-label="Instruments">
+        <h3>Instruments</h3>
+        <ul id="tools">
+          <li><label><input type="radio" name="tool" value="needle-driver" checked> Needle driver</label></li>
+          <li><label><input type="radio" name="tool" value="forceps"> Forceps</label></li>
+          <li><label><input type="radio" name="tool" value="scissors"> Scissors</label></li>
+          <li><label><input type="radio" name="tool" value="suction"> Suction</label></li>
+          <li><label><input type="radio" name="tool" value="ring-sizer"> Ring sizer</label></li>
         </ul>
-      </details>
-    </div>
-    <footer><button onclick="MVRT.UI.hideModal('aboutModal')">Close</button></footer>
-  </div>
-</div>
+        <hr/>
+        <h4>Instrument Telemetry</h4>
+        <div class="score-grid">
+          <span>Tip force</span><span id="tele-force" style="text-align:right">0.0 N</span>
+          <span>Grip angle</span><span id="tele-angle" style="text-align:right">0°</span>
+          <span>Collision</span><span id="tele-coll" style="text-align:right">None</span>
+        </div>
+      </aside>
 
-<div class="modal-backdrop" id="helpModal">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
-    <header><h3 id="helpTitle" style="margin:.4rem .6rem">Help &amp; Cheat‑sheet</h3></header>
-    <div class="body small">
-      <p><strong>Goal:</strong> Practice annuloplasty ring suturing from an atrial view. Follow steps, place bites along the annulus, maintain depth/angle/spacing, pass through ring, tension, and tie.</p>
-      <p><strong>Interaction:</strong> Click to set <em>entry</em> → drag along an arc → release to set <em>exit</em>. Drag free tail to tension. Drag tail over ring holes to pass.</p>
-      <p class="help-kbd">
-        <span class="kbd">N</span> Next <span class="kbd">B</span> Back <span class="kbd">H</span> Hints <span class="kbd">U</span> Undo <span class="kbd">Y</span> Redo <span class="kbd">R</span> Reset
-        <span class="kbd">G</span> Ghost <span class="kbd">T</span> Mode <span class="kbd">P</span> Timer <span class="kbd">?</span> Help
-      </p>
-      <hr class="sep"/>
-      <details open>
-        <summary>Acceptance tests</summary>
-        <ul id="testList"></ul>
-      </details>
-      <details>
-        <summary>Screenshots</summary>
-        <div id="screens"></div>
-      </details>
-    </div>
-    <footer><button onclick="MVRT.UI.hideModal('helpModal')">Close</button></footer>
-  </div>
-</div>
+      <!-- =========================
+           SECTION 08: UI • CENTER STAGE — SIMULATION CANVAS
+           ========================= -->
+      <section class="stage panel" aria-label="Simulation Stage">
+        <canvas id="gl" aria-label="3D mitral valve scene"></canvas>
+        <svg id="overlay" class="overlay" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- dynamic annotations/hotspots/rulers rendered here -->
+        </svg>
+        <!-- Floating legend & HUD -->
+        <div class="legend panel">
+          <h4>Legend</h4>
+          <ul style="margin:0; padding-left:18px;">
+            <li><span style="color:var(--accent)">Cyan</span> = Target bite zone</li>
+            <li><span style="color:var(--ok)">Green</span> = Valid stitch</li>
+            <li><span style="color:var(--warn)">Amber</span> = Shallow/steep angle</li>
+            <li><span style="color:var(--bad)">Red</span> = Chordal injury risk</li>
+          </ul>
+        </div>
+        <div class="hud panel">
+          <div>Step <b id="step-idx">1</b>/<span id="step-total">—</span> • <span id="step-title">—</span></div>
+          <div>Timer: <span id="timer">00:00</span></div>
+        </div>
+        <div id="tooltip" class="tooltip panel" role="status" aria-live="polite">Welcome. Press <b>?</b> for help.</div>
+      </section>
 
-<div class="modal-backdrop" id="licenseModal">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="licenseTitle">
-    <header><h3 id="licenseTitle" style="margin:.4rem .6rem">License &amp; Disclaimer</h3></header>
-    <div class="body small" style="line-height:1.55">
-      <p><strong>License:</strong> MIT‑like permissive license. You may copy, modify, and use for educational purposes. No warranty.</p>
-      <p><strong>Disclaimer:</strong> This software is an <em>educational simulation</em> only and <strong>not</strong> for clinical decision‑making or real procedures. The rendering and heuristics are approximate; no patient‑specific calculations are performed. Use with professional discretion.</p>
-    </div>
-    <footer><button onclick="MVRT.UI.hideModal('licenseModal')">Close</button></footer>
-  </div>
-</div>
-
-<script>
-/* =============================================================================
-   MVRT — Mitral Repair Trainer
-   Single-file JS (no external libraries). ES6 modules via namespaces.
-   Modules: AppState, Cases, Geometry, Renderer, Physics, AI, Scoring, UI, Export, Storage, Audio, Tests
-   ============================================================================= */
-
-const MVRT = (() => {
-'use strict';
-
-/* -------------------------------- Utilities -------------------------------- */
-const Util = {
-  clamp:(v,min,max)=>Math.max(min,Math.min(max,v)),
-  lerp:(a,b,t)=>a+(b-a)*t,
-  dist:(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),
-  dists:(x1,y1,x2,y2)=>Math.hypot(x1-x2,y1-y2),
-  rad:(deg)=>deg*Math.PI/180, deg:(rad)=>rad*180/Math.PI,
-  now:()=>performance.now(),
-  fmt:(n,d=1)=> (Number.isFinite(n)? n.toFixed(d) : '—'),
-  niceTime:(ms)=> {
-    const s = Math.floor(ms/1000);
-    const m = Math.floor(s/60);
-    const r = s % 60;
-    return `${String(m).padStart(2,'0')}:${String(r).padStart(2,'0')}`;
-  },
-  pointInPoly:(pt, poly)=>{ // ray-cast
-    let c=false; const x=pt.x, y=pt.y;
-    for (let i=0,j=poly.length-1;i<poly.length;j=i++){
-      const xi=poly[i].x, yi=poly[i].y, xj=poly[j].x, yj=poly[j].y;
-      const intersect = ((yi>y)!=(yj>y)) && (x < (xj-xi)*(y-yi)/(yj-yi+1e-6)+xi);
-      if(intersect) c=!c;
-    } return c;
-  },
-  bezier:(p0,p1,p2,p3,t)=>{
-    const u=1-t;
-    return {
-      x: u*u*u*p0.x + 3*u*u*t*p1.x + 3*u*t*t*p2.x + t*t*t*p3.x,
-      y: u*u*u*p0.y + 3*u*u*t*p1.y + 3*u*t*t*p2.y + t*t*t*p3.y
-    }
-  },
-  // Smooth random (Perlin-ish) using value noise
-  makeNoise2D(seed=1337){
-    const rand = (()=>{ let s=seed>>>0; return ()=> (s = (s*1664525 + 1013904223)>>>0, s/0xffffffff) })();
-    const perm = new Uint8Array(512); for(let i=0;i<256;i++) perm[i]=i;
-    for(let i=255;i>0;i--){ const j=(rand()*256)|0; [perm[i],perm[j]]=[perm[j],perm[i]] }
-    for(let i=0;i<256;i++) perm[256+i]=perm[i];
-    const grad = (h,x,y)=>{const u = (h&1)?x:-x; const v=(h&2)?y:-y; return u+v}
-    return (x,y)=>{
-      const X=Math.floor(x)&255, Y=Math.floor(y)&255;
-      x-=Math.floor(x); y-=Math.floor(y);
-      const u=x*x*(3-2*x), v=y*y*(3-2*y);
-      const a=perm[X]+Y, b=perm[X+1]+Y;
-      const n00=grad(perm[a],x,y), n01=grad(perm[a+1],x,y-1);
-      const n10=grad(perm[b],x-1,y), n11=grad(perm[b+1],x-1,y-1);
-      const nx0 = n00*(1-v)+n01*v, nx1 = n10*(1-v)+n11*v;
-      return (nx0*(1-u)+nx1*u);
-    };
-  },
-  saveBlob:(blob, filename)=>{
-    const a=document.createElement('a');
-    a.href=URL.createObjectURL(blob);
-    a.download=filename;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove() }, 0);
-  },
-  dataURLToBlob:(dataURL)=>{
-    const [meta, data] = dataURL.split(',');
-    const mime = /:(.*?);/.exec(meta)[1];
-    const bin = atob(data);
-    const n = bin.length;
-    const u8 = new Uint8Array(n);
-    for(let i=0;i<n;i++) u8[i] = bin.charCodeAt(i);
-    return new Blob([u8], {type:mime});
-  },
-  uid: (()=>{ let i=0; return ()=>`id_${(++i).toString(36)}_${Date.now().toString(36)}` })(),
-  withTry:(fn, onErr)=>{
-    try { return fn() } catch(e){ console.error(e); onErr?.(e); }
-  },
-  measureText(ctx, text, font='12px sans-serif'){ ctx.save(); ctx.font=font; const m=ctx.measureText(text); ctx.restore(); return m; }
-};
-
-/* -------------------------------- Cases ----------------------------------- */
-const Cases = {
-  data:{
-    standard:{
-      id:'standard',
-      title:'Standard annulus',
-      ellipse:{ a:220, b:170, rot:Util.rad(-20) },
-      center:{ x:0, y:0 }, // relative, will be centered at canvas runtime
-      commissures:{ anterolateral: 160, posteromedial: 340 }, // degrees along param (0 at +x)
-      ideal:{ biteDeg: 12, depthMM:{min:2.0, max:3.0}, spacingMM: 6.0 },
-      thresholds:{ depthTol:1.2, angleTol:12, spacingCV:0.22, tensionMax: 0.85 },
-      ring:{ size:32, holes: 28 },
-      forbidden:[], // no red masks
-      note:'Smooth annulus; standard thresholds.'
-    },
-    dilated:{
-      id:'dilated',
-      title:'Dilated annulus',
-      ellipse:{ a:250, b:185, rot:Util.rad(-18) },
-      center:{ x:0, y:0 },
-      commissures:{ anterolateral: 158, posteromedial: 338 },
-      ideal:{ biteDeg: 10, depthMM:{min:2.0, max:3.0}, spacingMM: 7.0 },
-      thresholds:{ depthTol:1.4, angleTol:14, spacingCV:0.28, tensionMax: 1.0 }, // looser tension
-      ring:{ size:34, holes: 30 },
-      forbidden:[],
-      note:'Larger posterior segment; looser tension thresholds.'
-    },
-    calcified:{
-      id:'calcified',
-      title:'Calcified posterior band',
-      ellipse:{ a:220, b:170, rot:Util.rad(-22) },
-      center:{ x:0, y:0 },
-      commissures:{ anterolateral: 160, posteromedial: 340 },
-      ideal:{ biteDeg: 11, depthMM:{min:2.0, max:3.0}, spacingMM: 6.2 },
-      thresholds:{ depthTol:1.0, angleTol:10, spacingCV:0.20, tensionMax: 0.80 },
-      ring:{ size:32, holes: 28 },
-      forbidden:[ // simple band P2-P3
-        { name:'Calcified band', poly:[ {x: -60, y: 40}, {x:-140, y:40}, {x:-160,y:80}, {x:-40,y:80} ] }
-      ],
-      note:'Stricter angle alignment near P2–P3; forbidden posterior band.'
-    }
-  }
-};
-
-/* ------------------------------- App State -------------------------------- */
-const AppState = {
-  version:'1.0.0',
-  canvas:null, ctx:null, overlay:null, DPR:1,
-  width:1200, height:780,
-  mode:'training', // 'training' | 'practice'
-  trainingSteps:[
-    'Orientation','Ring sizing preview','Choose suture type','Define first bite (P2)',
-    'Advance circumferentially','Pass through ring','Approximation & tensioning',
-    'Knot tying','Final check'
-  ],
-  stepIndex:0,
-  timerStart:0, timerPaused:true, elapsed:0,
-  caseId:'standard',
-  settings:{
-    hintLevel:2,
-    weights:{ precision:40, tissue:25, ring:20, eff:15 },
-    theme:'light',
-    audio:false
-  },
-  instruments:{ current:'needle', sutureType:'pledgeted', needle:'MH', ringSize:32 },
-  ghost:true,
-  geometry:{ center:{x:0,y:0}},
-  // Bites & sutures:
-  bites:[], // {id, entry:{x,y}, exit:{x,y}, tEntry, tExit, depthMM, angleErr, spacingErr, commissureTag, time, pledged:boolean, tension:0..1, ringHole:null, flags:{forbidden:boolean, repierce:boolean}}
-  // Thread endpoints for tensioning and interaction
-  threads:[], // {id, tail:{x,y}, fixed:[{x,y}], tension, pathPts:[]}
-  // Undo/redo
-  history:[], future:[],
-  // Events
-  events:[], // {time, type, info}
-  // Errors timeline for sparkline
-  errorTrend:[], // numeric over time
-  // Score data (cached)
-  score:null, // {precision, tissue, ring, eff, total, grade}
-  // Replay (recorded user input)
-  replay:[], // {t, action, data}
-  // Acceptance tests
-  tests:[],
-};
-
-/* ------------------------------- Storage ---------------------------------- */
-const Storage = {
-  load(){
-    const lastCase = localStorage.getItem('mvrt:lastCase');
-    const settings = localStorage.getItem('mvrt:settings');
-    const scores = localStorage.getItem('mvrt:highscores');
-    if(lastCase && Cases.data[lastCase]) AppState.caseId = lastCase;
-    if(settings){
-      try{ const s=JSON.parse(settings);
-        AppState.settings = Object.assign(AppState.settings, s);
-      }catch{}
-    }
-    AppState.instruments.ringSize = Cases.data[AppState.caseId].ring.size;
-    if(scores){ /* not used directly here */ }
-  },
-  save(){
-    localStorage.setItem('mvrt:lastCase', AppState.caseId);
-    localStorage.setItem('mvrt:settings', JSON.stringify(AppState.settings));
-    // Highscores updated when finishing
-  }
-};
-
-/* ------------------------------- Geometry --------------------------------- */
-const Geometry = {
-  // Canvas transform utilities (centered coordinate system)
-  toCanvas(pt){ return { x: AppState.width/2 + pt.x, y: AppState.height/2 + pt.y } },
-  fromCanvas(pt){ return { x: pt.x - AppState.width/2, y: pt.y - AppState.height/2 } },
-  ellipsePoint(caseConf, deg){
-    const {a,b,rot} = caseConf.ellipse;
-    const t = Util.rad(deg);
-    const x = a*Math.cos(t), y = b*Math.sin(t);
-    const xr = x*Math.cos(rot) - y*Math.sin(rot);
-    const yr = x*Math.sin(rot) + y*Math.cos(rot);
-    return {x:xr, y:yr};
-  },
-  ellipseTangentAngle(caseConf, deg){
-    const {a,b,rot} = caseConf.ellipse;
-    const t=Util.rad(deg);
-    // derivative of ellipse param rotated
-    const dx = -a*Math.sin(t), dy = b*Math.cos(t);
-    const tx = dx*Math.cos(rot) - dy*Math.sin(rot);
-    const ty = dx*Math.sin(rot) + dy*Math.cos(rot);
-    return Math.atan2(ty, tx);
-  },
-  nearestAngleOnEllipse(caseConf, pt){
-    // Iterate over coarse + refine search for nearest angle
-    let bestDeg=0, bestD=1e9;
-    for(let d=0; d<360; d+=5){
-      const p = this.ellipsePoint(caseConf, d);
-      const dd = Util.dists(pt.x,pt.y,p.x,p.y);
-      if(dd<bestD){ bestD=dd; bestDeg=d; }
-    }
-    // refine
-    let step=1, iter=0;
-    while(step>0.05 && iter<60){
-      iter++;
-      let improved=false;
-      for(const o of [-step,0,step]){
-        const cand = bestDeg+o;
-        const p=this.ellipsePoint(caseConf,cand);
-        const dd=Util.dists(pt.x,pt.y,p.x,p.y);
-        if(dd<bestD){ bestD=dd; bestDeg=cand; improved=true; }
-      }
-      if(!improved) step/=2;
-    }
-    return ((bestDeg%360)+360)%360;
-  },
-  radialDepth(caseConf, pt){
-    const deg = this.nearestAngleOnEllipse(caseConf, pt);
-    const on = this.ellipsePoint(caseConf, deg);
-    const d = Util.dists(pt.x,pt.y,on.x,on.y);
-    const inward = 1; // coordinate-free; we take absolute distance as depth surrogate
-    return {deg, on, depth:d*inward};
-  },
-  segmentTag(deg){
-    // Define rough sector mapping for labeling (A1..A3, P1..P3)
-    // We'll define anterior roughly 120deg wide centered near +y if rotated; use canonical mapping after rotation ~ handled visually.
-    // For pedagogy we map param angle to 6 equal sectors, starting at 0° on +x, increasing CCW.
-    const idx = Math.floor((((deg%360)+360)%360) / 60); // 0..5
-    const map = ['A1','A2','A3','P3','P2','P1']; // order so that posterior is near negative y
-    return map[idx];
-  }
-};
-
-/* -------------------------------- Physics --------------------------------- */
-const Physics = {
-  // Simple Hooke-like tension; thread sag approximated with cubic Bezier
-  tension(thread){
-    // rest length based on straight distance along bites
-    let len=0;
-    const pts = [ ...thread.fixed, thread.tail ];
-    for(let i=1;i<pts.length;i++) len += Util.dists(pts[i-1].x,pts[i-1].y,pts[i].x,pts[i].y);
-    const rest = thread.rest || (thread.rest = Math.max(80, len*0.92));
-    const k = 1/Math.max(1, rest);
-    const ext = Math.max(0, len-rest);
-    thread.tension = Util.clamp(k*ext, 0, 1.5);
-    return thread.tension;
-  },
-  bezierForSegment(a,b,tension=0.2){
-    // control points perpendicular to segment to simulate bowing
-    const mx = (a.x+b.x)/2, my=(a.y+b.y)/2;
-    const ang = Math.atan2(b.y-a.y, b.x-a.x);
-    const bend = (1-tension)*0.35*Util.dists(a.x,a.y,b.x,b.y);
-    const nx = -Math.sin(ang), ny = Math.cos(ang);
-    const p0=a, p3=b;
-    const p1={ x: Util.lerp(a.x,mx,0.5)+nx*bend, y: Util.lerp(a.y,my,0.5)+ny*bend };
-    const p2={ x: Util.lerp(mx,b.x,0.5)+nx*bend, y: Util.lerp(my,b.y,0.5)+ny*bend };
-    return {p0,p1,p2,p3};
-  },
-  deformTissue(localPts, bite, strength=0.55){
-    // Applies a small, local "dent" near bite points; returns offsets (used transiently)
-    const offs=[];
-    for(const p of localPts){
-      const d = Util.dists(p.x,p.y,bite.entry.x,bite.entry.y);
-      const r = 40; // radius of influence
-      const s = Math.max(0, 1 - d/r);
-      const dx = (bite.entry.x - p.x)*s*0.08*strength;
-      const dy = (bite.entry.y - p.y)*s*0.08*strength;
-      offs.push({dx,dy});
-    }
-    return offs;
-  }
-};
-
-/* -------------------------------- Renderer -------------------------------- */
-const Renderer = {
-  init(){
-    const c = AppState.canvas = document.getElementById('sim');
-    const o = AppState.overlay = document.getElementById('overlay');
-    const ctx = AppState.ctx = c.getContext('2d');
-    const DPR = AppState.DPR = Math.max(1, Math.min(2, window.devicePixelRatio||1));
-    const rect = c.getBoundingClientRect();
-    AppState.width = Math.floor(rect.width*DPR);
-    AppState.height = Math.floor(rect.height*DPR);
-    c.width = AppState.width;
-    c.height = AppState.height;
-    c.style.width = rect.width+'px';
-    c.style.height = rect.height+'px';
-    ctx.scale(DPR, DPR);
-    // build overlay viewBox to match pixels
-    o.setAttribute('viewBox', `0 0 ${rect.width} ${rect.height}`);
-    // textures
-    this.noise = Util.makeNoise2D(20240830);
-    this.time = 0;
-    this._buildLabels();
-    this._buildRingHoles();
-    this.draw();
-  },
-  _buildLabels(){
-    const labels = document.getElementById('labels');
-    labels.innerHTML = '';
-    const make = (text, pos)=>{
-      const t = document.createElementNS('http://www.w3.org/2000/svg','text');
-      t.textContent=text; t.setAttribute('x', pos.x); t.setAttribute('y', pos.y);
-      t.setAttribute('fill', 'var(--text)'); t.setAttribute('font-size','12');
-      t.setAttribute('text-anchor','middle'); t.setAttribute('paint-order','stroke'); t.setAttribute('stroke','var(--panel)'); t.setAttribute('stroke-width','3');
-      labels.appendChild(t);
-    };
-    // sector labels
-    const conf = Cases.data[AppState.caseId];
-    const center = Geometry.toCanvas({x:0,y:0});
-    const R = 180;
-    const names = [['A1',30],['A2',90],['A3',150],['P3',210],['P2',270],['P1',330]];
-    for(const [name,deg] of names){
-      const p = Geometry.ellipsePoint(conf, deg);
-      const pc = Geometry.toCanvas({x:p.x*0.75, y:p.y*0.75});
-      make(name,{x:pc.x, y:pc.y});
-    }
-  },
-  _buildRingHoles(){
-    const hit = document.getElementById('hitLayer');
-    hit.innerHTML = '';
-    const conf = Cases.data[AppState.caseId];
-    const holes = conf.ring.holes;
-    const labels = document.getElementById('callouts');
-    labels.innerHTML='';
-    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
-    g.setAttribute('id','ringHolesG');
-    document.getElementById('hitLayer').appendChild(g);
-    const r = 2.75; // px radius
-    for(let i=0;i<holes;i++){
-      const deg = (i/holes)*360;
-      const p = Geometry.ellipsePoint(conf, deg);
-      const s = 0.85; // ring slightly inside annulus
-      const pc = Geometry.toCanvas({x:p.x*s,y:p.y*s});
-      const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
-      c.setAttribute('cx', pc.x); c.setAttribute('cy', pc.y); c.setAttribute('r', r);
-      c.setAttribute('fill','transparent'); c.setAttribute('stroke','none');
-      c.classList.add('hit');
-      c.dataset.holeIndex = i.toString();
-      c.addEventListener('mouseenter', ()=>{ c.setAttribute('fill','rgba(120,198,255,0.8)') });
-      c.addEventListener('mouseleave', ()=>{ c.setAttribute('fill','transparent') });
-      c.addEventListener('click', (e)=>{
-        UI.ringHoleClicked(i, pc);
-        e.stopPropagation();
-      });
-      g.appendChild(c);
-    }
-  },
-  resize(){
-    const c = AppState.canvas;
-    const rect = c.getBoundingClientRect();
-    const DPR = AppState.DPR;
-    AppState.width = Math.floor(rect.width*DPR);
-    AppState.height = Math.floor(rect.height*DPR);
-    c.width = AppState.width;
-    c.height = AppState.height;
-    c.style.width = rect.width+'px';
-    c.style.height = rect.height+'px';
-    AppState.ctx.setTransform(DPR,0,0,DPR,0,0);
-    AppState.overlay.setAttribute('viewBox', `0 0 ${rect.width} ${rect.height}`);
-    this._buildLabels();
-    this._buildRingHoles();
-  },
-  drawBackground(ctx){
-    const w = ctx.canvas.clientWidth, h = ctx.canvas.clientHeight;
-    ctx.save();
-    // Left atrium subtle trabeculations (procedural noise)
-    const scale = 90;
-    for(let y=0;y<h;y+=4){
-      for(let x=0;x<w;x+=4){
-        const n = this.noise(x/scale + this.time*0.0005, y/scale + 33);
-        const v = 12 + Math.floor(10*n);
-        ctx.fillStyle = `rgba(255,255,255,${(v/255)*0.08})`;
-        ctx.fillRect(x,y,4,4);
-      }
-    }
-    // Papillary silhouettes
-    ctx.globalAlpha = 0.08;
-    ctx.fillStyle = '#000';
-    for(let i=0;i<2;i++){
-      ctx.beginPath();
-      const cx = w/2 + (i?80:-80), cy = h/2 + 180;
-      ctx.ellipse(cx, cy, 40, 22, 0, 0, Math.PI*2);
-      ctx.fill();
-    }
-    ctx.restore();
-  },
-  drawAnnulus(ctx){
-    const conf = Cases.data[AppState.caseId];
-    const center = {x:AppState.width/2/AppState.DPR, y:AppState.height/2/AppState.DPR};
-    // Soft shadow
-    ctx.save();
-    ctx.translate(center.x, center.y);
-    ctx.shadowColor = '#0006'; ctx.shadowBlur = 20; ctx.shadowOffsetY=8;
-    ctx.beginPath();
-    for(let d=0; d<=360; d+=3){
-      const p = Geometry.ellipsePoint(conf, d);
-      if(d===0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x,p.y);
-    }
-    ctx.closePath();
-    ctx.fillStyle = 'rgba(0,0,0,0.12)';
-    ctx.fill();
-    ctx.restore();
-
-    // Annulus band & leaflets
-    ctx.save();
-    ctx.translate(center.x, center.y);
-
-    // Leaflets shading (anterior, posterior)
-    const gradA = ctx.createRadialGradient(0,0,50, 0,0,240);
-    gradA.addColorStop(0,'#ffffff12'); gradA.addColorStop(1,'#ffffff02');
-    ctx.fillStyle=gradA;
-    // approximate leaflets area
-    ctx.beginPath();
-    for(let d=30; d<=150; d+=3){
-      const p=Geometry.ellipsePoint(conf,d); if(d===30) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y);
-    }
-    for(let d=150; d>=30; d-=3){
-      const p=Geometry.ellipsePoint(conf,d); ctx.lineTo(p.x*0.92,p.y*0.92);
-    }
-    ctx.closePath(); ctx.fill();
-
-    ctx.beginPath();
-    for(let d=210; d<=330; d+=3){ const p=Geometry.ellipsePoint(conf,d); if(d===210) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y); }
-    for(let d=330; d>=210; d-=3){ const p=Geometry.ellipsePoint(conf,d); ctx.lineTo(p.x*0.94,p.y*0.94); }
-    ctx.closePath(); ctx.fill();
-
-    // Annular safe/caution band
-    for(let pass=0; pass<2; pass++){
-      ctx.beginPath();
-      const scale = pass? 0.88 : 1.0;
-      for(let d=0; d<=360; d+=2){
-        const p=Geometry.ellipsePoint(conf,d); if(d===0) ctx.moveTo(p.x*scale,p.y*scale); else ctx.lineTo(p.x*scale,p.y*scale);
-      }
-      ctx.closePath();
-      ctx.lineWidth = pass? 10: 16;
-      ctx.strokeStyle = pass? 'rgba(255,175,0,0.25)' : 'rgba(46, 204, 113, 0.22)';
-      ctx.stroke();
-    }
-
-    // Ideal path (dashed)
-    ctx.beginPath();
-    ctx.setLineDash([8,6]);
-    for(let d=0; d<=360; d+=4){
-      const p=Geometry.ellipsePoint(conf,d);
-      if(d===0) ctx.moveTo(p.x*0.95,p.y*0.95); else ctx.lineTo(p.x*0.95,p.y*0.95);
-    }
-    ctx.setLineDash([]);
-    ctx.lineWidth=1.2; ctx.strokeStyle='rgba(106,169,255,0.9)'; ctx.stroke();
-
-    // Ideal bite markers (blue dots)
-    ctx.fillStyle='rgba(80,160,255,0.95)';
-    const step = Cases.data[AppState.caseId].ideal.biteDeg;
-    for(let d=0; d<360; d+=step){
-      const p=Geometry.ellipsePoint(conf,d);
-      ctx.beginPath(); ctx.arc(p.x*0.94,p.y*0.94,2.2,0,Math.PI*2); ctx.fill();
-    }
-
-    // Forbidden masks
-    for(const mask of (conf.forbidden||[])){
-      ctx.beginPath();
-      for(let i=0;i<mask.poly.length;i++){
-        const p=mask.poly[i];
-        if(i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y);
-      }
-      ctx.closePath();
-      ctx.fillStyle='rgba(231,76,60,0.18)';
-      ctx.fill();
-      ctx.strokeStyle='rgba(231,76,60,0.5)'; ctx.lineWidth=1.5; ctx.stroke();
-    }
-
-    // Ring template
-    ctx.save();
-    ctx.globalAlpha = 0.85;
-    ctx.beginPath();
-    for(let d=0; d<=360; d+=3){
-      const p=Geometry.ellipsePoint(conf,d);
-      const s=0.85;
-      if(d===0) ctx.moveTo(p.x*s,p.y*s); else ctx.lineTo(p.x*s,p.y*s);
-    }
-    ctx.closePath();
-    const gradR = ctx.createLinearGradient(-200,-100, 200,140);
-    gradR.addColorStop(0,'#c9d3df'); gradR.addColorStop(1,'#8b9bb1');
-    ctx.strokeStyle = gradR;
-    ctx.lineWidth = 6;
-    ctx.stroke();
-    ctx.restore();
-
-    // Commissures callouts
-    const comm = conf.commissures;
-    ctx.fillStyle='rgba(255,255,255,0.8)'; ctx.font='12px sans-serif';
-    for(const [name,deg] of [['AL', comm.anterolateral],['PM', comm.posteromedial]]){
-      const p=Geometry.ellipsePoint(conf,deg);
-      ctx.beginPath(); ctx.arc(p.x,p.y,4,0,Math.PI*2); ctx.fill();
-      const lbl= name==='AL'?'Anterolateral commissure':'Posteromedial commissure';
-      const m = Util.measureText(ctx, lbl, '12px sans-serif');
-      ctx.fillStyle='rgba(0,0,0,0.3)';
-      ctx.fillRect(p.x+8,p.y-12,m.width+8,16);
-      ctx.fillStyle='#fff'; ctx.fillText(lbl, p.x+12, p.y+1);
-      ctx.fillStyle='rgba(255,255,255,0.8)';
-    }
-
-    ctx.restore();
-  },
-  drawSutures(ctx){
-    // render placed bites & threads
-    const dpr = AppState.DPR;
-    const pledged = (b)=> b.pledged;
-    ctx.save();
-    ctx.translate(AppState.width/2/dpr, AppState.height/2/dpr);
-    for(const b of AppState.bites){
-      // Arc (needle trajectory) approximate
-      ctx.beginPath();
-      ctx.moveTo(b.entry.x, b.entry.y);
-      const mid={ x: (b.entry.x+b.exit.x)/2, y:(b.entry.y+b.exit.y)/2 };
-      const ang = Math.atan2(b.exit.y-b.entry.y, b.exit.x-b.entry.x) - Math.PI/2;
-      const r= Util.dists(b.entry.x,b.entry.y,b.exit.x,b.exit.y)*0.35;
-      const c1={ x: mid.x + Math.cos(ang)*r, y: mid.y + Math.sin(ang)*r };
-      ctx.quadraticCurveTo(c1.x,c1.y, b.exit.x, b.exit.y);
-      ctx.lineWidth=2.2;
-      ctx.strokeStyle='rgba(106,169,255,0.85)';
-      ctx.stroke();
-
-      // Entry/Exit markers
-      ctx.fillStyle='#fff'; ctx.strokeStyle='#0003';
-      for(const p of [b.entry, b.exit]){
-        ctx.beginPath(); ctx.arc(p.x,p.y,3,0,Math.PI*2); ctx.fill(); ctx.stroke();
-      }
-
-      // Pledget
-      if(pledged(b)){
-        ctx.fillStyle='rgba(230,230,230,0.95)';
-        const u = Math.atan2(b.exit.y-b.entry.y, b.exit.x-b.entry.x);
-        const px = (b.entry.x+b.exit.x)/2, py=(b.entry.y+b.exit.y)/2;
-        ctx.save(); ctx.translate(px,py); ctx.rotate(u);
-        ctx.fillRect(-6,-3,12,6);
-        ctx.restore();
-      }
-    }
-
-    // Draw thread segments with tension effect
-    for(const t of AppState.threads){
-      const pts = [ ...t.fixed, t.tail ];
-      for(let i=1;i<pts.length;i++){
-        const a=pts[i-1], b=pts[i];
-        const {p0,p1,p2,p3} = Physics.bezierForSegment(a,b, Util.clamp(t.tension, 0.05, 1.0));
-        ctx.beginPath();
-        ctx.moveTo(p0.x,p0.y);
-        ctx.bezierCurveTo(p1.x,p1.y,p2.x,p2.y,p3.x,p3.y);
-        ctx.lineWidth=1.8;
-        ctx.strokeStyle='rgba(106,169,255,0.8)';
-        ctx.stroke();
-      }
-      // Tail handle
-      ctx.fillStyle='rgba(120,198,255,0.85)';
-      ctx.beginPath(); ctx.arc(t.tail.x,t.tail.y,4,0,Math.PI*2); ctx.fill();
-    }
-    ctx.restore();
-  },
-  drawGhost(ctx){
-    if(!AppState.ghost || AppState.settings.hintLevel<3) return;
-    const conf = Cases.data[AppState.caseId];
-    ctx.save();
-    ctx.translate(AppState.width/2/AppState.DPR, AppState.height/2/AppState.DPR);
-    ctx.globalAlpha = 0.25;
-    ctx.beginPath();
-    for(let d=0; d<=360; d+=1){
-      const p=Geometry.ellipsePoint(conf,d);
-      const s=0.94;
-      if(d===0) ctx.moveTo(p.x*s,p.y*s); else ctx.lineTo(p.x*s,p.y*s);
-    }
-    ctx.strokeStyle='#5eead4';
-    ctx.lineWidth=6;
-    ctx.stroke();
-    ctx.restore();
-  },
-  drawHeatmap(ctx){
-    // show if over-tension events exist (transient)
-    const over = AppState.events.slice(-20).some(e=>e.type==='tensionOver' && AppState.now - e.time < 2500);
-    if(!over) return;
-    const w = ctx.canvas.clientWidth, h = ctx.canvas.clientHeight;
-    ctx.save();
-    const grad = ctx.createRadialGradient(w/2,h/2,160, w/2,h/2,380);
-    grad.addColorStop(0, 'rgba(255,59,48,0.12)');
-    grad.addColorStop(1, 'rgba(255,59,48,0.02)');
-    ctx.fillStyle=grad;
-    ctx.fillRect(0,0,w,h);
-    ctx.restore();
-  },
-  drawInstruments(ctx){
-    // Simple vector instruments (needle driver & forceps)
-    const dpr = AppState.DPR;
-    const tool = AppState.instruments.current;
-    const mouse = UI.mouseWorld || {x:0,y:0};
-    const pt = {x: mouse.x, y: mouse.y};
-    const c = Geometry.toCanvas(pt);
-    ctx.save();
-    // subtle shadow
-    ctx.shadowColor='#0005'; ctx.shadowBlur=8; ctx.shadowOffsetY=4;
-    ctx.translate(c.x, c.y);
-    ctx.rotate( Math.sin(this.time*0.003)*0.05 );
-    if(tool==='needle'){
-      ctx.fillStyle='#cbd5e1';
-      ctx.strokeStyle='#475569';
-      ctx.lineWidth=1.3;
-      ctx.beginPath();
-      ctx.moveTo(-22,-6); ctx.lineTo(24, -2); ctx.lineTo(22, 6); ctx.lineTo(-22,2); ctx.closePath();
-      ctx.fill(); ctx.stroke();
-      // needle tip
-      ctx.beginPath(); ctx.arc(26,-1.5, 3.5, Math.PI*0.2, Math.PI*1.6); ctx.strokeStyle='#9aa6b2'; ctx.stroke();
-    } else if(tool==='forceps'){
-      ctx.fillStyle='#9aa6b2';
-      ctx.beginPath(); ctx.roundRect(-30,-4,60,8,4); ctx.fill();
-      ctx.beginPath(); ctx.roundRect(-30,-1,60,2,1); ctx.fillStyle='#e5e7eb'; ctx.fill();
-    } else {
-      ctx.fillStyle='#94a3b8';
-      ctx.beginPath(); ctx.roundRect(-16,-16,32,32,6); ctx.fill();
-      ctx.fillStyle='#ffffffaa'; ctx.fillRect(-6,-6,12,12);
-    }
-    ctx.restore();
-  },
-  draw(){
-    const ctx = AppState.ctx; const dpr=AppState.DPR;
-    if(!ctx) return;
-    const w = ctx.canvas.clientWidth, h = ctx.canvas.clientHeight;
-    ctx.clearRect(0,0,w,h);
-    this.drawBackground(ctx);
-    this.drawAnnulus(ctx);
-    this.drawGhost(ctx);
-    this.drawSutures(ctx);
-    this.drawHeatmap(ctx);
-    this.drawInstruments(ctx);
-  },
-  loop(ts){
-    Renderer.time = ts||0;
-    Renderer.draw();
-    requestAnimationFrame(Renderer.loop);
-  }
-};
-
-/* --------------------------------- Audio ---------------------------------- */
-const Audio = {
-  ctx:null, gain:null, enabled:false,
-  init(){
-    try{
-      this.ctx = new (window.AudioContext||window.webkitAudioContext)();
-      this.gain = this.ctx.createGain(); this.gain.gain.value=0.0; // muted by default
-      this.gain.connect(this.ctx.destination);
-    }catch(e){ console.warn('Audio not available'); }
-  },
-  setEnabled(on){
-    this.enabled = on;
-    if(!this.ctx) return;
-    if(this.ctx.state==='suspended' && on) this.ctx.resume();
-    this.gain.gain.value = on ? 0.06 : 0.0;
-  },
-  click(){
-    if(!this.enabled||!this.ctx) return;
-    const o = this.ctx.createOscillator(); const g=this.ctx.createGain();
-    o.type='triangle'; o.frequency.value=440;
-    g.gain.value=0.12;
-    o.connect(g); g.connect(this.gain);
-    o.start();
-    setTimeout(()=>{ o.stop(); }, 80);
-  },
-  pull(){
-    if(!this.enabled||!this.ctx) return;
-    const o=this.ctx.createOscillator(); const g=this.ctx.createGain();
-    o.type='sine'; o.frequency.value=180;
-    g.gain.setValueAtTime(0.0, this.ctx.currentTime);
-    g.gain.linearRampToValueAtTime(0.2, this.ctx.currentTime+0.02);
-    g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime+0.25);
-    o.connect(g); g.connect(this.gain); o.start();
-    setTimeout(()=>o.stop(), 260);
-  }
-};
-
-/* ----------------------------------- AI ----------------------------------- */
-const AI = {
-  lastMsg:'',
-  evalBite(bite){
-    const conf = Cases.data[AppState.caseId];
-    // depth: distance to ideal band center from annulus
-    const depthBand = (conf.ideal.depthMM.min + conf.ideal.depthMM.max)/2;
-    const entryR = Geometry.radialDepth(conf, bite.entry);
-    const exitR = Geometry.radialDepth(conf, bite.exit);
-    const depth = (entryR.depth + exitR.depth)/2 / 10; // pixels->mm approx scale (~10px/mm)
-    const depthErr = Math.abs(depth - depthBand);
-    // angle error: difference between local tangent and bite vector
-    const localAngle = Geometry.ellipseTangentAngle(conf, (entryR.deg+exitR.deg)/2);
-    const biteAngle = Math.atan2(bite.exit.y-bite.entry.y, bite.exit.x-bite.entry.x);
-    const angleErr = Math.abs(Util.deg(biteAngle - localAngle));
-    const angNorm = ((angleErr+540)%360)-180; // normalize
-    const angleError = Math.abs(angNorm);
-    // spacing error: vs previous
-    let spacingErr = 0;
-    if(AppState.bites.length>1){
-      const prev = AppState.bites[AppState.bites.length-2];
-      const curAng = (entryR.deg+exitR.deg)/2;
-      const prevR = Geometry.radialDepth(conf, prev.entry);
-      const prevAng = (prevR.deg + Geometry.radialDepth(conf,prev.exit).deg)/2;
-      spacingErr = Math.abs(curAng - prevAng) - conf.ideal.biteDeg;
-    }
-    // commissure stricter thresholds
-    const nearCom = (deg)=>{
-      const c1 = conf.commissures.anterolateral, c2=conf.commissures.posteromedial;
-      const d1 = Math.min(Math.abs(deg-c1), 360-Math.abs(deg-c1));
-      const d2 = Math.min(Math.abs(deg-c2), 360-Math.abs(deg-c2));
-      return (d1<10)||(d2<10);
-    };
-    const midDeg = (entryR.deg+exitR.deg)/2;
-    const stricter = nearCom(midDeg);
-    const tolAngle = conf.thresholds.angleTol - (stricter?3:0);
-    const tolDepth = conf.thresholds.depthTol - (stricter?0.3:0);
-    // Forbidden zone check
-    let inForbidden=false;
-    for(const mask of conf.forbidden){
-      if(Util.pointInPoly(bite.entry, mask.poly) || Util.pointInPoly(bite.exit, mask.poly)){
-        inForbidden = true;
-        break;
-      }
-    }
-    // Build feedback
-    bite.depthMM = depth; bite.angleErr = angleError; bite.spacingErr = spacingErr;
-    bite.flags = bite.flags||{}; bite.flags.forbidden = inForbidden;
-    bite.segment = Geometry.segmentTag(midDeg);
-    const errs=[];
-    if(depthErr>tolDepth) errs.push({type:'depth', delta: depthErr});
-    if(angleError>tolAngle) errs.push({type:'angle', delta: angleError});
-    if(Math.abs(spacingErr) > conf.ideal.biteDeg*0.5) errs.push({type:'spacing', delta: spacingErr});
-    if(inForbidden) errs.push({type:'forbidden', delta: 1});
-    const msg = this.messageFor(errs, {depthBand, tolAngle, tolDepth, seg:bite.segment, midDeg});
-    UI.updateMetrics({ depthErr, angleError, spacingErr, tension: UI.currentTension() });
-    UI.addErrorMessages(errs, bite);
-    this.lastMsg = msg;
-    UI.setCoachStatus(msg, errs);
-    return errs;
-  },
-  messageFor(errs, ctx){
-    if(!errs.length) return `Good placement in ${ctx.seg}. Depth ~${Util.fmt(ctx.depthBand)} mm and alignment within ±${ctx.tolAngle}°. Proceed to next bite.`;
-    const primary = errs[0].type;
-    const byType = {
-      depth: ()=> `Entry too ${'deep'} by ${Util.fmt(errs[0].delta,1)} mm; aim for ${Util.fmt(ctx.depthBand,1)} mm depth in ${ctx.seg}. Adjust ${Util.fmt(errs[0].delta*0.8,1)} mm toward atrial side.`,
-      angle: ()=> `Angle off by ${Util.fmt(errs[0].delta,1)}°. Keep needle tangent to annulus (±${ctx.tolAngle}°). Rotate wrist slightly ${errs[0].delta>0?'counter-':'clockwise'}.`,
-      spacing: ()=> `Spacing drift of ${Util.fmt(errs[0].delta,1)}°. Maintain uniform spacing; use ghost dots as guide.`,
-      forbidden: ()=> `Bite intersects a forbidden posterior band. Reposition to a green zone — avoid calcified segments.`
-    };
-    return byType[primary] ? byType[primary]() : 'Adjust placement to match depth, angle, and spacing tolerances.';
-  },
-  onTension(t){
-    const conf = Cases.data[AppState.caseId];
-    const over = t > conf.thresholds.tensionMax;
-    if(over){
-      UI.warn('Over‑tension detected; reduce pull until heatmap clears. Recommend ~15% less.');
-      AppState.events.push({time:Date.now(), type:'tensionOver', info:{t}});
-      AppState.errorTrend.push(1.0);
-    } else {
-      AppState.errorTrend.push(0.2);
-    }
-    UI.updateMetrics({ tension: t });
-  },
-  nextAction(){
-    // Based on step & last error, propose action
-    const step = AppState.stepIndex;
-    const last = AppState.bites[AppState.bites.length-1];
-    if(step<=3 && !last) return UI.toast('Define the first bite at P2 safe zone. Click to set entry, drag to set exit.', 'warn');
-    const errs = (last?.flags && (last.angleErr>0 || last.flags.forbidden)) ? 1 : 0;
-    if(errs){
-      UI.toast('Reposition entry (Ctrl+drag) or Undo then re‑place with improved orientation.', 'warn');
-    } else {
-      UI.toast('Proceed to next bite and maintain even spacing.', 'ok');
-    }
-  }
-};
-
-/* -------------------------------- Scoring --------------------------------- */
-const Scoring = {
-  compute(){
-    const bites = AppState.bites;
-    const weights = AppState.settings.weights;
-    const conf = Cases.data[AppState.caseId];
-    const mmPerPx = 0.1; // heuristic used earlier (10px/mm => 0.1mm/px); keep consistent
-    // Precision
-    const depthMAE = bites.length? bites.reduce((s,b)=>s+Math.abs(b.depthMM - (conf.ideal.depthMM.min+conf.ideal.depthMM.max)/2),0)/bites.length : 0;
-    const angleMAE = bites.length? bites.reduce((s,b)=>s+Math.abs(b.angleErr||0),0)/bites.length : 0;
-    const spacingVals = [];
-    for(let i=1;i<bites.length;i++){
-      const di = Geometry.radialDepth(conf,bites[i].entry).deg;
-      const dj = Geometry.radialDepth(conf,bites[i-1].entry).deg;
-      spacingVals.push(Math.abs(di-dj));
-    }
-    const meanSpacing = spacingVals.length? spacingVals.reduce((a,b)=>a+b,0)/spacingVals.length : conf.ideal.biteDeg;
-    const sdSpacing = spacingVals.length? Math.sqrt(spacingVals.reduce((a,v)=>a+(v-meanSpacing)**2,0)/spacingVals.length) : 0;
-    const cv = meanSpacing ? sdSpacing/meanSpacing : 0;
-    const commissurePen = bites.filter(b=>{
-      const d = (Geometry.radialDepth(conf,b.entry).deg+Geometry.radialDepth(conf,b.exit).deg)/2;
-      const c1=conf.commissures.anterolateral, c2=conf.commissures.posteromedial;
-      const d1 = Math.min(Math.abs(d-c1), 360-Math.abs(d-c1));
-      const d2 = Math.min(Math.abs(d-c2), 360-Math.abs(d-c2));
-      return d1<10 || d2<10;
-    }).reduce((s,b)=> s + (Math.max(0, (b.angleErr - (conf.thresholds.angleTol-3)))/10), 0);
-    let pDepth = Math.max(0, 15 - 1.5*depthMAE);
-    let pAngle = Math.max(0, 10 - (angleMAE/ (conf.thresholds.angleTol*1.8))*10 );
-    let pSpacing = Math.max(0, 10 - cv*10);
-    let pCom = Math.max(0, 5 - commissurePen);
-    const precision = Util.clamp(pDepth+pAngle+pSpacing+pCom, 0, 40);
-
-    // Tissue Respect
-    const overT = AppState.events.filter(e=>e.type==='tensionOver').length;
-    const overTime = 0.1*(AppState.events.filter(e=>e.type==='tensionOver').length); // rough
-    const forb = bites.filter(b=>b.flags?.forbidden).length;
-    const rep = bites.filter(b=>b.flags?.repierce).length;
-    let tOver = Math.max(0, 10 - (2*overT + overTime));
-    let tForb = Math.max(0, 10 - 5*forb);
-    let tRep = Math.max(0, 5 - 2*rep);
-    const tissue = Util.clamp(tOver+tForb+tRep, 0, 25);
-
-    // Ring Integration
-    const mismap = bites.filter(b=> b.ringHole==null).length; // simple: not mapped yet
-    const centroidErr = 0.8; // placeholder
-    const knotShift = 0.5; // placeholder
-    let rMap = Math.max(0, 10 - 2*mismap);
-    let rSeat = Math.max(0, 5 - centroidErr);
-    let rKnot = Math.max(0, 5 - knotShift);
-    const ring = Util.clamp(rMap+rSeat+rKnot, 0, 20);
-
-    // Efficiency
-    const timeSec = AppState.elapsed/1000;
-    const ref = 8*60; // 8 minutes ref
-    let eTime = 8 - Math.abs((timeSec-ref)/ref)*8;
-    eTime = Util.clamp(eTime, 0, 8);
-    const undos = AppState.events.filter(e=>e.type==='undo').length;
-    const skips = Math.max(0, AppState.events.filter(e=>e.type==='skipStep').length);
-    let eUndo = Math.max(0, 4 - Math.max(0,undos-4)*0.5);
-    let eStep = Math.max(0, 3 - skips);
-    const eff = Util.clamp(eTime + eUndo + eStep, 0, 15);
-
-    // Total weighted to 100 (weights already sum 100 by default)
-    const total = Util.clamp(
-      (precision/40)*AppState.settings.weights.precision +
-      (tissue/25)*AppState.settings.weights.tissue +
-      (ring/20)*AppState.settings.weights.ring +
-      (eff/15)*AppState.settings.weights.eff
-    ,0,100);
-
-    const grade = total>=90?'A': total>=80?'B': total>=70?'C': total>=60?'D':'F';
-    const out = { precision, tissue, ring, eff, total, grade,
-      components:{ pDepth,pAngle,pSpacing,pCom,tOver,tForb,tRep,rMap,rSeat,rKnot,eTime,eUndo,eStep }
-    };
-    AppState.score = out;
-    UI.updateRadar(out);
-    UI.updateScoreBadge(out.total, out.grade);
-    return out;
-  }
-};
-
-/* ---------------------------------- UI ------------------------------------ */
-const UI = {
-  mouse:{x:0,y:0, down:false}, mouseWorld:null,
-  placing:false, tempEntry:null,
-  draggingTail:null,
-  init(){
-    document.getElementById('year').textContent = String(new Date().getFullYear());
-    document.getElementById('version').textContent = AppState.version;
-
-    // Apply stored settings
-    document.getElementById('caseSelect').value = AppState.caseId;
-    document.getElementById('themeToggle').value = AppState.settings.theme;
-    document.getElementById('modeToggle').checked = (AppState.mode==='practice');
-    document.getElementById('modeLabel').textContent = AppState.mode==='practice'?'Practice':'Training';
-    document.getElementById('hintRange').value = AppState.settings.hintLevel;
-    document.getElementById('audioToggle').textContent = AppState.settings.audio? '🔊 Sound' : '🔈 Muted';
-    document.getElementById('ringSize').value = String(Cases.data[AppState.caseId].ring.size);
-
-    // Build stepper
-    const stepper = document.getElementById('stepper');
-    stepper.innerHTML = '';
-    for(let i=0;i<AppState.trainingSteps.length;i++){
-      const d=document.createElement('div'); d.className='dot'+(i===0?' active':''); d.title=AppState.trainingSteps[i];
-      stepper.appendChild(d);
-    }
-    this.updateStepUI();
-
-    // Listeners
-    window.addEventListener('resize', ()=> Renderer.resize());
-    const canvas = AppState.canvas;
-    const viewport = document.getElementById('viewport');
-    viewport.addEventListener('mousemove', this.onMove);
-    viewport.addEventListener('mousedown', this.onDown);
-    viewport.addEventListener('mouseup', this.onUp);
-    viewport.addEventListener('mouseleave', this.onLeave);
-    viewport.addEventListener('contextmenu', e=>e.preventDefault());
-
-    // Top bar
-    document.getElementById('modeToggle').addEventListener('change', (e)=>{
-      AppState.mode = e.target.checked? 'practice':'training';
-      document.body.dataset.mode = AppState.mode;
-      document.getElementById('modeLabel').textContent = AppState.mode==='practice'?'Practice':'Training';
-      UI.toast(AppState.mode==='practice'?'Practice mode: free order with guidance.':'Training mode: follow step‑by‑step.', 'ok');
-    });
-    document.getElementById('caseSelect').addEventListener('change', (e)=>{
-      AppState.caseId = e.target.value; Storage.save();
-      Renderer._buildLabels(); Renderer._buildRingHoles();
-      UI.toast('Case switched to: '+Cases.data[AppState.caseId].title);
-      UI.resetCase(true);
-    });
-    document.getElementById('themeToggle').addEventListener('change', (e)=>{
-      const t=e.target.value; document.body.classList.toggle('light', t==='light');
-      document.body.dataset.theme=t; AppState.settings.theme=t; Storage.save();
-    });
-    document.getElementById('resetBtn').addEventListener('click', ()=> UI.resetCase());
-    document.getElementById('exportPNGBtn').addEventListener('click', ()=> Export.exportPNG());
-    document.getElementById('downloadReportBtn').addEventListener('click', ()=> Export.downloadReport());
-    document.getElementById('ghostToggle').addEventListener('click', ()=>{
-      AppState.ghost = !AppState.ghost;
-      document.getElementById('ghostToggle').textContent = 'Ghost: '+(AppState.ghost?'On':'Off');
-    });
-    document.getElementById('audioToggle').addEventListener('click', ()=>{
-      AppState.settings.audio = !AppState.settings.audio; Audio.setEnabled(AppState.settings.audio);
-      document.getElementById('audioToggle').textContent = AppState.settings.audio? '🔊 Sound' : '🔈 Muted';
-      Storage.save();
-    });
-    document.getElementById('aboutBtn').addEventListener('click', ()=> this.showModal('aboutModal'));
-    document.getElementById('helpBtn').addEventListener('click', ()=> this.showModal('helpModal'));
-    document.getElementById('licenseLink').addEventListener('click', (e)=>{ e.preventDefault(); this.showModal('licenseModal') });
-
-    // Left panel controls
-    document.getElementsByName('instrument').forEach(r=> r.addEventListener('change', (e)=> AppState.instruments.current = e.target.value));
-    document.getElementById('sutureType').addEventListener('change', (e)=> AppState.instruments.sutureType = e.target.value);
-    document.getElementById('needleSize').addEventListener('change', (e)=> AppState.instruments.needle = e.target.value);
-    document.getElementById('ringSize').addEventListener('change', (e)=> AppState.instruments.ringSize = Number(e.target.value) );
-    document.getElementById('hintRange').addEventListener('input', (e)=>{ AppState.settings.hintLevel = Number(e.target.value); Storage.save() });
-
-    // Right panel buttons
-    document.getElementById('nextAction').addEventListener('click', ()=> AI.nextAction());
-
-    // Center controls
-    document.getElementById('playDemo').addEventListener('click', ()=> UI.playDemo(1));
-    document.getElementById('playDemoSlow').addEventListener('click', ()=> UI.playDemo(0.5));
-    document.getElementById('finishBtn').addEventListener('click', ()=> UI.finishCase());
-
-    // Bottom bar
-    document.getElementById('nextBtn').addEventListener('click', ()=> UI.nextStep());
-    document.getElementById('backBtn').addEventListener('click', ()=> UI.prevStep());
-    document.getElementById('undoBtn').addEventListener('click', ()=> UI.undo());
-    document.getElementById('redoBtn').addEventListener('click', ()=> UI.redo());
-    document.getElementById('caseNotes').addEventListener('input', (e)=> AppState.caseNotes = e.target.value );
-
-    // Hotkeys
-    window.addEventListener('keydown', UI.onKey);
-
-    // Timer
-    UI.resetTimer(true);
-
-    // Build SVG overlay content
-    Renderer._buildLabels();
-    Renderer._buildRingHoles();
-
-    // Initial coach
-    UI.setCoachStatus('Welcome. Step 1: Orientation — review sectors A1–A3 / P1–P3 and commissures. Toggle Ghost to preview the target path.');
-
-    // Acceptance tests populate
-    setTimeout(()=> Tests.run(), 100);
-  },
-  setCoachStatus(text, errs){
-    const el = document.getElementById('coachStatus');
-    el.textContent = text;
-    el.className = 'msg' + (errs?.some(e=>e.type==='forbidden')? ' danger' : (errs?.length? ' warn':'' ));
-  },
-  updateMetrics(partial){
-    if(partial.depthErr!=null) document.getElementById('mDepth').textContent = Util.fmt(partial.depthErr,1)+' mm';
-    if(partial.angleError!=null) document.getElementById('mAngle').textContent = Util.fmt(partial.angleError,1)+' °';
-    if(partial.spacingErr!=null){
-      const cv = Math.abs(partial.spacingErr);
-      document.getElementById('mSpacing').textContent = Util.fmt(cv,2);
-    }
-    if(partial.tension!=null) document.getElementById('mTension').textContent = Util.fmt(partial.tension,2);
-  },
-  addErrorMessages(errs, bite){
-    const el = document.getElementById('errors');
-    if(!errs.length){ el.textContent = 'No errors for this bite. Good job.'; return; }
-    el.innerHTML = '';
-    for(const e of errs){
-      const div = document.createElement('div');
-      const why = {
-        depth:'Depth too shallow/deep risks leaflet detachment or inadequate purchase.',
-        angle:'Tangential alignment reduces tearing and optimizes tissue engagement.',
-        spacing:'Uniform spacing helps even load distribution and ring seating.',
-        forbidden:'Calcified segments are brittle; avoid passing sutures here.'
-      }[e.type];
-      const fix = {
-        depth:'Adjust entry ~0.8–1.2 mm toward atrial side; keep within green band.',
-        angle:'Rotate wrist to align needle with local tangent (±10–12°).',
-        spacing:'Use ghost dots/snap to maintain spacing; measure relative angle.',
-        forbidden:'Move bite outside red mask; choose green or amber zone.'
-      }[e.type];
-      const thresholds = {
-        depth:`Target band ${Cases.data[AppState.caseId].ideal.depthMM.min}–${Cases.data[AppState.caseId].ideal.depthMM.max} mm`,
-        angle:`Tolerance ±${Cases.data[AppState.caseId].thresholds.angleTol}°`,
-        spacing:`Ideal arc step ~${Cases.data[AppState.caseId].ideal.biteDeg}°`,
-        forbidden:`Any bite within masked polygon → critical`
-      }[e.type];
-      div.innerHTML = `<strong>${e.type.toUpperCase()}</strong> — ${why}<br/><em>How to correct:</em> ${fix}<br/><span class="small">Threshold: ${thresholds}</span>`;
-      el.appendChild(div);
-    }
-  },
-  updateRadar(score){
-    // radar chart & sparkline
-    const r = document.getElementById('radar');
-    const s = document.getElementById('sparkline');
-    const R = r.getContext('2d'); const S = s.getContext('2d');
-    const w = r.width = r.clientWidth, h = r.height = r.clientHeight;
-    const cx=w/2, cy=h/2; const rad=Math.min(w,h)*0.36;
-    R.clearRect(0,0,w,h);
-    R.strokeStyle='rgba(255,255,255,0.25)';
-    for(let i=1;i<=4;i++){
-      R.beginPath(); R.arc(cx,cy, rad*i/4, 0, Math.PI*2); R.stroke();
-    }
-    const axes = [
-      {name:'Precision', val:score.precision/40},
-      {name:'Tissue', val:score.tissue/25},
-      {name:'Ring', val:score.ring/20},
-      {name:'Efficiency', val:score.eff/15},
-    ];
-    R.beginPath();
-    axes.forEach((ax,i)=>{
-      const a = -Math.PI/2 + i*(Math.PI*2/axes.length);
-      const x = cx + Math.cos(a)*rad*ax.val;
-      const y = cy + Math.sin(a)*rad*ax.val;
-      if(i===0) R.moveTo(x,y); else R.lineTo(x,y);
-      // axis lines
-      R.moveTo(cx,cy); R.lineTo(cx+Math.cos(a)*rad, cy+Math.sin(a)*rad);
-    });
-    R.closePath();
-    R.fillStyle='rgba(120,198,255,0.25)'; R.strokeStyle='rgba(120,198,255,0.85)';
-    R.fill(); R.stroke();
-
-    // Sparkline
-    const W = s.width = s.clientWidth, H=s.height = s.clientHeight;
-    S.clearRect(0,0,W,H);
-    S.beginPath();
-    const trend = AppState.errorTrend.slice(-120);
-    for(let i=0;i<trend.length;i++){
-      const x = (i/(trend.length-1||1))*(W-10)+5;
-      const y = H - Util.clamp(trend[i],0,1)* (H-10) - 5;
-      if(i===0) S.moveTo(x,y); else S.lineTo(x,y);
-    }
-    S.strokeStyle='#f1c40f'; S.lineWidth=2; S.stroke();
-  },
-  updateScoreBadge(total, grade){
-    const el=document.getElementById('scoreBadge');
-    el.textContent = `Score: ${Util.fmt(total,0)} (${grade})`;
-    el.className = 'info-chip ' + (grade==='A'?'ok': grade==='B'?'ok': grade==='C'?'warn':'danger');
-  },
-  onMove:(e)=>{
-    const rect = AppState.canvas.getBoundingClientRect();
-    UI.mouse.x = (e.clientX - rect.left);
-    UI.mouse.y = (e.clientY - rect.top);
-    UI.mouseWorld = Geometry.fromCanvas({x:UI.mouse.x*AppState.DPR, y:UI.mouse.y*AppState.DPR});
-    if(UI.draggingTail){
-      UI.draggingTail.tail = UI.mouseWorld;
-      const t = Physics.tension(UI.draggingTail);
-      AI.onTension(t);
-      Audio.pull();
-      Renderer.draw();
-    }
-  },
-  onDown:(e)=>{
-    if(e.button===2){ return } // ignore right click
-    UI.mouse.down = true;
-    const tool = AppState.instruments.current;
-    if(tool==='suture'){
-      // check near a tail
-      const tail = AppState.threads.find(t=> Util.dist(Geometry.toCanvas(t.tail), {x:UI.mouse.x*AppState.DPR, y:UI.mouse.y*AppState.DPR})<12 );
-      if(tail){ UI.draggingTail = tail; return; }
-    }
-    // Start placing a bite
-    UI.placing = true;
-    UI.tempEntry = UI.mouseWorld;
-    Audio.click();
-  },
-  onUp:(e)=>{
-    UI.mouse.down = false;
-    if(UI.draggingTail){
-      UI.draggingTail = null;
-      return;
-    }
-    if(!UI.placing) return;
-    const entry = UI.tempEntry, exit = UI.mouseWorld;
-    UI.placing = false;
-    UI.tempEntry = null;
-    const bite = { id: Util.uid(), entry, exit, pledged: (AppState.instruments.sutureType==='pledgeted'), time:Date.now() };
-    AppState.bites.push(bite);
-    // Build a thread for this bite
-    AppState.threads.push({ id: bite.id, fixed: [entry, exit], tail: {...exit}, tension:0 });
-    // Evaluate
-    const errs = AI.evalBite(bite);
-    // Record event
-    AppState.events.push({ time: Date.now(), type:'bite', info:{biteId:bite.id, errs:errs.map(e=>e.type)} });
-    // Update UI
-    Renderer.draw();
-  },
-  onLeave:()=>{ UI.mouse.down=false; UI.draggingTail=null; UI.placing=false; },
-  ringHoleClicked(idx, ptCanvas){
-    // map the last thread tail to this hole
-    const last = AppState.threads[AppState.threads.length-1];
-    if(!last){ UI.toast('Place a suture bite before passing through ring.', 'warn'); return; }
-    // move tail to ring hole position (world coords)
-    const world = Geometry.fromCanvas({x:ptCanvas.x*AppState.DPR, y:ptCanvas.y*AppState.DPR});
-    last.tail = world;
-    const t = Physics.tension(last);
-    const bite = AppState.bites.find(b=>b.id===last.id);
-    if(bite){ bite.ringHole = idx; }
-    Renderer.draw();
-    UI.toast('Passed through ring hole #' + (idx+1), 'ok');
-  },
-  playDemo(speed=1){
-    // animate through ideal points
-    const conf = Cases.data[AppState.caseId];
-    const degs = [];
-    const step = conf.ideal.biteDeg;
-    for(let d=240; d>=120; d-=step){ degs.push(d) } // around posterior then anterior (simple)
-    let i=0;
-    const tick=()=>{
-      if(i>=Math.min(12, degs.length)) return;
-      const p1 = Geometry.ellipsePoint(conf, degs[i]);
-      const p2 = Geometry.ellipsePoint(conf, degs[i]-6);
-      const bite={ id:Util.uid(), entry:{x:p1.x*0.94,y:p1.y*0.94}, exit:{x:p2.x*0.94,y:p2.y*0.94}, pledged:true, time:Date.now() };
-      AppState.bites.push(bite);
-      AppState.threads.push({ id:bite.id, fixed:[bite.entry,bite.exit], tail:{...bite.exit}, tension:0 });
-      AI.evalBite(bite);
-      Renderer.draw();
-      i++;
-      setTimeout(tick, 320/speed);
-    };
-    tick();
-  },
-  nextStep(){
-    if(AppState.mode==='training'){
-      if(AppState.stepIndex < AppState.trainingSteps.length-1){
-        AppState.stepIndex++;
-        AppState.events.push({time:Date.now(), type:'nextStep'});
-        this.updateStepUI();
-      }
-    } else {
-      AppState.events.push({time:Date.now(), type:'skipStep'});
-      UI.toast('Practice mode: steps are advisory. Proceed freely.', 'ok');
-    }
-  },
-  prevStep(){
-    if(AppState.stepIndex>0){
-      AppState.stepIndex--;
-      AppState.events.push({time:Date.now(), type:'prevStep'});
-      this.updateStepUI();
-    }
-  },
-  updateStepUI(){
-    const dots = Array.from(document.getElementById('stepper').children);
-    dots.forEach((d,i)=>{
-      d.classList.toggle('active', i===AppState.stepIndex);
-      d.classList.toggle('done', i<AppState.stepIndex);
-    });
-    document.getElementById('stepBadge').textContent = `Step ${AppState.stepIndex+1}/${AppState.trainingSteps.length}`;
-    // Update coach per step
-    const step = AppState.stepIndex+1;
-    const msgByStep = {
-      1:'Orientation: sectors & commissures highlighted. Use Ghost to preview ideal path.',
-      2:'Ring sizing preview: select ring size (default 32). Educational only.',
-      3:'Choose suture type: default pledgeted 2‑0 Polyester. Review pros/cons.',
-      4:'Define first bite at P2 safe zone. Click entry, drag arc, release exit.',
-      5:'Advance circumferentially. Keep spacing uniform & angle consistent.',
-      6:'Pass through ring: map suture pairs to ring holes.',
-      7:'Approximation & tensioning: pull tail gently; avoid over‑tension.',
-      8:'Knot tying: click to add throws; watch security vs deformation.',
-      9:'Final check: review leakage surrogate, seating & suture map.'
-    };
-    UI.setCoachStatus(msgByStep[step]||'');
-  },
-  finishCase(){
-    const s = Scoring.compute();
-    UI.toast(`Final score: ${Util.fmt(s.total,0)} (${s.grade}). Printable summary opened.`, s.total>=80?'ok': (s.total>=60?'warn':'danger'));
-    Export.printSummary(s);
-    // persist highscore
-    const hs = JSON.parse(localStorage.getItem('mvrt:highscores')||'[]');
-    hs.push({date:new Date().toISOString(), case:AppState.caseId, score:s.total, grade:s.grade});
-    localStorage.setItem('mvrt:highscores', JSON.stringify(hs));
-  },
-  resetCase(keepStep=false){
-    AppState.bites.length=0; AppState.threads.length=0; AppState.events.length=0; AppState.errorTrend.length=0;
-    AppState.score=null;
-    if(!keepStep) AppState.stepIndex=0;
-    UI.resetTimer(true);
-    UI.updateStepUI();
-    UI.updateRadar({precision:0,tissue:0,ring:0,eff:0});
-    UI.updateScoreBadge('—','');
-    Renderer._buildLabels(); Renderer._buildRingHoles(); Renderer.draw();
-    UI.toast('Case reset.', 'ok');
-  },
-  toast(text, tone=''){
-    const host = document.getElementById('toasts');
-    const d = document.createElement('div');
-    d.className = 'toast ' + (tone||'');
-    d.textContent = text;
-    host.appendChild(d);
-    setTimeout(()=>{ d.style.opacity='0'; d.style.transform='translateY(6px)'; }, 2200);
-    setTimeout(()=>{ d.remove() }, 2800);
-  },
-  warn(text){ UI.toast(text,'warn') },
-  showModal(id){ const m=document.getElementById(id); if(!m) return; m.style.display='flex'; m.querySelector('button')?.focus() },
-  hideModal(id){ const m=document.getElementById(id); if(!m) return; m.style.display='none' },
-  onKey(e){
-    if(e.key==='?' || (e.shiftKey && e.key==='/' )){ UI.showModal('helpModal'); return }
-    if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
-    const key = e.key.toLowerCase();
-    if(key==='n'){ UI.nextStep() }
-    else if(key==='b'){ UI.prevStep() }
-    else if(key==='h'){ AppState.settings.hintLevel = (AppState.settings.hintLevel+1)%4; document.getElementById('hintRange').value=String(AppState.settings.hintLevel); UI.toast('Hint level: '+AppState.settings.hintLevel) }
-    else if(key==='u'){ UI.undo() }
-    else if(key==='y'){ UI.redo() }
-    else if(key==='r'){ UI.resetCase() }
-    else if(key==='g'){ AppState.ghost=!AppState.ghost; document.getElementById('ghostToggle').textContent='Ghost: '+(AppState.ghost?'On':'Off') }
-    else if(key==='t'){ const chk=document.getElementById('modeToggle'); chk.checked=!chk.checked; chk.dispatchEvent(new Event('change')) }
-    else if(key==='p'){ UI.toggleTimer() }
-  },
-  undo(){
-    const state = {
-      bites: JSON.stringify(AppState.bites),
-      threads: JSON.stringify(AppState.threads)
-    };
-    if(!AppState.history.length){
-      AppState.history.push(state);
-      UI.toast('Undo point saved.','ok');
-      return;
-    }
-    const last = AppState.history.pop();
-    AppState.future.push({ bites: JSON.stringify(AppState.bites), threads: JSON.stringify(AppState.threads) });
-    AppState.bites = JSON.parse(last.bites);
-    AppState.threads = JSON.parse(last.threads);
-    AppState.events.push({time:Date.now(), type:'undo'});
-    Renderer.draw();
-  },
-  redo(){
-    const nxt = AppState.future.pop();
-    if(!nxt){ UI.toast('Nothing to redo.'); return; }
-    AppState.history.push({ bites: JSON.stringify(AppState.bites), threads: JSON.stringify(AppState.threads) });
-    AppState.bites = JSON.parse(nxt.bites); AppState.threads = JSON.parse(nxt.threads);
-    Renderer.draw();
-  },
-  currentTension(){
-    const last = AppState.threads[AppState.threads.length-1];
-    return last? last.tension : 0;
-  },
-  // Timer
-  resetTimer(pause=true){
-    AppState.elapsed = 0;
-    AppState.timerStart = Date.now();
-    AppState.timerPaused = pause;
-    document.getElementById('timer').textContent = Util.niceTime(0);
-  },
-  toggleTimer(){
-    AppState.timerPaused = !AppState.timerPaused;
-    if(!AppState.timerPaused) AppState.timerStart = Date.now() - AppState.elapsed;
-  },
-  tickTimer(){
-    if(!AppState.timerPaused){
-      AppState.elapsed = Date.now() - AppState.timerStart;
-      document.getElementById('timer').textContent = Util.niceTime(AppState.elapsed);
-    }
-    requestAnimationFrame(UI.tickTimer);
-  }
-};
-
-/* --------------------------------- Export --------------------------------- */
-const Export = {
-  sessionJSON(){
-    const s = {
-      meta:{ version:AppState.version, date:new Date().toISOString(), case:AppState.caseId, mode:AppState.mode, elapsed:AppState.elapsed },
-      settings: AppState.settings,
-      instruments: AppState.instruments,
-      timeline: AppState.events,
-      bites: AppState.bites,
-      score: AppState.score
-    };
-    return s;
-  },
-  downloadJSON(){
-    const blob = new Blob([JSON.stringify(this.sessionJSON(), null, 2)], {type:'application/json'});
-    Util.saveBlob(blob, `mvrt_${AppState.caseId}_${Date.now()}.json`);
-  },
-  makePNGSnap(withOverlay=true){
-    // Compose canvas snapshot (main canvas already includes everything visual except SVG overlay)
-    // For simplicity, we rasterize the main canvas at displayed size.
-    const c = document.createElement('canvas');
-    const w = AppState.canvas.clientWidth, h=AppState.canvas.clientHeight;
-    c.width = w; c.height = h;
-    const cx = c.getContext('2d');
-    cx.drawImage(AppState.canvas, 0,0,w,h);
-    // Optionally render minimal overlays: step, score
-    if(withOverlay){
-      cx.fillStyle='rgba(0,0,0,0.35)'; cx.fillRect(8,h-34, 260, 26);
-      cx.fillStyle='#fff'; cx.font='14px sans-serif';
-      cx.fillText(`Case: ${Cases.data[AppState.caseId].title}`, 14, h-16);
-      const sc = AppState.score?.total!=null ? `${Util.fmt(AppState.score.total,0)} (${AppState.score.grade})` : '—';
-      cx.fillText(`Score: ${sc}`, 170, h-16);
-    }
-    return c.toDataURL('image/png');
-  },
-  exportPNG(dryRun=false){
-    const url = this.makePNGSnap(true);
-    if(dryRun) return url;
-    Util.saveBlob(Util.dataURLToBlob(url), `mvrt_${AppState.caseId}_${Date.now()}.png`);
-  },
-  downloadReport(){
-    this.downloadJSON();
-    const s = Scoring.compute();
-    this.printSummary(s);
-  },
-  printSummary(score){
-    const snap = this.makePNGSnap(true);
-    const win = window.open('', '_blank');
-    const css = `
-      body{font-family: ${getComputedStyle(document.body).getPropertyValue('--font')}; padding:16px; color:#111}
-      h1,h2,h3{margin:.5rem 0}
-      .grid{display:grid; grid-template-columns:1fr 1fr; gap:12px}
-      .card{border:1px solid #ccc; border-radius:8px; padding:10px}
-      table{width:100%; border-collapse:collapse}
-      td,th{border-bottom:1px solid #eee; padding:6px}
-      .small{color:#666}
-      .badge{display:inline-block; padding:2px 6px; border-radius:6px; background:#eef}
-    `;
-    const html = `
-      <!DOCTYPE html><html><head><meta charset="utf-8"><title>MVRT Summary</title><style>${css}</style></head>
-
-```
-  <body>
-    <h1>Mitral Repair Trainer — Printable Summary</h1>
-    <div class="small">Generated: ${new Date().toLocaleString()}</div>
-    <img src="${snap}" style="width:100%; border-radius:8px; margin:8px 0;" alt="Simulation snapshot"/>
-    <div class="grid">
-      <div class="card">
-        <h3>Case</h3>
-        <div><strong>${Cases.data[AppState.caseId].title}</strong> <span class="badge">${AppState.mode}</span></div>
-        <div class="small">${Cases.data[AppState.caseId].note}</div>
-        <h3>Score</h3>
-        <table>
-          <tr><td>Total</td><td><strong>${Util.fmt(score.total,0)}</strong> (${score.grade})</td></tr>
-          <tr><td>Precision</td><td>${Util.fmt(score.precision,1)}/40</td></tr>
-          <tr><td>Tissue Respect</td><td>${Util.fmt(score.tissue,1)}/25</td></tr>
-          <tr><td>Ring Integration</td><td>${Util.fmt(score.ring,1)}/20</td></tr>
-          <tr><td>Efficiency</td><td>${Util.fmt(score.eff,1)}/15</td></tr>
-        </table>
-      </div>
-      <div class="card">
-        <h3>Instruments & Settings</h3>
-        <table>
-          <tr><td>Suture</td><td>${AppState.instruments.sutureType}</td></tr>
-          <tr><td>Needle</td><td>${AppState.instruments.needle}</td></tr>
-          <tr><td>Ring size</td><td>${AppState.instruments.ringSize}</td></tr>
-          <tr><td>Hint level</td><td>${AppState.settings.hintLevel}</td></tr>
-        </table>
-        <h3>Bites</h3>
-        <div class="small">Count: ${AppState.bites.length}</div>
-        <ol class="small">
-          ${AppState.bites.slice(0,20).map((b,i)=> `<li>#${i+1} seg ${b.segment} depth ${Util.fmt(b.depthMM,1)} mm angleErr ${Util.fmt(b.angleErr,1)}° ${b.flags?.forbidden?'[forbidden]':''}</li>`).join('')}
+      <!-- =========================
+           SECTION 10: UI • RIGHT RAIL — AI CO-PILOT
+           ========================= -->
+      <aside class="panel" aria-label="AI Co‑Pilot">
+        <h3>AI Co‑Pilot</h3>
+        <p id="copilot-summary">Follow the highlighted path for your first posterior leaflet stitch.</p>
+        <ol id="step-list" class="steps">
+          <!-- li items injected per step -->
         </ol>
+        <hr/>
+        <h4>Feedback</h4>
+        <div id="feedback">
+          <p>Errors & suggestions will appear here.</p>
+        </div>
+      </aside>
+    </main>
+
+    <!-- =========================
+         SECTION 11: UI • BOTTOM BAR — TRANSPORT & SESSION CONTROLS
+         ========================= -->
+    <footer class="bottombar" aria-label="Controls">
+      <div style="display:flex; gap:8px;">
+        <button id="btn-start" class="primary"><svg width="18" height="18"><use href="#i-play"/></svg> Start</button>
+        <button id="btn-pause"><svg width="18" height="18"><use href="#i-pause"/></svg> Pause</button>
+        <button id="btn-reset" class="ghost">Reset</button>
+        <button id="btn-undo" class="ghost">Undo</button>
+        <button id="btn-redo" class="ghost">Redo</button>
       </div>
-    </div>
-    <p class="small">Disclaimer: Educational simulation only — not for clinical decision‑making.</p>
-    <script>window.onload=()=>window.print()</script>
-  </body></html>
-`;
-win.document.write(html); win.document.close();
-```
+      <div style="margin-left:auto; display:flex; gap:12px; align-items:center;">
+        <div class="chip">Score: <b id="score">0</b></div>
+        <div class="chip">Safety: <b id="score-safety">100%</b></div>
+        <div class="chip">Accuracy: <b id="score-accuracy">0%</b></div>
+        <div class="chip">Efficiency: <b id="score-efficiency">—</b></div>
+      </div>
+    </footer>
+  </div>
 
-}
-};
+  <!-- =========================
+       SECTION 12: UI • DIALOGS & SHEETS
+       ========================= -->
+  <dialog id="dlg-onboarding" class="panel">
+    <h3>Welcome</h3>
+    <p>This simulator guides you through mitral valve suturing with stepwise highlights and scoring.</p>
+    <ul>
+      <li><b>Training</b>: step‑by‑step with enforced sequence.</li>
+      <li><b>Practice</b>: guided but flexible sequence.</li>
+      <li><b>Assessment</b>: silent mode; full scoring.</li>
+    </ul>
+    <button id="ob-ok" class="primary">Let’s begin</button>
+  </dialog>
 
-/\* --------------------------------- Tests ---------------------------------- \*/
-const Tests = {
-run(){
-const list = \[];
-const pass = (name, ok, detail='')=>{ console\[ok?'log':'warn']\((ok?'✓ ':'✗ ')+name, detail); list.push({name,ok,detail}); };
-// 1: App loads in Training Mode, Step 1 highlighted, timer visible.
-pass('Load in Training mode, Step 1, timer shown', (AppState.mode==='training' && AppState.stepIndex===0 && document.getElementById('timer')!=null));
-// 2: Toggling Practice Mode keeps stepper but allows out-of-order
-const beforeDots = document.getElementById('stepper').children.length;
-document.getElementById('modeToggle').checked=true; document.getElementById('modeToggle').dispatchEvent(new Event('change'));
-pass('Practice mode toggle retains stepper', document.getElementById('stepper').children.length===beforeDots);
-// revert
-document.getElementById('modeToggle').checked=false; document.getElementById('modeToggle').dispatchEvent(new Event('change'));
-// 3: Placing a bite updates metrics (simulate)
-const demoBite = { id\:Util.uid(), entry:{x:-40,y:60}, exit:{x:-30,y:58}, pledged\:true, time\:Date.now() };
-AppState.bites.push(demoBite);
-AI.evalBite(demoBite);
-pass('Placing a bite sets metrics', document.getElementById('mDepth').textContent!=='—');
-AppState.bites.pop();
-// 4: Hint cycle
-const prevHint = AppState.settings.hintLevel; AppState.settings.hintLevel=(prevHint+1)%4;
-pass('Hint cycle', AppState.settings.hintLevel!==prevHint);
-// 5: Over-tension triggers heatmap & warning
-const thr = { id:'t', fixed:\[{x:0,y:0},{x:40,y:0}], tail:{x:200,y:0}, tension:0, rest:40 };
-AppState.threads.push(thr); const t=Physics.tension(thr);
-const over = t>Cases.data\[AppState.caseId].thresholds.tensionMax;
-AI.onTension(t);
-pass('Over‑tension detection', over);
-AppState.threads.pop();
-// 6: Export JSON with at least one bite
-const tmpSession = (function(){
-const b={ id:'tmp', entry:{x:1,y:1}, exit:{x:2,y:1}, pledged\:true, time\:Date.now(), depthMM:2.5, angleErr:5, spacingErr:0, flags:{} };
-const prev=AppState.bites; AppState.bites=\[b];
-const s=Export.sessionJSON(); AppState.bites=prev; return s;
-})();
-pass('Export JSON includes bites', (tmpSession.bites?.length||0)>0);
-// 7: Export PNG
-const url = Export.exportPNG(true);
-pass('Export PNG produces data URL', typeof url==='string' && url.startsWith('data\:image/png'));
-// 8: Reset clears sutures, restores Step 1, zeros timer
-UI.resetCase();
-pass('Reset clears and restores', AppState.bites.length===0 && AppState.stepIndex===0);
-// 9: Scoring computes after Finish
-Scoring.compute();
-pass('Scoring computes', AppState.score!=null);
-// 10: LocalStorage persists last settings (toggle and check)
-const was = AppState.settings.theme; AppState.settings.theme = (was==='light'?'dark':'light'); Storage.save();
-const re = JSON.parse(localStorage.getItem('mvrt\:settings')||'{}');
-pass('LocalStorage persistence', re.theme===AppState.settings.theme);
-// Render checklist to Help overlay
-const ul = document.getElementById('testList'); ul.innerHTML='';
-list.forEach(t=>{ const li=document.createElement('li'); li.textContent = (t.ok?'✓ ':'✗ ')+t.name; ul.appendChild(li) });
-AppState.tests = list;
-}
-};
+  <!-- =========================
+       SECTION 13–28: SCRIPTS (MODULE)
+       ========================= -->
+  <script type="module">
+  // =========================
+  // SECTION 13: BOOT & CAPABILITY CHECKS
+  // =========================
+  const caps = {
+    webgl2: !!document.createElement('canvas').getContext('webgl2'),
+    reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  };
+  if (!caps.webgl2) {
+    document.body.innerHTML = '<div style="padding:24px;color:white;font:16px/1.5 var(--font-ui)">'+
+      '<h2>WebGL2 not available</h2><p>This simulator needs a modern browser/GPU. Try Chrome/Edge/Firefox on desktop.</p></div>';
+    throw new Error('WebGL2 required');
+  }
 
-/\* ------------------------------ App Bootstrap ----------------------------- \*/
-function bootstrap(){
-Storage.load();
-Audio.init(); Audio.setEnabled(AppState.settings.audio);
+  // =========================
+  // SECTION 14: STATE STORE & EVENT BUS
+  // =========================
+  const State = {
+    mode: 'training',
+    scenario: 'suturing-basic',
+    stepIndex: 0,
+    timerStart: 0,
+    score: { total:0, safety:100, accuracy:0, efficiency:null },
+    telemetry: { forceN:0, angleDeg:0, collisions:0 },
+    flags: { highContrast:false },
+  };
+  const Bus = new EventTarget();
+  const emit = (type, detail) => Bus.dispatchEvent(new CustomEvent(type, { detail }));
 
-Renderer.init();
-UI.init();
-UI.tickTimer();
-Renderer.loop();
+  // =========================
+  // SECTION 15: GEOMETRY & ASSETS BUILDER (PARAMETRIC)
+  // =========================
+  // Placeholder stubs; you will fill with mesh generation later.
+  const Assets = {};
+  function buildMitralApparatus(params={}) {
+    // TODO: annulus spline, leaflets (A/P segments), chordae trees, papillary anchors
+    return { meshes:{}, bounds:{}, landmarks:{} };
+  }
 
-// Persist settings on unload
-window\.addEventListener('beforeunload', Storage.save);
-}
-const UIRef = UI; // expose for some closures
-const ExportRef = Export;
+  // =========================
+  // SECTION 16: RENDERER & MATERIALS
+  // =========================
+  let gl, renderer;
+  function initRenderer() {
+    const canvas = document.getElementById('gl');
+    gl = canvas.getContext('webgl2', { antialias:true, alpha:false });
+    // TODO: init program(s), FBOs, simple SSS / wetness shading
+    onResize();
+    window.addEventListener('resize', onResize);
+  }
+  function onResize(){
+    const c = gl.canvas; const dpr = Math.min(window.devicePixelRatio||1, 2);
+    c.width = c.clientWidth * dpr; c.height = c.clientHeight * dpr;
+    // TODO: viewport update
+  }
+  function renderFrame(t){
+    // TODO: draw valve, instruments, suture thread, overlays
+    requestAnimationFrame(renderFrame);
+  }
 
-/\* ------------------------------ Public API -------------------------------- \*/
-return { AppState, Cases, Geometry, Renderer, Physics, AI, Scoring, UI, Export, Storage, Audio, Tests };
+  // =========================
+  // SECTION 17: CAMERA & INTERACTION
+  // =========================
+  const Input = { pointer:{down:false,x:0,y:0}, tool:'needle-driver' };
+  function bindInteraction(){
+    const canvas = document.getElementById('gl');
+    canvas.addEventListener('pointerdown', e => { Input.pointer.down=true; });
+    canvas.addEventListener('pointerup',   e => { Input.pointer.down=false; });
+    canvas.addEventListener('pointermove', e => { Input.pointer.x=e.offsetX; Input.pointer.y=e.offsetY; });
+    document.querySelector('#tools').addEventListener('change', e=>{
+      if (e.target.name==='tool') Input.tool = e.target.value;
+    });
+  }
 
-})();
+  // =========================
+  // SECTION 18: PHYSICS LITE (SURFACE + THREAD)
+  // =========================
+  const Physics = {
+    // TODO: mass-spring for leaflets; constraint chain for suture
+  };
 
-/\* -------------------------- Start the application -------------------------- \*/
-document.addEventListener('DOMContentLoaded', ()=>{
-// Theme init
-document.body.classList.toggle('light', true);
-document.body.dataset.theme = 'light';
-document.getElementById('ghostToggle').textContent = 'Ghost: On';
-MVRT.AppState.ghost = true;
+  // =========================
+  // SECTION 19: SUTURING ENGINE
+  // =========================
+  const Suturing = {
+    stitches: [],
+    takeBite(worldPt, normal, options){
+      // TODO: log & validate bite depth/spacing/angle; update scoring hooks
+    },
+    evaluateQuality(){ /* TODO */ },
+  };
 
-// Bind RAF timing
-MVRT.now = Date.now();
+  // =========================
+  // SECTION 20: SCENARIO & STEP MACHINE (Training/Practice)
+  // =========================
+  const Scenarios = {
+    "suturing-basic": {
+      title: "Posterior leaflet interrupted suturing",
+      steps: [
+        { id:"prep-01", title:"Identify target coaptation zone",
+          highlight:{ region:"P2", type:"fill" },
+          goal:{ gaze:true, duration:2000 },
+          rubric:{ weight:0.05 } },
+        { id:"mark-01", title:"Mark first annular anchor (P2 midpoint)",
+          highlight:{ region:"annulus-P2", type:"ring" },
+          goal:{ clickWithinMm:2 },
+          rubric:{ weight:0.10, accuracyMm:[0,1,2,4] } },
+        { id:"bite-01", title:"Needle bite: ventricular→atrial at P2",
+          highlight:{ region:"leaflet-P2", type:"zone" },
+          goal:{ biteDepthMm:[1.5,3.0], angleDeg:[35,55], spacingMm:[2.0,3.0] },
+          rubric:{ weight:0.25, safetyPenaltyChordInjury:0.3 } },
+        // ...more steps: symmetric bites, knot tying, saline test, etc.
+      ]
+    }
+  };
 
-MVRT.Renderer.init();
-MVRT.UI.init();
-MVRT.UI.tickTimer();
-MVRT.Renderer.loop();
+  // =========================
+  // SECTION 21: AI CO-PILOT LOGIC (Hints, Errors, Remediation)
+  // =========================
+  function setMode(v){ State.mode=v; emit('mode', v); }
+  function gotoStep(i){
+    State.stepIndex = Math.max(0, Math.min(i, getSteps().length-1));
+    updateStepUI();
+    focusCameraToCurrentStep();
+    speak(`Step ${State.stepIndex+1}. ${getSteps()[State.stepIndex].title}`);
+  }
+  function getSteps(){ return Scenarios[State.scenario].steps; }
+  function analyzeAndGuide(event){
+    // TODO: inspect last action; classify (angle shallow, bite too deep, near chordae, spacing off)
+    // then: highlight error region, suggest correction, adjust target tolerances if practice mode
+  }
 
-// Save after load
-MVRT.Storage.save();
-}); </script>
+  // =========================
+  // SECTION 22: SCORING & RUBRIC
+  // =========================
+  const Scoring = {
+    weights:{ accuracy:0.5, safety:0.3, efficiency:0.2 },
+    metrics:{ accuracy:0, safety:1.0, efficiency:0 },
+    compute(){
+      const total = (this.metrics.accuracy*this.weights.accuracy) +
+                    (this.metrics.safety  *this.weights.safety)   +
+                    (this.metrics.efficiency*this.weights.efficiency);
+      State.score.total = Math.round(total*100);
+      updateScoreUI();
+    }
+  };
 
+  // =========================
+  // SECTION 23: OVERLAY & ANNOTATION RENDERER (SVG)
+  // =========================
+  function drawHighlight(opts){ /* TODO: add <circle>/<path> to #overlay; animate pulse */ }
+  function drawRuler(a,b,mm){ /* TODO: measurement line with mm labels */ }
+
+  // =========================
+  // SECTION 24: AUDIO/VOICE & TEXT-TO-CUE
+  // =========================
+  function speak(text){
+    // Optional: use SpeechSynthesis if available; always show text in tooltip for accessibility
+    document.getElementById('tooltip').textContent = text;
+    if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); window.speechSynthesis.speak(new SpeechSynthesisUtterance(text)); }
+  }
+
+  // =========================
+  // SECTION 25: PERSISTENCE & EXPORT
+  // =========================
+  function saveSession(){
+    const payload = { State, Suturing };
+    localStorage.setItem('mitralsim-session', JSON.stringify(payload));
+  }
+  function exportSnapshot(){
+    // TODO: draw overlay into offscreen canvas + gl canvas, export PNG; also export JSON of attempts
+  }
+
+  // =========================
+  // SECTION 26: ACCESSIBILITY & LOCALIZATION
+  // =========================
+  const STR = { en: { start:"Start", pause:"Pause" } }; // placeholder
+
+  // =========================
+  // SECTION 27: DEBUG & QA PANEL
+  // =========================
+  const Debug = { enabled:false };
+
+  // =========================
+  // SECTION 28: INIT & SAFE FALLBACK
+  // =========================
+  function updateScoreUI(){
+    document.getElementById('score').textContent = State.score.total;
+    document.getElementById('score-safety').textContent = Math.round(Scoring.metrics.safety*100)+'%';
+    document.getElementById('score-accuracy').textContent = Math.round(Scoring.metrics.accuracy*100)+'%';
+  }
+  function updateStepUI(){
+    document.getElementById('step-idx').textContent = State.stepIndex+1;
+    document.getElementById('step-total').textContent = getSteps().length;
+    document.getElementById('step-title').textContent = getSteps()[State.stepIndex].title;
+    // Populate right-rail steps
+    const ol = document.getElementById('step-list'); ol.innerHTML='';
+    getSteps().forEach((s,idx)=>{
+      const li = document.createElement('li'); li.textContent = s.title; if (idx===State.stepIndex) li.classList.add('active'); ol.appendChild(li);
+    });
+  }
+
+  // Wire UI
+  document.getElementById('mode').addEventListener('change', e=>setMode(e.target.value));
+  document.getElementById('scenario').addEventListener('change', e=>{ State.scenario=e.target.value; gotoStep(0); });
+  document.getElementById('btn-start').addEventListener('click', ()=>{ State.timerStart=performance.now(); speak('Session started'); });
+  document.getElementById('btn-reset').addEventListener('click', ()=>{ location.reload(); });
+  document.getElementById('toggle-contrast').addEventListener('change', e=>{ document.getElementById('app').classList.toggle('high-contrast', e.target.checked); });
+  document.getElementById('take-screenshot').addEventListener('click', exportSnapshot);
+  document.getElementById('open-onboarding').addEventListener('click', ()=>document.getElementById('dlg-onboarding').showModal());
+  document.getElementById('ob-ok').addEventListener('click', ()=>document.getElementById('dlg-onboarding').close());
+
+  // Start
+  initRenderer(); bindInteraction();
+  gotoStep(0); updateScoreUI();
+  requestAnimationFrame(renderFrame);
+  </script>
 </body>
 </html>
