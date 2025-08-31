@@ -2,105 +2,182 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Module 1 — Anatomical Mastery (Mitral Anatomy Recognition)</title>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <title>MitralSim Pro — Module 1.1 · Mitral Apparatus Overview</title>
+  <meta name="description" content="Super‑realistic, web‑based, 3D overview of the mitral apparatus (annulus, anterior/posterior leaflets, commissures) with cinematic rendering, annotations, and guided steps."/>
   <link rel="stylesheet" href="../assets/css/style.css"/>
-  <meta name="description" content="MitralSim Pro — Module 1: Anatomical Mastery. Interactive 3D mitral apparatus exploration with AI copilot, variations, and scoring."/>
-  <!-- Three.js + Controls (CDN) -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+
+  <!-- 📦 Three.js (ESM) + examples -->
+  <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"></script>
+  <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js"></script>
+  <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/EffectComposer.js"></script>
+  <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/RenderPass.js"></script>
+  <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/UnrealBloomPass.js"></script>
+  <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/ShaderPass.js"></script>
+  <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/OutlinePass.js"></script>
+  <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/shaders/FXAAShader.js"></script>
+  <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/environments/RoomEnvironment.js"></script>
+
   <style>
-    /* Module-specific tasteful accents */
-    .pill { display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border:1px solid var(--outline); border-radius:999px; font-size:12px; color:var(--muted) }
-    .kbd-row { display:flex; gap:8px; flex-wrap:wrap }
-    .switch { display:inline-flex; align-items:center; gap:8px; cursor:pointer; }
-    .switch input{ width:18px; height:18px }
-    .panel .row.wrap { flex-wrap:wrap }
-    .tile { background:var(--panel); border:1px solid var(--outline); border-radius:10px; padding:8px 10px; font-size:12px; color:var(--muted) }
-    .tile b { color:var(--ink) }
-    .scorebox { display:grid; grid-template-columns: repeat(2,1fr); gap:8px }
-    .scorebox .kpi { text-align:center }
-    .overlay-label { position:absolute; transform:translate(-50%,-100%); background:rgba(15,18,24,.92); border:1px solid var(--outline); padding:4px 8px; border-radius:8px; font-size:12px; pointer-events:none }
-    .hot { border-color:#ff6b6b !important; box-shadow:0 0 0 2px rgba(255,107,107,.2) inset }
+    /* ---- Module‑specific design polish ---- */
+    :root{
+      --panelGrad: linear-gradient(180deg, rgba(33,38,45,.8), rgba(22,27,34,.85));
+      --glass: rgba(24, 28, 36, .6);
+    }
+    body { background: radial-gradient(1200px 700px at 70% -10%, #142031, #0d1117 60%); }
+    .topbar .inner { backdrop-filter: blur(10px); }
+    .page { grid-template-columns: 380px 1fr; gap: 18px; }
+
+    /* Cinematic canvas wrap */
+    .canvas-wrap{
+      background: radial-gradient(1200px 800px at 50% -20%, #0f1b29, #070a0f 55%, #05070a);
+      border: 1px solid var(--outline);
+      box-shadow: 0 40px 120px rgba(0,0,0,.65), inset 0 0 0 1px rgba(255,255,255,.02);
+    }
+
+    /* Annotations & overlays */
+    #overlay { position:absolute; inset:0; pointer-events:none; }
+    .callout {
+      position:absolute; max-width:280px; color:#e8f0ff; font-size:12px; line-height:1.35;
+      padding:10px 12px; border-radius:12px; border:1px solid rgba(120,140,170,.35);
+      background: linear-gradient(180deg, rgba(16,22,30,.9), rgba(11,15,22,.88));
+      box-shadow: 0 3px 18px rgba(0,0,0,.45);
+    }
+    .callout .title{ font-weight:700; margin-bottom:4px; font-size:12px; letter-spacing:.3px }
+    .callout .meta { color:#9db0c7; font-size:11px }
+    .pin {
+      position:absolute; width:10px; height:10px; border-radius:50%;
+      background: radial-gradient(9px 9px at 40% 35%, #76d0ff, #2274ff 60%, #1b3fa0 100%);
+      box-shadow: 0 0 0 4px rgba(64,169,255,.18), 0 0 16px rgba(64,169,255,.35);
+    }
+
+    /* Control tiles */
+    .toolrow { display:flex; gap:8px; flex-wrap:wrap }
+    .toolbtn{
+      border:1px solid var(--outline); border-radius:10px; background:var(--panelGrad); color:var(--ink);
+      padding:8px 10px; font-size:12px; cursor:pointer; transition: transform .08s ease, box-shadow .15s ease;
+    }
+    .toolbtn:hover{ box-shadow:0 6px 18px rgba(0,0,0,.35); transform: translateY(-1px); }
+    .toolbtn[data-active="1"]{ outline:2px solid #4cc9f0; outline-offset:-2px }
+
+    .switch { display:flex; align-items:center; gap:10px; }
+    .switch input{ width:18px; height:18px; }
+
+    /* KPIs */
+    .kpis2 { display:grid; grid-template-columns: repeat(3,1fr); gap:10px }
+    .kpis2 .k { background:var(--panel); border:1px solid var(--outline); border-radius:12px; padding:10px; }
+    .kpis2 .k .label { color:var(--muted); font-size:11px }
+    .kpis2 .k .value { font-family: var(--mono); font-size:18px }
+
+    /* Stepper */
+    .step { padding:10px; border:1px dashed var(--outline); border-radius:10px; background:rgba(18,22,30,.45) }
+    .step .t{ font-weight:700; margin-bottom:4px }
+    .step .d{ color:var(--muted); font-size:12px }
+    .hl { color:#a6e3a1 }
+
+    /* Pretty sliders */
+    .range { -webkit-appearance: none; width: 100%; height: 6px; border-radius: 8px; background:#1a2533; outline: none; }
+    .range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width:14px; height:14px; border-radius:50%; background:#4cc9f0; border:2px solid #0b1a2a; cursor:pointer }
+    .mini-caption{ font-size:11px; color:var(--muted); margin-top:2px }
+
+    /* Outline color indicator */
+    .swatch { width:12px; height:12px; border-radius:3px; border:1px solid var(--outline); display:inline-block; translate: 0 2px; }
+
+    /* Floating HUD badge */
+    .hud {
+      position:absolute; top:10px; right:10px; background:rgba(20,24,32,.55); border:1px solid var(--outline);
+      color:#93b7ff; padding:8px 10px; border-radius:10px; font-size:12px; backdrop-filter: blur(8px);
+    }
   </style>
 </head>
 <body>
   <div class="topbar">
     <div class="inner">
       <a class="btn secondary" href="../index.html">← Back</a>
-      <div class="logo">Module 1 — Anatomical Mastery</div>
-      <span class="badge">Anatomy Recognition</span>
+      <div class="logo">Module 1.1 — Mitral Apparatus Overview</div>
+      <span class="badge">Annulus</span>
+      <span class="badge">Anterior/Posterior Leaflets</span>
+      <span class="badge">Commissures</span>
       <div style="flex:1"></div>
-      <span class="badge">Educational prototype · Not a medical device</span>
+      <span class="badge">Cinematic 3D</span>
     </div>
   </div>
 
   <div class="container page">
-    <!-- Left sidebar -->
+    <!-- Sidebar -->
     <aside class="sidebar">
       <div class="panel">
-        <h4>Mode</h4>
-        <div class="row">
-          <button id="btnModeTraining" class="btn secondary">Training</button>
-          <button id="btnModePractice" class="btn secondary">Practice</button>
-          <button id="btnModeQuiz" class="btn secondary">Quiz</button>
+        <h4>Lesson Mode</h4>
+        <div class="toolrow">
+          <button id="btnGuide" class="toolbtn" data-active="1">Guided</button>
+          <button id="btnExplore" class="toolbtn">Explore</button>
+          <button id="btnIdentify" class="toolbtn">Identify</button>
         </div>
-        <div class="small">Training = guided lessons with hotspots. Practice = prompts to identify structures. Quiz = timed 10‑question assessment.</div>
-      </div>
-
-      <div class="panel">
-        <h4>Legend</h4>
-        <div class="legend">
-          <span class="tag">Red: LV myocardium</span>
-          <span class="tag">Teal: LA</span>
-          <span class="tag">Green: Mitral annulus</span>
-          <span class="tag">Light green: Leaflets (A/P)</span>
-          <span class="tag">Yellow: Chordae</span>
-          <span class="tag">Purple: Papillary muscles</span>
-          <span class="tag">Blue: Targets/Segments</span>
-          <span class="tag">Red band: Danger zone</span>
-          <span class="tag">Green band: Safe zone</span>
+        <div class="small" style="margin-top:6px">
+          <b>Guided:</b> step‑by‑step with highlights ·
+          <b>Explore:</b> free navigation + labels ·
+          <b>Identify:</b> click requested landmark (no hints).
         </div>
       </div>
 
       <div class="panel">
-        <h4>Map Layers</h4>
-        <div class="list small" id="layerList">
-          <label class="switch"><input type="checkbox" data-layer="leaflets" checked> Leaflets (A/P)</label>
-          <label class="switch"><input type="checkbox" data-layer="annulus" checked> Mitral Annulus</label>
-          <label class="switch"><input type="checkbox" data-layer="lvot" checked> LVOT & AMC markers</label>
-          <label class="switch"><input type="checkbox" data-layer="papillary" checked> Papillary Muscles</label>
-          <label class="switch"><input type="checkbox" data-layer="chordae" checked> Chordae Tendineae</label>
-          <label class="switch"><input type="checkbox" data-layer="segments" checked> A1–A3 / P1–P3 Hit‑pads</label>
-          <label class="switch"><input type="checkbox" data-layer="zones" checked> Safe / Danger Zones</label>
-          <label class="switch"><input type="checkbox" data-layer="coronaries" checked> Coronary Surrogates</label>
-          <label class="switch"><input type="checkbox" data-layer="labels" checked> Floating Labels</label>
-        </div>
-      </div>
-
-      <div class="panel">
-        <h4>Anatomical Variations</h4>
-        <div class="list">
-          <select id="variationSel" style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--outline); background:#0d1117; color:var(--ink)">
-            <option value="normal">Normal Adult</option>
-            <option value="annular_dilation">Annular Dilatation</option>
-            <option value="posterior_p2_prolapse">Posterior P2 Prolapse</option>
-            <option value="barlow_bileaflet">Barlow‑type Bileaflet Prolapse</option>
-            <option value="annular_calcification">Annular Calcification (posterior)</option>
-            <option value="cleft_a2">Anterior Leaflet Cleft (A2)</option>
-            <option value="short_chordae">Shortened Primary Chordae</option>
-          </select>
-          <div class="row" style="margin-top:8px">
-            <button id="btnApplyVar" class="btn secondary">Apply Variation</button>
-            <button id="btnResetVar" class="btn secondary">Reset</button>
+        <h4>Cinematic Controls</h4>
+        <div class="list small">
+          <div class="row">
+            <label style="width:38%">Bloom</label>
+            <input id="rngBloom" class="range" type="range" min="0" max="2.0" step="0.02" value="0.8"/>
           </div>
-          <div class="small" id="variationNote">Tip: switch modes after applying a variation to re‑test recognition under different anatomy.</div>
+          <div class="mini-caption">Highlights the glossy tissue sheen</div>
+          <div class="row" style="margin-top:10px">
+            <label style="width:38%">Outline</label>
+            <input id="rngOutline" class="range" type="range" min="0" max="0.06" step="0.002" value="0.032"/>
+          </div>
+          <div class="mini-caption">Selection glow thickness</div>
+          <div class="row" style="margin-top:10px">
+            <label style="width:38%">Pulse</label>
+            <input id="rngPulse" class="range" type="range" min="0" max="1" step="0.02" value="0.35"/>
+          </div>
+          <div class="mini-caption">Subtle leaflet motion amplitude</div>
         </div>
       </div>
 
       <div class="panel">
-        <h4>AI Copilot</h4>
-        <div id="coachUI" class="list small"></div>
+        <h4>Layers</h4>
+        <div class="list small" id="layers">
+          <label class="switch"><input data-layer="annulus" type="checkbox" checked> Mitral Annulus</label>
+          <label class="switch"><input data-layer="leafletA" type="checkbox" checked> Anterior Leaflet</label>
+          <label class="switch"><input data-layer="leafletP" type="checkbox" checked> Posterior Leaflet</label>
+          <label class="switch"><input data-layer="commissures" type="checkbox" checked> Commissures</label>
+          <label class="switch"><input data-layer="coaptation" type="checkbox" checked> Coaptation Line</label>
+          <label class="switch"><input data-layer="labels" type="checkbox" checked> Floating Labels</label>
+          <label class="switch"><input data-layer="backdrop" type="checkbox" checked> Backdrop Volume</label>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h4>Quick Camera</h4>
+        <div class="toolrow">
+          <button class="toolbtn" data-focus="annulus">Focus Annulus</button>
+          <button class="toolbtn" data-focus="anterior">Focus Anterior</button>
+          <button class="toolbtn" data-focus="posterior">Focus Posterior</button>
+          <button class="toolbtn" data-focus="commAL">Focus A‑L Comm.</button>
+          <button class="toolbtn" data-focus="commPM">Focus P‑M Comm.</button>
+          <button class="toolbtn" data-focus="reset">Reset</button>
+        </div>
+        <div class="small" style="margin-top:8px">
+          <b>Orbit</b> drag · <b>Pan</b> shift+drag · <b>Zoom</b> wheel · Hotkeys:
+          <kbd>1</kbd> Annulus <kbd>2</kbd> A‑leaflet <kbd>3</kbd> P‑leaflet <kbd>4</kbd>/<kbd>5</kbd> Commissures
+        </div>
+      </div>
+
+      <div class="panel">
+        <h4>Step Guide</h4>
+        <div id="stepBox" class="step">
+          <div class="t">Step 1 — Mitral Annulus</div>
+          <div class="d">The annulus is an elliptical fibrous ring. It is saddle‑shaped with highest points anteriorly/posteriorly.</div>
+        </div>
         <div class="row" style="margin-top:8px">
           <button id="btnPrev" class="btn secondary">◀ Prev</button>
           <button id="btnNext" class="btn secondary">Next ▶</button>
@@ -108,827 +185,582 @@
       </div>
 
       <div class="panel">
-        <h4>Quick Camera</h4>
-        <div class="row wrap">
-          <button class="btn secondary" data-focus="annulus">Focus Annulus</button>
-          <button class="btn secondary" data-focus="aorta">Focus LVOT/AMC</button>
-          <button class="btn secondary" data-focus="pap_al">Focus Pap AL</button>
-          <button class="btn secondary" data-focus="pap_pm">Focus Pap PM</button>
-          <button class="btn secondary" data-focus="reset">Reset View</button>
-        </div>
-        <div class="kbd-row small" style="margin-top:8px">
-          <span class="pill"><b>Orbit</b> drag</span>
-          <span class="pill"><b>Pan</b> shift+drag</span>
-          <span class="pill"><b>Zoom</b> wheel</span>
-          <span class="pill"><b>Hotkeys</b> <kbd>F</kbd> focus, <kbd>L</kbd> labels, <kbd>V</kbd> variations</span>
-        </div>
-      </div>
-
-      <div class="panel">
-        <h4>Metrics & Scoring</h4>
-        <div class="scorebox">
-          <div class="kpi">
-            <div class="label">Accuracy</div>
-            <div id="kpiAcc" class="value">0%</div>
-          </div>
-          <div class="kpi">
-            <div class="label">Avg. Response</div>
-            <div id="kpiRT" class="value">— s</div>
-          </div>
-          <div class="kpi">
-            <div class="label">Streak</div>
-            <div id="kpiStreak" class="value">0</div>
-          </div>
-          <div class="kpi">
-            <div class="label">Score</div>
-            <div id="kpiScore" class="value">0</div>
-          </div>
-        </div>
-        <div class="small" style="margin-top:8px">Practice/Quiz: score = correctness, speed, difficulty. Training: ungraded.</div>
-      </div>
-
-      <div class="panel">
-        <h4>Finish</h4>
-        <div class="list small">
-          <button id="btnFinish" class="btn">Save to Dashboard</button>
-          <div id="finishNote" class="small">Status: <b>Not saved</b></div>
+        <h4>KPIs</h4>
+        <div class="kpis2">
+          <div class="k"><div class="label">Hovered</div><div id="kHovered" class="value">—</div></div>
+          <div class="k"><div class="label">Identify Score</div><div id="kScore" class="value">0</div></div>
+          <div class="k"><div class="label">Outline</div><div class="value"><span id="swOut" class="swatch" style="background:#7fb6ff"></span></div></div>
         </div>
       </div>
     </aside>
 
-    <!-- Right main -->
+    <!-- Main -->
     <main>
       <div id="canvasWrap" class="canvas-wrap">
         <div id="overlay"></div>
+        <div class="hud">Module 1.1 · Overview</div>
       </div>
-      <div class="row" style="margin-top:10px; gap:10px">
-        <div class="chip"><b>Task:</b> <span id="taskText" class="small">—</span></div>
-        <div class="chip"><b>Feedback:</b> <span id="feedbackText" class="small">—</span></div>
+      <div class="row" style="margin-top:10px; gap:12px">
+        <div class="chip"><b>Task:</b> <span id="task">Explore the mitral annulus, leaflets, and commissures. Hover to highlight; click to pin a label.</span></div>
+        <div class="chip"><b>Status:</b> <span id="status">Ready</span></div>
       </div>
     </main>
   </div>
 
-  <div class="footer small">© 2025 MitralSim Pro — Module 1. Educational prototype. No clinical use.</div>
+  <div class="footer small">© 2025 MitralSim Pro — Educational prototype · Not a medical device.</div>
 
-  <!-- Module script -->
+  <!-- ██████████████████████████████████████████████████████████████████████ -->
+  <!--                                SCRIPT                                  -->
+  <!-- ██████████████████████████████████████████████████████████████████████ -->
   <script type="module">
-    import {Bus, Util, Overlay, Voice, Progress} from '../assets/js/core/common.js';
-    import {Renderer3D} from '../assets/js/core/renderer3d.js';
-    import {StepEngine} from '../assets/js/core/coach.js';
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+    import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+    import { EffectComposer } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/EffectComposer.js';
+    import { RenderPass } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/RenderPass.js';
+    import { UnrealBloomPass } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/UnrealBloomPass.js';
+    import { OutlinePass } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/OutlinePass.js';
+    import { ShaderPass } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/ShaderPass.js';
+    import { FXAAShader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/shaders/FXAAShader.js';
+    import { RoomEnvironment } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/environments/RoomEnvironment.js';
 
-    // ---------- State ----------
-    const state = {
-      mode: 'training',           // 'training' | 'practice' | 'quiz'
-      renderer: null,
-      groups: {
-        core: null,               // entire heart root
-        lv: null, la: null,       // myocardium
-        annulus: null,            // mitral ring
-        leaflets: { A: null, P: null },
-        segments: [],             // A1-A3, P1-P3 hitpads
-        chordae: null,            // chordae bundle
-        pap: { AL: null, PM: null },
-        coronaries: { LAD: null, Cx: null },
-        aorta: null,              // aortic root surrogate
-        zones: { safe: [], danger: [] },
-        labels: []                // floating label anchors
-      },
-      variation: 'normal',
-      task: null,                 // current practice/quiz task
-      expectKey: null,            // structure key expected
-      labelVisible: true,
-      quiz: { total: 10, asked: 0, correct: 0, rt: [], score: 0 },
-      practice: { asked: 0, correct: 0, streak: 0, rt: [], score: 0 },
-      timers: { t0: 0 },
-      metricsEls: {
-        acc: document.getElementById('kpiAcc'),
-        rt: document.getElementById('kpiRT'),
-        streak: document.getElementById('kpiStreak'),
-        score: document.getElementById('kpiScore')
-      },
-      ui: {
-        task: document.getElementById('taskText'),
-        feedback: document.getElementById('feedbackText'),
-        finishNote: document.getElementById('finishNote')
-      }
-    };
+    // -------------------- DOM refs --------------------
+    const wrap = document.getElementById('canvasWrap');
+    const overlay = document.getElementById('overlay');
+    const stepBox = document.getElementById('stepBox');
+    const statusEl = document.getElementById('status');
+    const taskEl = document.getElementById('task');
+    const kHovered = document.getElementById('kHovered');
+    const kScore   = document.getElementById('kScore');
+    const swOut    = document.getElementById('swOut');
 
-    // ---------- UI bindings ----------
-    Overlay.init(document.getElementById('canvasWrap'));
-    document.getElementById('btnModeTraining').onclick = () => setMode('training');
-    document.getElementById('btnModePractice').onclick = () => setMode('practice');
-    document.getElementById('btnModeQuiz').onclick = () => setMode('quiz');
-    document.getElementById('btnApplyVar').onclick = () => applyVariation(document.getElementById('variationSel').value);
-    document.getElementById('btnResetVar').onclick = () => applyVariation('normal');
-    document.getElementById('btnPrev').onclick = () => engine.prev();
-    document.getElementById('btnNext').onclick = () => engine.next();
-    document.getElementById('btnFinish').onclick = saveProgress;
+    // -------------------- Renderer & Scene --------------------
+    const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio||1));
+    renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    wrap.appendChild(renderer.domElement);
 
-    // Layer toggles
-    document.getElementById('layerList').addEventListener('change', (e) => {
-      if(!(e.target instanceof HTMLInputElement)) return;
-      toggleLayer(e.target.dataset.layer, e.target.checked);
-    });
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x070a10, 0.08);
 
-    // Quick camera focus
-    document.querySelectorAll('[data-focus]').forEach(btn => {
-      btn.addEventListener('click', () => focusView(btn.dataset.focus));
-    });
+    const camera = new THREE.PerspectiveCamera(45, wrap.clientWidth/wrap.clientHeight, 0.02, 50);
+    camera.position.set(0.9, 1.0, 2.9);
 
-    // Hotkeys
-    window.addEventListener('keydown', (e) => {
-      if(e.key === 'f' || e.key === 'F') focusView('annulus');
-      if(e.key === 'l' || e.key === 'L') { state.labelVisible = !state.labelVisible; updateLabelVisibility(); }
-      if(e.key === 'v' || e.key === 'V') cycleVariation();
-    });
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true; controls.dampingFactor = 0.08;
+    controls.minDistance = 1.1; controls.maxDistance = 5.5;
+    controls.target.set(0,0.18,0); controls.update();
 
-    // ---------- Renderer ----------
-    state.renderer = new Renderer3D(document.getElementById('canvasWrap'));
-    state.renderer.animate();
+    // PBR environment
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), .7).texture;
 
-    // ---------- Build anatomy ----------
-    buildMitralAnatomy();
+    // Lights
+    scene.add(new THREE.AmbientLight(0x52606e, .45));
+    const key = new THREE.DirectionalLight(0xffffff, .85);
+    key.position.set(2.5, 3.5, 3.0);
+    key.castShadow = true; key.shadow.mapSize.set(1024,1024);
+    key.shadow.camera.near = 0.1; key.shadow.camera.far = 12;
+    scene.add(key);
 
-    // ---------- Picking & interactions ----------
-    const pickables = new Set();      // objects that can be clicked / quizzed
-    // will be filled while building
+    const fill = new THREE.DirectionalLight(0x99aaff, .35); fill.position.set(-2.2, 1.2, -2.0); scene.add(fill);
+    const rim  = new THREE.DirectionalLight(0x3344aa, .3); rim.position.set(0.5, 1.8, -1.5); scene.add(rim);
 
-    state.renderer.renderer.domElement.addEventListener('click', onClick);
+    // Ground catch (soft shadow plane)
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(8,8),
+      new THREE.ShadowMaterial({ color: 0x000000, opacity: .18 })
+    );
+    ground.rotation.x = -Math.PI/2; ground.position.y = -0.25; ground.receiveShadow = true; scene.add(ground);
 
-    function onClick(ev){
-      const dom = state.renderer.renderer.domElement;
-      const hits = state.renderer.pick(ev.clientX, ev.clientY, Array.from(pickables));
-      if(!hits.length) return;
+    // -------------------- Post‑processing --------------------
+    const composer = new EffectComposer(renderer);
+    const renderPass = new RenderPass(scene, camera);
+    composer.addPass(renderPass);
 
-      // Prefer segment pads > key landmarks > surfaces
-      const hit = hits.sort((a,b)=>{
-        const ap = (a.object.userData.kind==='segment')?0: (a.object.userData.kind==='landmark'?1:2);
-        const bp = (b.object.userData.kind==='segment')?0: (b.object.userData.kind==='landmark'?1:2);
-        return ap-bp;
-      })[0];
+    const outlinePass = new OutlinePass(new THREE.Vector2(wrap.clientWidth, wrap.clientHeight), scene, camera);
+    outlinePass.edgeStrength = 3.0;
+    outlinePass.edgeGlow = .6;
+    outlinePass.edgeThickness = 0.032 / 0.016; // relative to FXAA resolution
+    outlinePass.pulsePeriod = 2.5;
+    outlinePass.visibleEdgeColor.set('#7fb6ff');
+    outlinePass.hiddenEdgeColor.set('#2a5bb7');
+    composer.addPass(outlinePass);
 
-      const obj = hit.object;
-      const key = obj.userData.key;
-      const label = obj.userData.label || obj.name || key;
-      showFloatingLabel(hit.point, label);
+    const fxaaPass = new ShaderPass(FXAAShader);
+    fxaaPass.material.uniforms['resolution'].value.set(1/(wrap.clientWidth*renderer.getPixelRatio()), 1/(wrap.clientHeight*renderer.getPixelRatio()));
+    composer.addPass(fxaaPass);
 
-      if(state.mode === 'training'){
-        // In training, step goals will check specific keys
-        lastClickKey = key;
-        engine.check();
-        feedback(`Selected: ${label}`);
-      } else {
-        evaluateSelection(key, label);
-      }
-    }
+    const bloomPass = new UnrealBloomPass(new THREE.Vector2(wrap.clientWidth, wrap.clientHeight), 0.8, 0.32, 0.85);
+    composer.addPass(bloomPass);
 
-    function showFloatingLabel(worldPoint, text){
-      if(!state.labelVisible) return;
-      const {x,y} = state.renderer.worldToScreen(worldPoint);
-      const d = document.createElement('div');
-      d.className = 'overlay-label';
-      d.textContent = text;
-      d.style.left = (x|0)+'px';
-      d.style.top  = (y|0)+'px';
-      Overlay.el.appendChild(d);
-      setTimeout(()=>d.remove(), 1500);
-    }
+    // -------------------- Scene content root --------------------
+    const root = new THREE.Group();
+    scene.add(root);
 
-    // ---------- Anatomy construction ----------
-    function buildMitralAnatomy(){
-      const scene = state.renderer.scene;
-      const root = new THREE.Group(); root.name='HeartRoot'; scene.add(root);
-      state.groups.core = root;
-
-      // Lighting tweak (already in renderer) — add subtle rim
-      const rim = new THREE.DirectionalLight(0x88aaff, 0.25); rim.position.set(-3, 2, -4); scene.add(rim);
-
-      // Left Ventricle (LV) — ellipsoid
-      const lvGeo = new THREE.SphereGeometry(0.95, 40, 32);
-      const lvMat = new THREE.MeshStandardMaterial({ color:0x8b2b2b, roughness:0.9, metalness:0.05 });
-      const lv = new THREE.Mesh(lvGeo, lvMat);
-      lv.scale.set(0.85, 1.15, 0.85);
-      lv.position.set(0, -0.15, 0);
-      lv.name = 'LV';
-      root.add(lv);
-      state.groups.lv = lv;
-
-      // Left Atrium (LA) — smaller ellipsoid
-      const laGeo = new THREE.SphereGeometry(0.55, 36, 28);
-      const laMat = new THREE.MeshStandardMaterial({ color:0x2c8b8b, roughness:0.95, metalness:0.02 });
-      const la = new THREE.Mesh(laGeo, laMat);
-      la.scale.set(0.9, 0.7, 0.9);
-      la.position.set(0, 0.55, -0.05);
-      la.name = 'LA';
-      root.add(la);
-      state.groups.la = la;
-
-      // Mitral Annulus — torus scaled elliptical
-      const annGeo = new THREE.TorusGeometry(0.65, 0.045, 28, 180);
-      const annMat = new THREE.MeshStandardMaterial({ color:0x2b7a3f, roughness:0.8, metalness:0.1, emissive:0x001a00 });
-      const ann = new THREE.Mesh(annGeo, annMat);
-      ann.rotation.x = Math.PI/2;
-      ann.scale.set(1.15, 1.0, 0.95);  // ellipse-ish
-      ann.position.set(0, 0.22, 0);
-      ann.name = 'Mitral Annulus';
-      root.add(ann);
-      state.groups.annulus = ann;
-      pickables.add(ann);
-      ann.userData = { key:'annulus', label:'Mitral Annulus', kind:'landmark' };
-
-      // Aortic root & LVOT surrogate
-      const aorta = new THREE.Mesh(
-        new THREE.TorusGeometry(0.35, 0.05, 24, 120),
-        new THREE.MeshStandardMaterial({ color:0x7da0ff, roughness:0.8, metalness:0.1 })
-      );
-      aorta.rotation.set(Math.PI/2.2, 0.0, 0.45);
-      aorta.position.set(0.35, 0.34, 0.1);
-      aorta.name='Aortic Root';
-      root.add(aorta);
-      state.groups.aorta = aorta;
-      pickables.add(aorta);
-      aorta.userData = { key:'aorta', label:'Aortic Root', kind:'landmark' };
-
-      // LVOT point & AMC marker (as tiny spheres)
-      const lvot = new THREE.Mesh(new THREE.SphereGeometry(0.02, 12, 12), new THREE.MeshBasicMaterial({color:0x40a9ff}));
-      lvot.position.set(0.15, 0.28, 0.08); lvot.name='LVOT';
-      root.add(lvot); pickables.add(lvot);
-      lvot.userData = { key:'lvot', label:'LVOT', kind:'landmark' };
-
-      const amc = new THREE.Mesh(new THREE.SphereGeometry(0.022, 12, 12), new THREE.MeshBasicMaterial({color:0x40a9ff}));
-      amc.position.set(0.12, 0.23, 0.0); amc.name='Aorto‑Mitral Continuity';
-      root.add(amc); pickables.add(amc);
-      amc.userData = { key:'amc', label:'Aorto‑Mitral Continuity (AMC)', kind:'landmark' };
-
-      // Leaflets: anterior (A) & posterior (P) — curved planes
-      const leafA = makeLeaflet(+1, 0x6dad8f, 'Anterior Leaflet (A)');
-      const leafP = makeLeaflet(-1, 0x7ca38c, 'Posterior Leaflet (P)');
-      root.add(leafA, leafP);
-      state.groups.leaflets.A = leafA; state.groups.leaflets.P = leafP;
-      pickables.add(leafA); leafA.userData = { key:'leaflet_A', label:'Anterior Leaflet', kind:'landmark' };
-      pickables.add(leafP); leafP.userData = { key:'leaflet_P', label:'Posterior Leaflet', kind:'landmark' };
-
-      // Leaflet segment hitpads A1-A3 / P1-P3 (blue invisible circles)
-      state.groups.segments = [];
-      const segSpec = [
-        {key:'A1', theta: -0.8}, {key:'A2', theta: 0.0}, {key:'A3', theta: +0.8},
-        {key:'P1', theta: -0.8+Math.PI}, {key:'P2', theta: Math.PI}, {key:'P3', theta: +0.8+Math.PI}
-      ];
-      const segGroup = new THREE.Group(); segGroup.name='Segments'; root.add(segGroup);
-      segSpec.forEach(s => {
-        const r = 0.64;
-        const pad = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.06,0.06, 0.003, 24),
-          new THREE.MeshBasicMaterial({ color:0x40a9ff, transparent:true, opacity:0.15 })
-        );
-        const x = Math.cos(s.theta)*r, z = Math.sin(s.theta)*r;
-        pad.position.set(x, 0.23, z);
-        pad.rotation.x = Math.PI/2;
-        pad.name = s.key;
-        segGroup.add(pad);
-        state.groups.segments.push(pad);
-        pickables.add(pad);
-        pad.userData = { key: s.key.toLowerCase(), label: s.key, kind:'segment' };
-      });
-
-      // Papillary muscles (AL/PM) — purple cones inside LV
-      const papAL = makePapillary(new THREE.Color(0x7c4dff)); papAL.position.set(+0.25, -0.25, +0.12); papAL.name='Papillary (AL)';
-      const papPM = makePapillary(new THREE.Color(0x8a4dff)); papPM.position.set(-0.22, -0.27, -0.18); papPM.name='Papillary (PM)';
-      root.add(papAL, papPM);
-      state.groups.pap.AL = papAL; state.groups.pap.PM = papPM;
-      pickables.add(papAL); papAL.userData = { key:'pap_al', label:'Anterolateral Papillary Muscle', kind:'landmark' };
-      pickables.add(papPM); papPM.userData = { key:'pap_pm', label:'Posteromedial Papillary Muscle', kind:'landmark' };
-
-      // Chordae tendineae — yellow tubes from pap tips to leaflet underside (few strands)
-      const chordae = new THREE.Group(); chordae.name='Chordae';
-      root.add(chordae); state.groups.chordae = chordae;
-      const chordMat = new THREE.MeshStandardMaterial({ color:0xe6cf57, roughness:0.5, metalness:0.2 });
-      function strand(from, to){
-        const curve = new THREE.CatmullRomCurve3([from, from.clone().lerp(to,0.4).add(new THREE.Vector3(0,0.06,0)), to]);
-        const geo = new THREE.TubeGeometry(curve, 32, 0.008, 8, false);
-        const m = new THREE.Mesh(geo, chordMat);
-        chordae.add(m); pickables.add(m);
-        m.userData = { key:'chordae', label:'Chordae Tendineae', kind:'landmark' };
-        return m;
-      }
-      const papALTip = new THREE.Vector3().copy(papAL.position).add(new THREE.Vector3(0,0.14,0));
-      const papPMTip = new THREE.Vector3().copy(papPM.position).add(new THREE.Vector3(0,0.14,0));
-      // a few attachments to leaflet underside near A2/P2
-      [ new THREE.Vector3(0.1,0.22, 0.03), new THREE.Vector3(0.0,0.22, 0.07), new THREE.Vector3(-0.1,0.22, 0.02) ].forEach(p=> strand(papALTip, p));
-      [ new THREE.Vector3(0.1,0.22,-0.04), new THREE.Vector3(0.0,0.22,-0.09), new THREE.Vector3(-0.1,0.22,-0.06) ].forEach(p=> strand(papPMTip, p));
-
-      // Coronary surrogates (simplified): LAD on anterior surface, Cx near posterior annulus
-      const coronaries = new THREE.Group(); coronaries.name='Coronaries'; root.add(coronaries);
-      const vesselMat = new THREE.MeshStandardMaterial({ color:0xff6666, roughness:0.4, metalness:0.3 });
-      const lad = vesselTube([ [0.05,0.35,0.15], [0.00,0.25,0.18], [-0.02,0.15,0.15], [-0.05,0.0,0.1] ], 0.012, vesselMat);
-      const cx  = vesselTube([ [-0.42,0.22,-0.05], [-0.55,0.22,0.0], [-0.65,0.22,0.05] ], 0.012, vesselMat);
-      coronaries.add(lad, cx);
-      state.groups.coronaries.LAD = lad; state.groups.coronaries.Cx = cx;
-      pickables.add(lad); lad.userData = { key:'lad', label:'LAD (surrogate)', kind:'landmark' };
-      pickables.add(cx);  cx.userData  = { key:'cx',  label:'Circumflex (surrogate)', kind:'landmark' };
-
-      // Safe/Danger annular sectors (LVOT/conduction hazard; posterior Cx proximity)
-      const zonesGroup = new THREE.Group(); zonesGroup.name='Zones'; root.add(zonesGroup);
-      const safe1 = arcSector(0.65, 0.11, Math.PI*0.05, Math.PI*0.35, 0x00ff88);
-      const danger1 = arcSector(0.65, 0.11, Math.PI*0.4, Math.PI*0.55, 0xff3366); // conduction area surrogate
-      const danger2 = arcSector(0.65, 0.11, Math.PI*1.15, Math.PI*1.35, 0xff5c7a); // Cx proximity
-      zonesGroup.add(safe1, danger1, danger2);
-      zonesGroup.position.set(0,0.22,0);
-      zonesGroup.rotation.x = Math.PI/2;
-      state.groups.zones.safe = [safe1];
-      state.groups.zones.danger = [danger1, danger2];
-
-      // Floating labels (initial)
-      addLabelAnchor(ann.position.clone().add(new THREE.Vector3(0.0, 0.15, 0.0)), 'Annulus');
-      addLabelAnchor(new THREE.Vector3(0.12,0.23,0), 'AMC');
-      addLabelAnchor(new THREE.Vector3(0.15,0.28,0.08), 'LVOT');
-      addLabelAnchor(papAL.position.clone().add(new THREE.Vector3(0,0.22,0)), 'Pap AL');
-      addLabelAnchor(papPM.position.clone().add(new THREE.Vector3(0,0.22,0)), 'Pap PM');
-
-      // Helper functions
-      function makeLeaflet(sign=+1, color=0x6dad8f, name='Leaflet'){
-        const w=1.2, h=0.45, segX=48, segY=16;
-        const geo = new THREE.PlaneGeometry(w, h, segX, segY);
-        geo.rotateX(-Math.PI/2);
-        geo.translate(0, 0.22+sign*0.07, 0);
-        const pos = geo.attributes.position;
-        for(let i=0;i<pos.count;i++){
-          const x = pos.getX(i), z = pos.getZ(i);
-          const bulge = Math.exp(-Math.abs(x))*0.09 * sign;
-          const scallop = Math.sin(x*1.7)*0.03 * sign;
-          pos.setY(i, pos.getY(i) + bulge + scallop);
-        }
-        pos.needsUpdate = true;
-        const m = new THREE.MeshStandardMaterial({ color, metalness:0.05, roughness:0.92, side:THREE.DoubleSide });
-        const mesh = new THREE.Mesh(geo, m); mesh.name=name; return mesh;
-      }
-
-      function makePapillary(color){
-        const cone = new THREE.Mesh(
-          new THREE.ConeGeometry(0.08, 0.24, 24),
-          new THREE.MeshStandardMaterial({ color, roughness:0.6, metalness:0.2 })
-        );
-        cone.rotation.x = -0.4;
-        return cone;
-      }
-
-      function vesselTube(points, r, mat){
-        const pts = points.map(p=> new THREE.Vector3(p[0],p[1],p[2]));
-        const curve = new THREE.CatmullRomCurve3(pts);
-        const geo = new THREE.TubeGeometry(curve, 64, r, 10, false);
-        return new THREE.Mesh(geo, mat);
-      }
-
-      function arcSector(r=0.65, tube=0.12, start=0, end=Math.PI/3, color=0x0a8f4b){
-        const shape = new THREE.Shape();
-        shape.absarc(0,0,r+tube, start, end, false);
-        const inner = new THREE.Path();
-        inner.absarc(0,0,r-tube, end, start, true);
-        shape.holes.push(inner);
-        const geo = new THREE.ShapeGeometry(shape, 40);
-        const mat = new THREE.MeshBasicMaterial({ color, transparent:true, opacity:0.24, side:THREE.DoubleSide });
-        return new THREE.Mesh(geo, mat);
-      }
-
-      function addLabelAnchor(vec3, text){
-        const dot = new THREE.Mesh(new THREE.SphereGeometry(0.01,10,10), new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0.0}));
-        dot.position.copy(vec3); dot.userData = { label: text };
-        root.add(dot); state.groups.labels.push(dot);
-      }
-    }
-
-    // ---------- Variations ----------
-    function applyVariation(kind='normal'){
-      state.variation = kind;
-      const g = state.groups;
-
-      // Reset transforms
-      g.annulus.scale.set(1.15, 1.0, 0.95);
-      g.leaflets.A.position.y = 0.29; g.leaflets.P.position.y = 0.15;
-      g.leaflets.A.geometry.attributes.position.needsUpdate = true;
-      g.leaflets.P.geometry.attributes.position.needsUpdate = true;
-
-      // remove calcification artifacts if any
-      if(g.annulus.userData.calcMeshes){
-        g.annulus.userData.calcMeshes.forEach(m=> g.annulus.remove(m));
-        g.annulus.userData.calcMeshes = [];
-      }
-
-      switch(kind){
-        case 'annular_dilation':
-          g.annulus.scale.set(1.35, 1.0, 1.10);
-          Voice.speak('Variation applied: Annular dilatation.');
-          break;
-        case 'posterior_p2_prolapse':
-          pushLeafletBulge(g.leaflets.P, +0.06, -0.1, 'P2');
-          Voice.speak('Variation applied: posterior P2 prolapse.');
-          break;
-        case 'barlow_bileaflet':
-          pushLeafletBulge(g.leaflets.A, +0.07, 0, 'A2');
-          pushLeafletBulge(g.leaflets.P, +0.07, 0, 'P2');
-          Voice.speak('Variation applied: Barlow-type bileaflet prolapse.');
-          break;
-        case 'annular_calcification':
-          addAnnularCalcificationSegment();
-          Voice.speak('Variation applied: annular calcification on posterior arc.');
-          break;
-        case 'cleft_a2':
-          carveLeafletCleft(g.leaflets.A, 0.0 /* A2 center */);
-          Voice.speak('Variation applied: cleft at A2.');
-          break;
-        case 'short_chordae':
-          shortenChordae(0.85);
-          Voice.speak('Variation applied: shortened primary chordae.');
-          break;
-        default:
-          Voice.speak('Variation reset to normal.');
-      }
-
-      // light visual cue on annulus
-      pulseMaterial(g.annulus.material);
-
-      function pushLeafletBulge(leaf, amp=0.06, xCenter=0.0, tag=''){
-        const pos = leaf.geometry.attributes.position;
-        for(let i=0;i<pos.count;i++){
-          const x = pos.getX(i), z = pos.getZ(i);
-          const near = Math.exp(-Math.pow((x-xCenter)/0.25,2));
-          const lift = amp * near;
-          pos.setY(i, pos.getY(i) + lift);
-        }
-        pos.needsUpdate = true;
-      }
-
-      function carveLeafletCleft(leaf, xCenter=0.0){
-        const pos = leaf.geometry.attributes.position;
-        for(let i=0;i<pos.count;i++){
-          const x = pos.getX(i);
-          const d = Math.abs(x-xCenter);
-          if(d < 0.08){
-            pos.setY(i, pos.getY(i) - (0.05 - d*0.5));
+    // Backdrop volumetric shell (subtle gradient)
+    const backdrop = new THREE.Mesh(
+      new THREE.SphereGeometry(10, 48, 32),
+      new THREE.ShaderMaterial({
+        side: THREE.BackSide, transparent:true, depthWrite:false,
+        uniforms: {
+          c1:{value:new THREE.Color('#09121d')},
+          c2:{value:new THREE.Color('#0b1b2e')},
+          fogC:{value:new THREE.Color('#0a0f19')}
+        },
+        vertexShader: `
+          varying vec3 vPos;
+          void main(){
+            vPos = position;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
           }
-        }
-        pos.needsUpdate = true;
-      }
+        `,
+        fragmentShader: `
+          varying vec3 vPos;
+          uniform vec3 c1; uniform vec3 c2; uniform vec3 fogC;
+          void main(){
+            float h = normalize(vPos).y * 0.5 + 0.5;
+            vec3 col = mix(c1, c2, h);
+            gl_FragColor = vec4(mix(col, fogC, 0.2), 0.95);
+          }
+        `
+      })
+    );
+    root.add(backdrop);
 
-      function addAnnularCalcificationSegment(){
-        const seg = new THREE.Mesh(
-          new THREE.TorusGeometry(0.65, 0.055, 22, 80, Math.PI*0.35),
-          new THREE.MeshStandardMaterial({ color:0xdddddd, roughness:0.6, metalness:0.3, emissive:0x111111 })
-        );
-        seg.rotation.x = Math.PI/2;
-        seg.rotation.z = Math.PI*1.1;
-        seg.position.copy(g.annulus.position);
-        g.annulus.add(seg);
-        g.annulus.userData.calcMeshes = (g.annulus.userData.calcMeshes||[]).concat(seg);
-      }
+    // -------------------- Mitral Apparatus Geometry --------------------
+    const groupValve = new THREE.Group(); groupValve.position.set(0,0.0,0); root.add(groupValve);
 
-      function shortenChordae(factor){
-        state.groups.chordae.children.forEach(mesh=>{
-          mesh.scale.y = factor;
-          mesh.updateMatrix(); mesh.updateMatrixWorld();
-        });
-      }
+    // Annulus — elliptical, mildly saddle shaped torus
+    const annulus = makeAnnulus();
+    annulus.name = 'Mitral Annulus';
+    groupValve.add(annulus);
 
-      function pulseMaterial(mat){
-        const base = mat.emissive.clone();
-        let t=0; const off = state.renderer.addTicker(dt=>{
-          t += dt; const k = Math.sin(t*6)*0.5+0.5;
-          mat.emissive.lerpColors(base, new THREE.Color(0x112200), k*0.25);
-          if(t>0.8){ state.renderer._tickers.delete(off); mat.emissive.copy(base); }
-        });
-      }
-    }
+    // Leaflets — physical material with sheen to mimic moist tissue
+    const leafletA = makeLeaflet(+1, 0x78b99a, 'Anterior Leaflet');
+    const leafletP = makeLeaflet(-1, 0x86b79d, 'Posterior Leaflet');
+    groupValve.add(leafletA, leafletP);
 
-    function cycleVariation(){
-      const sel = document.getElementById('variationSel');
-      const idx = sel.selectedIndex;
-      const next = (idx+1) % sel.options.length;
-      sel.selectedIndex = next;
-      applyVariation(sel.value);
-    }
+    // Coaptation line — thin ribbon at leaflet edges
+    const coaptation = makeCoaptationLine();
+    coaptation.name = 'Coaptation Line';
+    groupValve.add(coaptation);
 
-    // ---------- Layers ----------
-    function toggleLayer(layer, visible){
-      const g = state.groups;
-      const setVis = (obj, v)=>{ if(!obj) return; obj.visible = v; if(obj.children) obj.children.forEach(c=>setVis(c,v)); };
+    // Commissures — anterolateral (AL, left viewer side) & posteromedial (PM, right rear)
+    const commissures = new THREE.Group(); commissures.name = 'Commissures';
+    const commAL = makeCommissure( 0.85,  0.75, 'Anterolateral Commissure');
+    const commPM = makeCommissure(-2.25, -2.35, 'Posteromedial Commissure');
+    commissures.add(commAL, commPM);
+    groupValve.add(commissures);
 
-      switch(layer){
-        case 'leaflets': setVis(g.leaflets.A, visible); setVis(g.leaflets.P, visible); break;
-        case 'annulus': setVis(g.annulus, visible); break;
-        case 'papillary': setVis(g.pap.AL, visible); setVis(g.pap.PM, visible); break;
-        case 'chordae': setVis(g.chordae, visible); break;
-        case 'segments': g.segments.forEach(s=> setVis(s, visible)); break;
-        case 'zones': g.zones.safe.forEach(z=> setVis(z, visible)); g.zones.danger.forEach(z=> setVis(z, visible)); break;
-        case 'coronaries': setVis(state.groups.coronaries.LAD, visible); setVis(state.groups.coronaries.Cx, visible); break;
-        case 'lvot': setVis(state.groups.aorta, visible); break;
-        case 'labels': state.labelVisible = visible; updateLabelVisibility(); break;
-      }
-    }
-
-    function updateLabelVisibility(){
-      const any = state.labelVisible;
-      if(!Overlay.el) return;
-      Overlay.clear();
-      // Re-render static anchors only when visible (dynamic click labels spawn on click regardless)
-      if(!any) return;
-      state.groups.labels.forEach(dot=>{
-        const {x,y} = state.renderer.worldToScreen(dot.position);
-        const d = document.createElement('div');
-        d.className = 'overlay-label';
-        d.textContent = dot.userData.label;
-        d.style.left = (x|0)+'px';
-        d.style.top  = (y|0)+'px';
-        Overlay.el.appendChild(d);
-      });
-    }
-
-    // ---------- Camera focuses ----------
-    function focusView(where){
-      const cam = state.renderer.camera;
-      const ctr = state.renderer.controls;
-      const tween = (from, to, dur=0.45)=> {
-        let t=0; const start=from.clone();
-        const off = state.renderer.addTicker(dt=>{
-          t += dt; const k = Math.min(1, t/dur);
-          from.lerpVectors(start, to, k);
-          if(k>=1){ state.renderer._tickers.delete(off); }
-        });
-      };
-      const focus = {
-        annulus: new THREE.Vector3(0,0.22,0),
-        aorta:   new THREE.Vector3(0.15,0.27,0.06),
-        pap_al:  state.groups.pap.AL.position.clone(),
-        pap_pm:  state.groups.pap.PM.position.clone(),
-        reset:   new THREE.Vector3(0,0,0)
-      }[where] || new THREE.Vector3(0,0,0);
-
-      tween(ctr.target, focus, 0.4);
-      if(where==='reset'){
-        tween(cam.position, new THREE.Vector3(0.8,0.9,3.2), 0.6);
-      }else{
-        const dir = focus.clone().add(new THREE.Vector3(0.6,0.5,1.2));
-        tween(cam.position, dir, 0.6);
-      }
-    }
-
-    // ---------- AI Copilot (Training steps) ----------
-    let engine = null; let lastClickKey = null;
-    function setMode(m){
-      state.mode = m;
-      Util.toast('Mode: ' + m);
-      Overlay.clear();
-      if(m==='training'){ setupTraining(); state.ui.task.textContent = 'Follow copilot instructions'; }
-      if(m==='practice'){ startPracticeRound(); }
-      if(m==='quiz'){ startQuiz(); }
-    }
-
-    function setupTraining(){
-      engine = new StepEngine([
-        {
-          id:'orient', title:'Orientation',
-          details:'Orbit around the heart. Press F to focus on the annulus.',
-          goal: () => true,
-          onEnter: () => { Voice.speak('Welcome to Anatomical Mastery. Orbit to orient yourself. Press F to focus on the annulus.'); hintAnnulus(); }
-        },
-        {
-          id:'annulus', title:'Identify the Mitral Annulus',
-          details:'Click the green ring (mitral annulus).',
-          goal: () => lastClickKey === 'annulus',
-          onEnter: () => { Voice.speak('Click on the mitral annulus.'); highlightObject(state.groups.annulus); }
-        },
-        {
-          id:'leaflet_a', title:'Identify Anterior Leaflet',
-          details:'Click the anterior leaflet (toward LVOT/AMC).',
-          goal: () => lastClickKey === 'leaflet_A',
-          onEnter: () => { Voice.speak('Identify the anterior leaflet near the LVOT and AMC.'); highlightObject(state.groups.leaflets.A); }
-        },
-        {
-          id:'leaflet_p', title:'Identify Posterior Leaflet',
-          details:'Click the posterior leaflet (scalloped, near circumflex).',
-          goal: () => lastClickKey === 'leaflet_P',
-          onEnter: () => { Voice.speak('Identify the posterior leaflet.'); highlightObject(state.groups.leaflets.P); }
-        },
-        {
-          id:'segments', title:'Segments A2 and P2',
-          details:'Click A2, then P2 segment pads.',
-          goal: () => lastClickKey === 'p2', // step advances after P2
-          onEnter: () => { Voice.speak('Click A2 first, then P2.'); pulseSegment('A2'); },
-          onExit: () => clearSegmentPulse()
-        },
-        {
-          id:'pap', title:'Papillary Muscles',
-          details:'Click Anterolateral (AL), then Posteromedial (PM) papillary muscles.',
-          goal: () => lastClickKey === 'pap_pm',
-          onEnter: () => { Voice.speak('Click anterolateral, then posteromedial papillary muscles.'); highlightObject(state.groups.pap.AL); },
-        },
-        {
-          id:'chordae', title:'Chordae Tendineae',
-          details:'Click a yellow chordae strand.',
-          goal: () => lastClickKey === 'chordae',
-          onEnter: () => { Voice.speak('Click on the chordae.'); }
-        },
-        {
-          id:'conduction', title:'Conduction Proximity',
-          details:'Toggle Zones layer ON and click the AMC marker.',
-          goal: () => lastClickKey === 'amc',
-          onEnter: () => { Voice.speak('Toggle zones. Be aware of conduction tissue near the aorto-mitral continuity. Click AMC.'); ensureZonesOn(); }
-        },
-        {
-          id:'variation', title:'Variation Drill',
-          details:'Apply Annular Dilatation variation, then click the annulus again.',
-          goal: () => lastClickKey === 'annulus',
-          onEnter: () => { Voice.speak('Apply annular dilatation, then re-identify the annulus.'); document.getElementById('variationSel').value='annular_dilation'; }
-        }
-      ], state);
-
-      engine._enter();
-      Bus.on('coach:enter', ({step}) => renderCoach(step));
-    }
-
-    function hintAnnulus(){
-      const ann = state.groups.annulus;
-      const p = state.renderer.worldToScreen(ann.position.clone().add(new THREE.Vector3(0,0.16,0)));
-      Overlay.addHint(p.x, p.y, 'Mitral Annulus');
-    }
-
-    function highlightObject(obj){
-      if(!obj || !obj.material) return;
-      const mat = obj.material;
-      const base = mat.emissive ? mat.emissive.clone() : new THREE.Color(0,0,0);
-      let t=0; const off = state.renderer.addTicker(dt=>{
-        t += dt; const k = Math.sin(t*6)*0.5+0.5;
-        if(mat.emissive) mat.emissive.setRGB(0.05 + 0.15*k, 0.08 + 0.1*k, 0.05);
-        if(t>1.2){ state.renderer._tickers.delete(off); if(mat.emissive) mat.emissive.copy(base); }
-      });
-    }
-
-    let segPulse = null;
-    function pulseSegment(name='A2'){
-      const pad = state.groups.segments.find(x => x.name===name);
-      if(!pad) return;
-      pad.material.opacity = 0.45; pad.material.needsUpdate = true;
-      segPulse = pad;
-    }
-    function clearSegmentPulse(){ if(segPulse){ segPulse.material.opacity=0.15; segPulse=null; } }
-    function ensureZonesOn(){
-      const zonesBox = document.querySelector('input[data-layer="zones"]');
-      if(zonesBox && !zonesBox.checked){ zonesBox.checked = true; toggleLayer('zones', true); }
-    }
-
-    function renderCoach(step){
-      const el = document.getElementById('coachUI');
-      el.innerHTML = '';
-      const h = document.createElement('div'); h.textContent = step.title; el.appendChild(h);
-      const d = document.createElement('div'); d.textContent = step.details; d.className = 'small'; el.appendChild(d);
-    }
-
-    // ---------- Practice / Quiz ----------
-    const ALL_TASKS = [
-      { key:'annulus', text:'Click the Mitral Annulus' },
-      { key:'leaflet_A', text:'Click the Anterior Leaflet' },
-      { key:'leaflet_P', text:'Click the Posterior Leaflet' },
-      { key:'aorta', text:'Click the Aortic Root (LVOT vicinity)' },
-      { key:'lvot', text:'Click the LVOT marker' },
-      { key:'amc', text:'Click the Aorto‑Mitral Continuity (AMC)' },
-      { key:'pap_al', text:'Click the Anterolateral Papillary Muscle' },
-      { key:'pap_pm', text:'Click the Posteromedial Papillary Muscle' },
-      { key:'chordae', text:'Click a Chordae strand' },
-      { key:'a1', text:'Click segment A1' },
-      { key:'a2', text:'Click segment A2' },
-      { key:'a3', text:'Click segment A3' },
-      { key:'p1', text:'Click segment P1' },
-      { key:'p2', text:'Click segment P2' },
-      { key:'p3', text:'Click segment P3' },
-      { key:'lad', text:'Click the LAD (surrogate)' },
-      { key:'cx', text:'Click the Circumflex (surrogate)' }
+    // Labels anchors (for overlay)
+    const anchors = [
+      { obj: annulus,   title:'Mitral Annulus', meta:'Elliptical, saddle‑shaped fibrous ring' },
+      { obj: leafletA,  title:'Anterior Leaflet (A)', meta:'Broad, near LVOT/AMC; smooth edge' },
+      { obj: leafletP,  title:'Posterior Leaflet (P)', meta:'Scalloped (P1–P3); shorter height' },
+      { obj: commAL,    title:'Anterolateral Commissure', meta:'Junction A1–P1' },
+      { obj: commPM,    title:'Posteromedial Commissure', meta:'Junction A3–P3' }
     ];
 
-    function startPracticeRound(){
-      state.practice = { asked:0, correct:0, streak:0, rt:[], score:0 };
-      nextTask();
+    // Picking registry
+    const pickables = new Set([annulus, leafletA, leafletP, commAL, commPM, coaptation]);
+
+    // -------------------- Materials & helpers --------------------
+    function makeAnnulus(){
+      // Base torus → elliptic scale; sculpt y to saddle using custom shader
+      const geo = new THREE.TorusGeometry(0.62, 0.05, 48, 320);
+      const mat = new THREE.MeshPhysicalMaterial({
+        color: 0x2c8a51, metalness:0.05, roughness:0.4, transmission:0.0, thickness:0.2,
+        clearcoat: 0.6, clearcoatRoughness: 0.3, sheen: 1.0, sheenRoughness: 0.9, sheenColor: new THREE.Color(0x99f0c8),
+        envMapIntensity: 0.38
+      });
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.scale.set(1.25, 1.0, 1.05);
+      mesh.rotation.x = Math.PI/2;
+      mesh.castShadow = true; mesh.receiveShadow = true;
+
+      // Subtle saddle shape by per-vertex displacement
+      const pos = geo.attributes.position;
+      for(let i=0;i<pos.count;i++){
+        const x = pos.getX(i), z = pos.getZ(i);
+        const theta = Math.atan2(z, x);
+        const saddle = 0.05 * Math.sin(2*theta);
+        pos.setY(i, pos.getY(i) + saddle);
+      }
+      pos.needsUpdate = true;
+      return mesh;
     }
 
-    function startQuiz(){
-      state.quiz = { total:10, asked:0, correct:0, rt:[], score:0 };
-      nextTask(true);
+    function makeLeaflet(sign=+1, baseColor=0x7fbba0, name='Leaflet'){
+      const w=1.35, h=0.52, segX=64, segY=24;
+      const geo = new THREE.PlaneGeometry(w, h, segX, segY);
+      geo.rotateX(-Math.PI/2);
+      // slight posterior/anterior offset for hinge
+      geo.translate(0, 0.22 + sign*0.07, 0.0);
+
+      // sculpt: bulge + scallop + hinge curvature
+      const pos = geo.attributes.position;
+      const norm = new Float32Array(pos.count*3); // later for custom shading if needed
+      for(let i=0;i<pos.count;i++){
+        const x = pos.getX(i), z = pos.getZ(i);
+        const bulge   = Math.exp(-Math.abs(x)*0.9) * 0.09 * sign;
+        const scallop = Math.sin((x*1.8) + (sign>0?0.2:-0.1))*0.03 * sign;
+        const hinge   = -0.015 * Math.sign(sign) * (z>0?1:-1);
+        pos.setY(i, pos.getY(i) + bulge + scallop + hinge);
+        // store a pseudo anisotropy vector in "norm"
+        norm[i*3+0] = Math.cos(x*2.0); norm[i*3+1] = 0.0; norm[i*3+2] = Math.sin(x*2.0);
+      }
+      geo.setAttribute('aniso', new THREE.BufferAttribute(norm, 3));
+      pos.needsUpdate = true;
+
+      const mat = new THREE.MeshPhysicalMaterial({
+        color: baseColor,
+        metalness: 0.05, roughness: 0.45,
+        clearcoat: 0.8, clearcoatRoughness: 0.22,
+        sheen: 1.0, sheenRoughness: 0.6, sheenColor: new THREE.Color(0xcfeee0),
+        transmission: 0.08, thickness: 0.25, ior: 1.35,
+        side: THREE.DoubleSide, envMapIntensity: 0.5
+      });
+
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.name = name; mesh.castShadow = true; mesh.receiveShadow = true;
+      return mesh;
     }
 
-    function nextTask(quiz=false){
-      const choices = ALL_TASKS;
-      const t = choices[Math.floor(Math.random()*choices.length)];
-      state.task = t; state.expectKey = t.key;
-      state.ui.task.textContent = t.text;
-      state.ui.feedback.textContent = '—';
-      state.timers.t0 = performance.now();
-      if(quiz){
-        state.quiz.asked++;
-      }else{
-        state.practice.asked++;
+    function makeCoaptationLine(){
+      // very thin circular line slightly inside annulus radius
+      const r = 0.60; const pts = [];
+      for(let i=0;i<=200;i++){
+        const t = i/200 * Math.PI*2;
+        pts.push(new THREE.Vector3(Math.cos(t)*r, 0.222 + 0.002*Math.sin(2*t), Math.sin(t)*r));
+      }
+      const geo = new THREE.BufferGeometry().setFromPoints(pts);
+      const mat = new THREE.LineBasicMaterial({ color:0x9fe3ff, transparent:true, opacity:0.68 });
+      const line = new THREE.Line(geo, mat); line.name='Coaptation Line';
+      return line;
+    }
+
+    function makeCommissure(a0, a1, label){
+      // small arc on annulus, glowing material
+      const r=0.64, tube=0.018;
+      const start=a0, end=a1; // radians
+      const shape = new THREE.Shape();
+      shape.absarc(0,0,r+tube, start, end, false);
+      const hole = new THREE.Path(); hole.absarc(0,0,r-tube, end, start, true);
+      shape.holes.push(hole);
+      const geo = new THREE.ShapeGeometry(shape, 60);
+      const mat = new THREE.MeshPhysicalMaterial({
+        color: 0xf0d47f,
+        emissive: 0x332000,
+        roughness: 0.45, metalness: 0.35, clearcoat: 0.6, clearcoatRoughness: 0.3
+      });
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.rotation.x = Math.PI/2;
+      mesh.position.y = 0.223;
+      mesh.name = label;
+      mesh.castShadow = true; mesh.receiveShadow = true;
+      return mesh;
+    }
+
+    // -------------------- Micro‑animation (lifelike) --------------------
+    const motion = { t:0, pulseAmp: 0.35 };
+    function animateLeaflets(dt){
+      motion.t += dt;
+      const a = motion.pulseAmp * 0.0025; // amplitude in meters
+      const yA = a * Math.sin(motion.t*2.1);
+      const yP = a * Math.sin(motion.t*2.1 + Math.PI);
+      leafletA.position.y = 0.29 + yA;
+      leafletP.position.y = 0.15 + yP;
+      // subtle rim shimmer
+      const cc = 0.6 + 0.1*Math.sin(motion.t*1.8);
+      leafletA.material.clearcoat = cc; leafletP.material.clearcoat = cc;
+    }
+
+    // -------------------- Overlay labels --------------------
+    const pinned = [];
+    function screenXY(vec3){
+      const v = vec3.clone().project(camera);
+      const x = (v.x * 0.5 + 0.5) * wrap.clientWidth;
+      const y = (-v.y * 0.5 + 0.5) * wrap.clientHeight;
+      return {x,y, on: (v.z<1)};
+    }
+    function addCalloutAt(obj, title, meta){
+      const box = document.createElement('div'); box.className='callout';
+      const h = document.createElement('div'); h.className='title'; h.textContent = title; box.appendChild(h);
+      if(meta){ const m=document.createElement('div'); m.className='meta'; m.textContent=meta; box.appendChild(m); }
+      overlay.appendChild(box);
+      pinned.push({ obj, box });
+
+      // also add a pin dot
+      const dot = document.createElement('div'); dot.className='pin'; overlay.appendChild(dot);
+      pinned[pinned.length-1].dot = dot;
+    }
+    function clearOverlay(){ overlay.innerHTML=''; pinned.length = 0; }
+    function updateOverlay(){
+      pinned.forEach((p,i)=>{
+        const center = new THREE.Vector3();
+        p.obj.getWorldPosition(center);
+        const {x,y,on} = screenXY(center);
+        p.box.style.left = (x + 12) + 'px';
+        p.box.style.top  = (y - 12) + 'px';
+        p.box.style.opacity = on? '1':'0';
+        p.dot.style.left = (x - 5) + 'px';
+        p.dot.style.top  = (y - 5) + 'px';
+        p.dot.style.opacity = on? '1':'0';
+      });
+    }
+
+    // Seed a few key labels initially (can be toggled via "labels" layer)
+    anchors.forEach(a => addCalloutAt(a.obj, a.title, a.meta));
+
+    // -------------------- Interactions & hover highlight --------------------
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    let hovered = null;
+
+    function setHovered(obj){
+      if(hovered === obj) return;
+      hovered = obj;
+      outlinePass.selectedObjects = obj ? [obj] : [];
+      kHovered.textContent = obj ? (obj.name || '—') : '—';
+    }
+
+    renderer.domElement.addEventListener('mousemove', (e)=>{
+      const rect = renderer.domElement.getBoundingClientRect();
+      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    });
+
+    renderer.domElement.addEventListener('click', ()=>{
+      if(!hovered) return;
+      // pin a label if clicked
+      addCalloutAt(hovered, hovered.name, hintFor(hovered));
+      statusEl.textContent = 'Pinned: ' + hovered.name;
+      score(2); // small exploration score
+    });
+
+    function hintFor(obj){
+      switch(obj){
+        case annulus: return 'Elliptical, saddle profile; sutures/repairs reference line.';
+        case leafletA: return 'Broader leaflet; near LVOT/AMC; higher height.';
+        case leafletP: return 'Scalloped P1–P3; shorter height.';
+        case coaptation: return 'Approximation line where leaflets meet.';
+        default:
+          if(obj && obj.name && obj.name.includes('Commissure')){
+            return 'Leaflet junction: A–P transition.';
+          }
+          return '';
       }
     }
 
-    function evaluateSelection(key, label){
-      const dt = (performance.now() - state.timers.t0)/1000;
-      const quiz = (state.mode==='quiz');
-      const correct = (key === state.expectKey);
-      const ctx = quiz ? state.quiz : state.practice;
-
-      if(correct){
-        ctx.correct++; ctx.streak = (ctx.streak||0) + 1;
-        state.ui.feedback.textContent = 'Correct: ' + (label || key);
-        state.ui.feedback.classList.remove('score-bad'); state.ui.feedback.classList.add('score-good');
-        Voice.speak('Correct');
+    // Picking update (each frame)
+    function updateHover(){
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(Array.from(pickables), true);
+      if(intersects.length>0){
+        // prefer commissure arcs > annulus > leaflets > line
+        intersects.sort((a,b)=>{
+          const p = priority(a.object), q = priority(b.object);
+          return p-q;
+        });
+        setHovered(getRoot(intersects[0].object));
       }else{
-        ctx.streak = 0;
-        state.ui.feedback.textContent = 'Incorrect (selected ' + (label||key) + '). Expected ' + state.task.text.replace('Click ','');
-        state.ui.feedback.classList.remove('score-good'); state.ui.feedback.classList.add('score-bad');
-        Voice.speak('Incorrect');
-      }
-
-      // Scoring model: base 10 per question; speed bonus up to +3; wrong −5
-      let delta = correct ? 10 : -5;
-      const speedBonus = Math.max(0, 3 - Math.min(3, dt)); // up to 3 points if <1s
-      if(correct) delta += speedBonus;
-      ctx.score = Math.max(0, (ctx.score||0) + delta);
-      ctx.rt = ctx.rt || []; ctx.rt.push(dt);
-
-      updateKPIs();
-
-      // Continue
-      if(quiz){
-        if(state.quiz.asked >= state.quiz.total){
-          finishQuiz();
-        }else{
-          nextTask(true);
-        }
-      }else{
-        nextTask(false);
+        setHovered(null);
       }
     }
+    function priority(o){
+      const name = getRoot(o).name || '';
+      if(name.includes('Commissure')) return 0;
+      if(name.includes('Annulus'))    return 1;
+      if(name.includes('Leaflet'))    return 2;
+      if(name.includes('Coaptation')) return 3;
+      return 4;
+    }
+    function getRoot(o){ while(o.parent && o.parent!==scene && !pickables.has(o)) o=o.parent; return o; }
 
-    function updateKPIs(){
-      const quiz = (state.mode==='quiz');
-      const ctx = quiz ? state.quiz : state.practice;
-      const acc = (ctx.correct / Math.max(1, ctx.asked)) * 100;
-      const avg = (ctx.rt.length ? ctx.rt.reduce((a,b)=>a+b,0)/ctx.rt.length : 0);
-      state.metricsEls.acc.textContent   = (acc||0).toFixed(0) + '%';
-      state.metricsEls.rt.textContent    = (avg?avg.toFixed(2)+' s':'— s');
-      state.metricsEls.streak.textContent= (ctx.streak||0);
-      state.metricsEls.score.textContent = (ctx.score||0).toFixed(0);
-      // colorize score
-      const cls = (acc>=90)?'score-good':(acc>=70)?'score-warn':'score-bad';
-      state.metricsEls.acc.className = 'value ' + cls;
+    // -------------------- Camera focus helpers --------------------
+    const tmpV = new THREE.Vector3();
+    function focusObject(obj, dist=2.2, elev=0.7){
+      obj.getWorldPosition(tmpV);
+      // simple tween
+      const start = camera.position.clone();
+      const startT = controls.target.clone();
+      const endT = tmpV.clone();
+      const dir = tmpV.clone().add(new THREE.Vector3(dist*.3, elev, dist*.5));
+      const end = dir;
+      let t=0;
+      const animateFocus = (dt)=>{
+        t += dt*1.4;
+        const k = Math.min(1, t);
+        camera.position.lerpVectors(start, end, easeInOutCubic(k));
+        controls.target.lerpVectors(startT, endT, easeInOutCubic(k));
+        if(k>=1) tickers.delete(animateFocus);
+      };
+      tickers.add(animateFocus);
+    }
+    function easeInOutCubic(x){ return x<0.5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3) / 2; }
+
+    // Quick camera buttons
+    document.querySelectorAll('[data-focus]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const where = btn.getAttribute('data-focus');
+        if(where==='annulus')   focusObject(annulus, 2.0, 0.6);
+        if(where==='anterior')  focusObject(leafletA, 2.2, 0.7);
+        if(where==='posterior') focusObject(leafletP, 2.2, 0.65);
+        if(where==='commAL')    focusObject(commAL, 2.1, 0.55);
+        if(where==='commPM')    focusObject(commPM, 2.1, 0.55);
+        if(where==='reset') { controls.target.set(0,0.18,0); camera.position.set(0.9,1.0,2.9); }
+        controls.update();
+      });
+    });
+
+    window.addEventListener('keydown', (e)=>{
+      if(e.key==='1') focusObject(annulus, 2.0, 0.6);
+      if(e.key==='2') focusObject(leafletA, 2.2, 0.7);
+      if(e.key==='3') focusObject(leafletP, 2.2, 0.65);
+      if(e.key==='4') focusObject(commAL, 2.1, 0.55);
+      if(e.key==='5') focusObject(commPM, 2.1, 0.55);
+    });
+
+    // -------------------- Step Guide (Guided mode) --------------------
+    const steps = [
+      { id:'annulus',  title:'Step 1 — Mitral Annulus',      desc:'Elliptical, saddle‑shaped fibrous ring. Hover to inspect; click to pin a label.', focus: annulus },
+      { id:'anterior', title:'Step 2 — Anterior Leaflet (A)', desc:'Broader leaflet adjacent to the LVOT/AMC. Smooth curved free edge.', focus: leafletA },
+      { id:'posterior',title:'Step 3 — Posterior Leaflet (P)',desc:'Scalloped leaflet (P1–P3) with shorter height.', focus: leafletP },
+      { id:'comm',     title:'Step 4 — Commissures',          desc:'Anterolateral (A1–P1) and Posteromedial (A3–P3) leaflet junctions.', focus: commAL }
+    ];
+    let stepIndex = 0;
+
+    function renderStep(){
+      const s = steps[stepIndex];
+      stepBox.innerHTML = `<div class="t">${s.title}</div><div class="d">${s.desc}</div>`;
+      focusObject(s.focus, 2.2, 0.65);
+      // glow emphasis target
+      outlinePass.selectedObjects = [s.focus];
+      statusEl.textContent = 'Guided: ' + s.title;
     }
 
-    function finishQuiz(){
-      const acc = (state.quiz.correct / Math.max(1, state.quiz.asked)) * 100;
-      const score = state.quiz.score;
-      const grade = letterFor(score, acc);
-      state.ui.task.textContent = 'Quiz finished.';
-      state.ui.feedback.textContent = `Summary — Correct: ${state.quiz.correct}/${state.quiz.asked}, Accuracy: ${acc.toFixed(0)}%, Score: ${score.toFixed(0)} (${grade})`;
-      Voice.speak('Quiz complete.');
+    document.getElementById('btnPrev').addEventListener('click', ()=>{
+      stepIndex = Math.max(0, stepIndex-1); renderStep();
+    });
+    document.getElementById('btnNext').addEventListener('click', ()=>{
+      stepIndex = Math.min(steps.length-1, stepIndex+1); renderStep();
+    });
+
+    // -------------------- Modes: Guided / Explore / Identify --------------------
+    const btnGuide = document.getElementById('btnGuide');
+    const btnExplore = document.getElementById('btnExplore');
+    const btnIdentify = document.getElementById('btnIdentify');
+    const modes = { mode:'guided', score:0 };
+
+    btnGuide.addEventListener('click', ()=> setMode('guided'));
+    btnExplore.addEventListener('click', ()=> setMode('explore'));
+    btnIdentify.addEventListener('click', ()=> setMode('identify'));
+
+    function setMode(m){
+      modes.mode = m;
+      btnGuide.dataset.active = (m==='guided')?'1':'0';
+      btnExplore.dataset.active = (m==='explore')?'1':'0';
+      btnIdentify.dataset.active = (m==='identify')?'1':'0';
+      if(m==='guided'){
+        stepIndex=0; renderStep();
+        taskEl.textContent = 'Follow the step guide. Hover to highlight; click to pin labels.';
+      } else if(m==='explore'){
+        outlinePass.selectedObjects = [];
+        statusEl.textContent = 'Exploration mode';
+        taskEl.textContent = 'Free explore. Toggle layers, adjust look, pin labels anywhere.';
+      } else {
+        // identify: random target requested
+        requestIdentify();
+      }
     }
 
-    function letterFor(score, acc){
-      if(score>=95 && acc>=90) return 'A+';
-      if(score>=90) return 'A';
-      if(score>=85) return 'A-';
-      if(score>=80) return 'B+';
-      if(score>=75) return 'B';
-      if(score>=70) return 'B-';
-      if(score>=60) return 'C';
-      if(score>=50) return 'D';
-      return 'F';
+    function requestIdentify(){
+      const items = [annulus, leafletA, leafletP, commAL, commPM];
+      const pick = items[Math.floor(Math.random()*items.length)];
+      modes.expect = pick;
+      outlinePass.selectedObjects = []; // no hint
+      taskEl.textContent = 'Identify: ' + (pick.name);
+      statusEl.textContent = 'Click the structure that matches the requested name (no outline hint).';
+      focusObject(pick, 2.3, 0.7);
     }
 
-    // ---------- Finish & Save ----------
-    function saveProgress(){
-      // Choose best of practice/quiz score; convert to 0..100
-      const q = state.quiz?.score||0, p = state.practice?.score||0;
-      const s = Math.max(q, p);
-      const norm = Math.max(0, Math.min(100, s));
-      const saved = Progress.load();
-      saved['anatomy-recognition'] = { completed: true, score: norm };
-      Progress.save(saved);
-      state.ui.finishNote.innerHTML = 'Status: <b>Saved</b> (score ' + norm.toFixed(0) + ')';
-      Util.toast('Saved to dashboard.');
+    function score(delta){
+      modes.score = Math.max(0, modes.score + delta);
+      kScore.textContent = modes.score.toFixed(0);
     }
 
-    // ---------- Utils for training ----------
-    function feedback(msg){ state.ui.feedback.textContent = msg; }
-    function renderCoachStep(title, details){
-      const el = document.getElementById('coachUI');
-      el.innerHTML = '';
-      const h = document.createElement('div'); h.textContent = title; el.appendChild(h);
-      const p = document.createElement('div'); p.textContent = details; p.className='small'; el.appendChild(p);
+    // In identify mode, clicking a correct structure increases score, else decreases
+    renderer.domElement.addEventListener('click', ()=>{
+      if(modes.mode!=='identify' || !hovered) return;
+      if(getRoot(hovered) === modes.expect){
+        statusEl.textContent = 'Correct ✓';
+        score(10);
+      } else {
+        statusEl.textContent = 'Incorrect ✗';
+        score(-6);
+      }
+      // queue next
+      setTimeout(requestIdentify, 500);
+    });
+
+    // -------------------- Layer toggles --------------------
+    document.getElementById('layers').addEventListener('change', (e)=>{
+      if(!(e.target instanceof HTMLInputElement)) return;
+      const key = e.target.dataset.layer, v = e.target.checked;
+      if(key==='annulus') annulus.visible = v;
+      if(key==='leafletA') leafletA.visible = v;
+      if(key==='leafletP') leafletP.visible = v;
+      if(key==='commissures') commissures.visible = v;
+      if(key==='coaptation') coaptation.visible = v;
+      if(key==='labels'){ if(!v) clearOverlay(); else { overlay.innerHTML=''; anchors.forEach(a=> addCalloutAt(a.obj, a.title, a.meta)); } }
+      if(key==='backdrop') backdrop.visible = v;
+    });
+
+    // Cinematic sliders
+    const rngBloom = document.getElementById('rngBloom');
+    const rngOutline = document.getElementById('rngOutline');
+    const rngPulse = document.getElementById('rngPulse');
+    rngBloom.addEventListener('input', ()=> bloomPass.strength = parseFloat(rngBloom.value));
+    rngOutline.addEventListener('input', ()=>{
+      const t = parseFloat(rngOutline.value);
+      outlinePass.edgeThickness = t / 0.016;
+    });
+    rngPulse.addEventListener('input', ()=> motion.pulseAmp = parseFloat(rngPulse.value));
+
+    // swatch color indicator (outline)
+    swOut.style.background = '#7fb6ff';
+
+    // -------------------- Ticker / loop --------------------
+    const tickers = new Set();
+    let last = performance.now();
+    function loop(now){
+      const dt = Math.min(0.033, (now - last)/1000); last = now;
+      tickers.forEach(fn=> fn(dt));
+      animateLeaflets(dt);
+      updateHover();
+      updateOverlay();
+      controls.update();
+      composer.render();
+      requestAnimationFrame(loop);
     }
+    requestAnimationFrame(loop);
 
-    // ---------- Initial setup ----------
-    setMode('training');
-    updateLabelVisibility();
+    // Guided by default
+    setMode('guided');
+    renderStep();
 
-    // ---------- Window resize: update overlay labels ----------
-    window.addEventListener('resize', ()=> { updateLabelVisibility(); });
+    // -------------------- Resize handling --------------------
+    window.addEventListener('resize', ()=>{
+      const w = wrap.clientWidth, h=wrap.clientHeight;
+      camera.aspect = w/h; camera.updateProjectionMatrix();
+      renderer.setSize(w,h);
+      composer.setSize(w,h);
+      outlinePass.setSize(w,h);
+      fxaaPass.material.uniforms['resolution'].value.set(1/(w*renderer.getPixelRatio()), 1/(h*renderer.getPixelRatio()));
+    });
 
   </script>
 </body>
