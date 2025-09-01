@@ -1,819 +1,1736 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-  <title>MitralSim Pro — Module 1.1 · Mitral Apparatus Overview</title>
-  <meta name="description" content="Super‑realistic, optimized 3D overview of the mitral apparatus (annulus, anterior/posterior leaflets, commissures) with cinematic rendering, annotations, guided steps, and identify mode."/>
-  <link rel="stylesheet" href="../assets/css/style.css"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CardioVis | Revolutionary Surgical Robotics & AI for Cardiac Surgery</title>
+    <meta name="description" content="Leading the future of cardiac surgery with AI-powered digital twins, robotic assistance, and real-time surgical guidance.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-hue: 220;
+            --secondary-hue: 200;
+            --accent-hue: 340;
+            
+            --primary: hsl(var(--primary-hue), 85%, 55%);
+            --primary-dark: hsl(var(--primary-hue), 85%, 45%);
+            --primary-light: hsl(var(--primary-hue), 85%, 65%);
+            --secondary: hsl(var(--secondary-hue), 100%, 60%);
+            --accent: hsl(var(--accent-hue), 85%, 65%);
+            --background: hsl(220, 13%, 9%);
+            --surface: hsl(220, 13%, 12%);
+            --surface-light: hsl(220, 13%, 16%);
+            --text-primary: hsl(0, 0%, 95%);
+            --text-secondary: hsl(0, 0%, 75%);
+            --text-muted: hsl(0, 0%, 55%);
+            --border: hsl(220, 13%, 18%);
+            --gradient-primary: linear-gradient(135deg, var(--primary), var(--secondary));
+            --gradient-accent: linear-gradient(135deg, var(--accent), var(--primary));
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            --shadow-colored: 0 25px 50px -12px rgba(var(--primary-hue), 85%, 55%, 0.3);
+            
+            --font-sans: 'Inter', system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+            
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+            --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
 
-  <!-- Three.js + JSM modules (ESM) -->
-  <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"></script>
-  <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js"></script>
-  <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/environments/RoomEnvironment.js"></script>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  <!-- Postprocessing -->
-  <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/EffectComposer.js"></script>
-  <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/RenderPass.js"></script>
-  <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/UnrealBloomPass.js"></script>
-  <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/OutlinePass.js"></script>
-  <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/SSAOPass.js"></script>
-  <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/ShaderPass.js"></script>
-  <script type="module" crossorigin src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/shaders/FXAAShader.js"></script>
+        html {
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
 
-  <style>
-    /* -------- Module 1.1: Cinematic, polished UI (complements global style.css) -------- */
-    :root{
-      --glass: rgba(20,24,32,.55);
-      --glass-strong: rgba(20,24,32,.75);
-      --aqua: #7fb6ff;
-      --mint: #a6e3a1;
-      --rose: #ff6b86;
-      --amber: #ffd666;
-    }
+        body {
+            font-family: var(--font-sans);
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
 
-    body{
-      background:
-        radial-gradient(1600px 900px at 70% -20%, #142032 0%, #0d1117 55%, #090d14 100%),
-        linear-gradient(180deg, #0c121b 0%, #0b0f16 100%);
-    }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--surface); }
+        ::-webkit-scrollbar-thumb { 
+            background: var(--gradient-primary);
+            border-radius: 4px;
+        }
 
-    .page { grid-template-columns: 400px 1fr; gap: 18px; }
+        /* Loading Screen with Advanced Animation */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--background);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transition: opacity 1s var(--ease-out-expo);
+        }
 
-    .canvas-wrap{
-      border:1px solid var(--outline);
-      border-radius:12px;
-      background: radial-gradient(1400px 1000px at 50% -30%, #0e1a29, #070a10 60%, #05070a);
-      box-shadow:
-        0 40px 140px rgba(0,0,0,.65),
-        inset 0 0 0 1px rgba(255,255,255,.03);
-      position: relative;
-    }
+        .loading-screen.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
 
-    /* HUD + overlay */
-    #overlay { position:absolute; inset:0; pointer-events:none; }
-    #hud-svg { position:absolute; inset:0; pointer-events: none; }
+        .loader-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+        }
 
-    .hud-badge{
-      position:absolute; top:10px; right:10px; z-index:3;
-      background: var(--glass);
-      border: 1px solid var(--outline);
-      color: #cbe0ff;
-      padding: 8px 10px; border-radius: 10px; font-size: 12px;
-      backdrop-filter: blur(10px);
-      display:flex; gap:10px; align-items:center;
-    }
-    .hud-dot{ width:10px; height:10px; border-radius:50%; background: radial-gradient(circle at 40% 40%, #7de3ff, #247fff); box-shadow: 0 0 14px rgba(64,169,255,.45) }
+        .loader-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px solid transparent;
+            border-top: 2px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+        }
 
-    .callout{
-      position: absolute; max-width: 300px;
-      color: #eaf6ff; font-size: 12px; line-height: 1.35;
-      padding: 10px 12px; border-radius: 12px;
-      border:1px solid rgba(120,140,170,.35);
-      background: linear-gradient(180deg, rgba(12,16,24,.92), rgba(9,12,18,.9));
-      box-shadow: 0 6px 24px rgba(0,0,0,.45);
-      transform: translate(12px, -12px);
-    }
-    .callout .t{ font-weight: 700; margin-bottom: 4px; letter-spacing:.3px }
-    .callout .m{ color:#a8bdde; font-size:11px }
+        .loader-ring:nth-child(2) {
+            width: 80%;
+            height: 80%;
+            top: 10%;
+            left: 10%;
+            border-top-color: var(--secondary);
+            animation-delay: -0.4s;
+            animation-duration: 1.5s;
+        }
 
-    .pin{
-      position:absolute; width:11px; height:11px; border-radius:50%;
-      background: radial-gradient(10px 10px at 40% 35%, #76d0ff, #2274ff 60%, #1b3fa0 100%);
-      box-shadow: 0 0 0 4px rgba(64,169,255,.18), 0 0 16px rgba(64,169,255,.35);
-    }
+        .loader-ring:nth-child(3) {
+            width: 60%;
+            height: 60%;
+            top: 20%;
+            left: 20%;
+            border-top-color: var(--accent);
+            animation-delay: -0.8s;
+            animation-duration: 1s;
+        }
 
-    /* Sidebar extras */
-    .toolrow{ display:flex; gap:8px; flex-wrap:wrap }
-    .toolbtn{
-      border:1px solid var(--outline); border-radius:10px; background:linear-gradient(180deg, rgba(32,38,48,.85), rgba(18,22,30,.85));
-      color:var(--ink); padding:8px 10px; font-size:12px;
-      cursor:pointer; transition: transform .08s ease, box-shadow .12s ease, outline-color .2s ease;
-    }
-    .toolbtn:hover{ box-shadow:0 8px 22px rgba(0,0,0,.35); transform: translateY(-1px); }
-    .toolbtn[data-active="1"]{ outline:2px solid var(--aqua); outline-offset:-2px }
-    .switch{ display:flex; gap:10px; align-items:center }
-    .switch input{ width:18px; height:18px }
+        .loader-text {
+            margin-top: 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+        }
 
-    /* Controls */
-    .range{ -webkit-appearance:none; width:100%; height:6px; border-radius:8px; background:#162234; outline:none }
-    .range::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:14px; height:14px; border-radius:50%; border:2px solid #0c1b2a; background:#59c2ff; cursor:pointer }
-    .mini{ font-size:11px; color:var(--muted) }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
-    /* KPIs */
-    .kpis3{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px }
-    .kpi3{ background: var(--panel); border:1px solid var(--outline); border-radius:10px; padding:10px }
-    .kpi3 .label{ color:var(--muted); font-size:11px }
-    .kpi3 .value{ font-family: var(--mono); font-size:18px }
+        /* Navigation with Advanced Blur */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(var(--background-rgb, 23, 23, 32), 0.8);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--glass-border);
+            z-index: 1000;
+            padding: 1rem 0;
+            transition: all 0.5s var(--ease-out-expo);
+        }
 
-    .legend .tag b{ color:#eaf6ff }
-  </style>
+        .navbar.scrolled {
+            background: rgba(var(--background-rgb, 23, 23, 32), 0.95);
+            padding: 0.75rem 0;
+            box-shadow: var(--shadow);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+            position: relative;
+            font-family: var(--font-mono);
+            transition: all 0.3s var(--ease-out-back);
+        }
+
+        .logo::before {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 8px;
+            padding: 2px;
+            background: var(--gradient-primary);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: xor;
+            -webkit-mask-composite: xor;
+            opacity: 0;
+            transition: opacity 0.3s var(--ease-out-expo);
+        }
+
+        .logo:hover::before {
+            opacity: 1;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-weight: 500;
+            position: relative;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            transition: all 0.3s var(--ease-out-expo);
+            border: 1px solid transparent;
+        }
+
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--glass);
+            border-radius: 12px;
+            opacity: 0;
+            transition: all 0.3s var(--ease-out-expo);
+            z-index: -1;
+        }
+
+        .nav-link:hover {
+            color: var(--text-primary);
+            border-color: var(--glass-border);
+            transform: translateY(-2px);
+        }
+
+        .nav-link:hover::before {
+            opacity: 1;
+        }
+
+        /* Hero Section with Particles */
+        .hero {
+            height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .hero-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(var(--primary-hue), 85%, 55%, 0.15) 0%, transparent 70%);
+        }
+
+        .particles-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 1200px;
+            padding: 0 2rem;
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 8vw, 6rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--primary) 50%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: fadeInUp 1s var(--ease-out-expo) 0.5s both;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1.1rem, 2vw, 1.4rem);
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            animation: fadeInUp 1s var(--ease-out-expo) 0.7s both;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeInUp 1s var(--ease-out-expo) 0.9s both;
+        }
+
+        /* Advanced Button System */
+        .btn {
+            position: relative;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s var(--ease-out-expo);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            overflow: hidden;
+            font-family: var(--font-sans);
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: var(--shadow-colored);
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s var(--ease-out-expo);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: var(--shadow), var(--shadow-colored);
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-outline {
+            background: var(--glass);
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-outline:hover {
+            background: var(--glass-border);
+            transform: translateY(-2px) scale(1.05);
+            border-color: var(--primary);
+        }
+
+        /* Advanced 3D Card System */
+        .section {
+            padding: 8rem 0;
+            position: relative;
+        }
+
+        .section-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(var(--secondary-hue), 100%, 60%, 0.05) 0%, transparent 70%);
+            opacity: 0.5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            position: relative;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+
+        .section-title {
+            font-size: clamp(2rem, 5vw, 4rem);
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+        }
+
+        .product-card {
+            position: relative;
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 2.5rem;
+            border: 1px solid var(--border);
+            transition: all 0.5s var(--ease-out-expo);
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .product-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-primary);
+            opacity: 0;
+            transition: opacity 0.3s var(--ease-out-expo);
+            z-index: 0;
+        }
+
+        .product-card > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px) rotateX(5deg);
+            box-shadow: var(--shadow);
+            border-color: var(--glass-border);
+        }
+
+        .product-card:hover::before {
+            opacity: 0.05;
+        }
+
+        .product-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient-accent);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+            transition: all 0.3s var(--ease-out-back);
+        }
+
+        .product-card:hover .product-icon {
+            transform: scale(1.1) rotateY(10deg);
+            box-shadow: var(--shadow-colored);
+        }
+
+        .product-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .product-description {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            line-height: 1.7;
+        }
+
+        .product-features {
+            list-style: none;
+        }
+
+        .product-features li {
+            padding: 0.5rem 0;
+            color: var(--text-secondary);
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .product-features li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+            transition: transform 0.3s var(--ease-out-back);
+        }
+
+        .product-card:hover .product-features li::before {
+            transform: translateX(5px);
+        }
+
+        /* Interactive Data Visualization */
+        .stats-dashboard {
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 3rem;
+            margin: 4rem 0;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stats-dashboard::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--gradient-primary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            position: relative;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: block;
+            font-family: var(--font-mono);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+            font-weight: 500;
+        }
+
+        .stat-progress {
+            width: 100%;
+            height: 4px;
+            background: var(--surface-light);
+            border-radius: 2px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+
+        .stat-progress-fill {
+            height: 100%;
+            background: var(--gradient-primary);
+            border-radius: 2px;
+            transition: width 2s var(--ease-out-expo);
+        }
+
+        /* Team Section with Advanced Cards */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .team-card {
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 2.5rem;
+            text-align: center;
+            border: 1px solid var(--border);
+            transition: all 0.4s var(--ease-out-expo);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .team-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-accent);
+            opacity: 0;
+            transition: opacity 0.3s var(--ease-out-expo);
+            z-index: 0;
+        }
+
+        .team-card > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .team-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: var(--shadow);
+        }
+
+        .team-card:hover::before {
+            opacity: 0.05;
+        }
+
+        .team-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: white;
+            transition: all 0.3s var(--ease-out-back);
+        }
+
+        .team-card:hover .team-avatar {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-colored);
+        }
+
+        .team-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .team-role {
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .team-affiliation {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        /* Publications with Interactive Timeline */
+        .publications-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .publications-timeline {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--gradient-primary);
+            transform: translateX(-50%);
+        }
+
+        .publication-item {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid var(--border);
+            position: relative;
+            transition: all 0.3s var(--ease-out-expo);
+            max-width: 480px;
+        }
+
+        .publication-item:nth-child(even) {
+            margin-left: auto;
+        }
+
+        .publication-item::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 12px;
+            height: 12px;
+            background: var(--primary);
+            border-radius: 50%;
+            transform: translateY(-50%);
+        }
+
+        .publication-item:nth-child(odd)::before {
+            right: -26px;
+        }
+
+        .publication-item:nth-child(even)::before {
+            left: -26px;
+        }
+
+        .publication-item:hover {
+            transform: scale(1.02);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-colored);
+        }
+
+        .publication-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+        }
+
+        .publication-authors {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .publication-venue {
+            color: var(--primary);
+            font-size: 0.9rem;
+            font-style: italic;
+            font-weight: 500;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            padding: 4rem 0 2rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-section h4 {
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        .footer-section p,
+        .footer-section a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            line-height: 1.6;
+            transition: color 0.3s var(--ease-out-expo);
+        }
+
+        .footer-section a:hover {
+            color: var(--primary);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid var(--border);
+            padding-top: 2rem;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.8;
+                transform: scale(1.05);
+            }
+        }
+
+        /* Scroll Animations */
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 0.8s var(--ease-out-expo);
+        }
+
+        .animate-on-scroll.animated {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+            }
+
+            .hero-title {
+                font-size: 3rem;
+            }
+
+            .hero-cta {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .team-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .publications-timeline {
+                left: 20px;
+            }
+
+            .publication-item {
+                max-width: 100%;
+                margin-left: 40px !important;
+            }
+
+            .publication-item::before {
+                left: -26px !important;
+            }
+        }
+
+        /* Utility Classes */
+        .text-gradient {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .glass-effect {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+        }
+
+        /* Advanced Interactive Elements */
+        .interactive-demo {
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 3rem;
+            margin: 4rem 0;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .demo-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .demo-button {
+            padding: 0.75rem 1.5rem;
+            background: var(--surface-light);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s var(--ease-out-expo);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+        }
+
+        .demo-button.active,
+        .demo-button:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .visualization-area {
+            height: 300px;
+            background: var(--background);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .heart-model-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        #heartCanvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+        }
+
+        /* Particle System Styles */
+        .particle-system {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--primary);
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: float 20s linear infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.6;
+            }
+            90% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-100px) translateX(100px);
+                opacity: 0;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="topbar">
-    <div class="inner">
-      <a class="btn secondary" href="../index.html">← Back</a>
-      <div class="logo">Module 1.1 — Mitral Apparatus Overview</div>
-      <span class="badge">Annulus</span>
-      <span class="badge">Anterior/Posterior Leaflets</span>
-      <span class="badge">Commissures</span>
-      <div style="flex:1"></div>
-      <span class="badge">Cinematic 3D</span>
-      <span class="badge">Optimized</span>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loader-container">
+            <div class="loader-ring"></div>
+            <div class="loader-ring"></div>
+            <div class="loader-ring"></div>
+        </div>
+        <div class="loader-text">Initializing CardioVis...</div>
     </div>
-  </div>
 
-  <div class="container page">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="panel">
-        <h4>Lesson Mode</h4>
-        <div class="toolrow">
-          <button id="btnGuide" class="toolbtn" data-active="1">Guided</button>
-          <button id="btnExplore" class="toolbtn">Explore</button>
-          <button id="btnIdentify" class="toolbtn">Identify</button>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo" id="logo">CardioVis</a>
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link">Home</a></li>
+                <li><a href="#products" class="nav-link">Products</a></li>
+                <li><a href="#demo" class="nav-link">Demo</a></li>
+                <li><a href="#team" class="nav-link">Team</a></li>
+                <li><a href="#research" class="nav-link">Research</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+            </ul>
         </div>
-        <div class="small" style="margin-top:6px">
-          <b>Guided:</b> step tour with focus and highlights ·
-          <b>Explore:</b> free navigation + labels ·
-          <b>Identify:</b> requested structure (no hints) → scored.
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-background"></div>
+        <canvas class="particles-canvas" id="particlesCanvas"></canvas>
+        <div class="hero-content">
+            <h1 class="hero-title">Revolutionizing Cardiac Surgery with AI</h1>
+            <p class="hero-subtitle">Leading the future of cardiovascular medicine through cutting-edge surgical robotics, real-time AI guidance, and physics-based digital twins for precision cardiac interventions.</p>
+            <div class="hero-cta">
+                <a href="#products" class="btn btn-primary">
+                    <span>Explore Technology</span>
+                    <span>→</span>
+                </a>
+                <a href="#demo" class="btn btn-outline">
+                    <span>Interactive Demo</span>
+                    <span>▶</span>
+                </a>
+            </div>
         </div>
-      </div>
+    </section>
 
-      <div class="panel">
-        <h4>Cinematic Controls</h4>
-        <div class="list small">
-          <div class="row">
-            <label style="width:38%">Exposure</label>
-            <input id="rngExposure" class="range" type="range" min="0.6" max="1.8" value="1.0" step="0.02"/>
-          </div>
-          <div class="mini">ACES tonemapping exposure</div>
-          <div class="row" style="margin-top:10px">
-            <label style="width:38%">Bloom</label>
-            <input id="rngBloom" class="range" type="range" min="0.0" max="1.8" value="0.75" step="0.02"/>
-          </div>
-          <div class="mini">Moist tissue highlights</div>
-          <div class="row" style="margin-top:10px">
-            <label style="width:38%">SSAO</label>
-            <input id="rngSSAO" class="range" type="range" min="0.0" max="1.2" value="0.35" step="0.02"/>
-          </div>
-          <div class="mini">Subsurface creases and depth</div>
-          <div class="row" style="margin-top:10px">
-            <label style="width:38%">Outline</label>
-            <input id="rngOutline" class="range" type="range" min="0.0" max="0.08" value="0.035" step="0.002"/>
-          </div>
-          <div class="mini">Selection edge thickness</div>
-          <div class="row" style="margin-top:10px">
-            <label style="width:38%">Pulse</label>
-            <input id="rngPulse" class="range" type="range" min="0.0" max="1.2" value="0.35" step="0.02"/>
-          </div>
-          <div class="mini">Subtle leaflet motion amplitude</div>
+    <!-- Products Section -->
+    <section class="section" id="products">
+        <div class="section-bg"></div>
+        <div class="container">
+            <div class="section-header animate-on-scroll">
+                <h2 class="section-title">Revolutionary Healthcare Solutions</h2>
+                <p class="section-subtitle">Our comprehensive platform combines AI, robotics, and digital twin technology to transform cardiac surgery outcomes worldwide with unprecedented precision and safety.</p>
+            </div>
+
+            <div class="products-grid">
+                <div class="product-card animate-on-scroll">
+                    <div class="product-icon">🔍</div>
+                    <h3 class="product-title">AUTO-VALVE Portal</h3>
+                    <p class="product-description">Secure edge-to-cloud platform that unifies CT, 2D/3D TEE, and endoscopic video with automatic de-identification, real-time synchronization, and collaborative annotation tools.</p>
+                    <ul class="product-features">
+                        <li>HIPAA/GDPR compliant data processing</li>
+                        <li>Auto-annotation with computer vision AI</li>
+                        <li>Real-time collaborative web UI/API</li>
+                        <li>Standardized medical ontologies</li>
+                        <li>Multi-institutional data sharing</li>
+                    </ul>
+                </div>
+
+                <div class="product-card animate-on-scroll">
+                    <div class="product-icon">🧠</div>
+                    <h3 class="product-title">AI Surgical Copilot</h3>
+                    <p class="product-description">Real-time multimodal LLM assistant providing contextual guidance during cardiac procedures with source-verified recommendations and continuous learning capabilities.</p>
+                    <ul class="product-features">
+                        <li>Real-time phase and instrument detection</li>
+                        <li>Context-aware safety reminders</li>
+                        <li>Evidence-based guideline suggestions</li>
+                        <li>Decision support (no device control)</li>
+                        <li>Continuous learning from outcomes</li>
+                    </ul>
+                </div>
+
+                <div class="product-card animate-on-scroll">
+                    <div class="product-icon">💖</div>
+                    <h3 class="product-title">Cardiac Digital Twin</h3>
+                    <p class="product-description">Patient-specific virtual heart valve modeling from routine TEE/CT images enabling surgical planning, outcome prediction, and what-if scenario analysis.</p>
+                    <ul class="product-features">
+                        <li>Physics-based valve simulations</li>
+                        <li>Interactive what-if scenario testing</li>
+                        <li>Coaptation and leak prediction</li>
+                        <li>Uncertainty quantification</li>
+                        <li>Secure hospital-only deployment</li>
+                    </ul>
+                </div>
+
+                <div class="product-card animate-on-scroll">
+                    <div class="product-icon">🤖</div>
+                    <h3 class="product-title">AI-Enhanced Robotics</h3>
+                    <p class="product-description">Intelligent assist layer for robotic surgical platforms with camera autopilot, proximity warnings, and advanced surgical guidance systems.</p>
+                    <ul class="product-features">
+                        <li>Autonomous camera positioning</li>
+                        <li>Dynamic no-go zone enforcement</li>
+                        <li>Intelligent suture planning assistance</li>
+                        <li>da Vinci Research Kit integration</li>
+                        <li>Haptic feedback optimization</li>
+                    </ul>
+                </div>
+
+                <div class="product-card animate-on-scroll">
+                    <div class="product-icon">🎯</div>
+                    <h3 class="product-title">Computer Vision Suite</h3>
+                    <p class="product-description">Advanced surgical video analysis platform for real-time phase detection, instrument tracking, and automated teaching content generation.</p>
+                    <ul class="product-features">
+                        <li>Real-time operative video analysis</li>
+                        <li>Automatic teaching clip generation</li>
+                        <li>Comprehensive post-case summaries</li>
+                        <li>TEE monitoring integration</li>
+                        <li>Quality assurance metrics</li>
+                    </ul>
+                </div>
+
+                <div class="product-card animate-on-scroll">
+                    <div class="product-icon">🏥</div>
+                    <h3 class="product-title">Mitral Valve Simulator</h3>
+                    <p class="product-description">Portable bench-top training system with 3D-printed silicone valves and objective performance metrics for comprehensive skill development.</p>
+                    <ul class="product-features">
+                        <li>Interchangeable 3D-printed valve models</li>
+                        <li>Real-time leak visualization</li>
+                        <li>Objective performance scoring</li>
+                        <li>dVRK platform compatibility</li>
+                        <li>Progressive skill assessment</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Interactive Stats Dashboard -->
+            <div class="stats-dashboard animate-on-scroll">
+                <h3 class="section-title" style="margin-bottom: 2rem; font-size: 2rem;">Real-Time Impact Metrics</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-number" data-target="4200000">$0</span>
+                        <div class="stat-label">Active Research Funding</div>
+                        <div class="stat-progress">
+                            <div class="stat-progress-fill" style="width: 0%;" data-width="85%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" data-target="200">0</span>
+                        <div class="stat-label">Publications & Patents</div>
+                        <div class="stat-progress">
+                            <div class="stat-progress-fill" style="width: 0%;" data-width="92%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" data-target="25">0</span>
+                        <div class="stat-label">PhD Students & Postdocs</div>
+                        <div class="stat-progress">
+                            <div class="stat-progress-fill" style="width: 0%;" data-width="75%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" data-target="15000">0</span>
+                        <div class="stat-label">Surgical Cases Analyzed</div>
+                        <div class="stat-progress">
+                            <div class="stat-progress-fill" style="width: 0%;" data-width="68%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
+    </section>
 
-      <div class="panel">
-        <h4>Layers</h4>
-        <div id="layers" class="list small">
-          <label class="switch"><input data-layer="annulus" type="checkbox" checked> Mitral Annulus</label>
-          <label class="switch"><input data-layer="leafletA" type="checkbox" checked> Anterior Leaflet</label>
-          <label class="switch"><input data-layer="leafletP" type="checkbox" checked> Posterior Leaflet</label>
-          <label class="switch"><input data-layer="commissures" type="checkbox" checked> Commissures</label>
-          <label class="switch"><input data-layer="coaptation" type="checkbox" checked> Coaptation Line</label>
-          <label class="switch"><input data-layer="labels" type="checkbox" checked> Floating Labels</label>
-          <label class="switch"><input data-layer="backdrop" type="checkbox" checked> Backdrop Volume</label>
-          <label class="switch"><input data-layer="rim" type="checkbox" checked> Rim Light</label>
+    <!-- Interactive Demo Section -->
+    <section class="section" id="demo">
+        <div class="container">
+            <div class="section-header animate-on-scroll">
+                <h2 class="section-title">Interactive Technology Demo</h2>
+                <p class="section-subtitle">Experience our advanced cardiac simulation and AI analysis tools in real-time. Explore 3D heart models, surgical planning, and AI-powered insights.</p>
+            </div>
+
+            <div class="interactive-demo animate-on-scroll">
+                <div class="demo-controls">
+                    <button class="demo-button active" data-demo="heart-model">3D Heart Model</button>
+                    <button class="demo-button" data-demo="ai-analysis">AI Analysis</button>
+                    <button class="demo-button" data-demo="surgical-plan">Surgical Planning</button>
+                    <button class="demo-button" data-demo="outcomes">Outcome Prediction</button>
+                </div>
+                <div class="visualization-area">
+                    <div class="heart-model-container">
+                        <canvas id="heartCanvas"></canvas>
+                        <div id="demoOverlay" style="position: absolute; top: 20px; left: 20px; color: var(--text-primary); font-family: var(--font-mono); font-size: 0.9rem;">
+                            Interactive 3D Heart Model - Click and drag to rotate
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
+    </section>
 
-      <div class="panel">
-        <h4>Quick Camera</h4>
-        <div class="toolrow">
-          <button class="toolbtn" data-focus="annulus">Focus Annulus</button>
-          <button class="toolbtn" data-focus="anterior">Focus Anterior</button>
-          <button class="toolbtn" data-focus="posterior">Focus Posterior</button>
-          <button class="toolbtn" data-focus="commAL">Focus A‑L Comm.</button>
-          <button class="toolbtn" data-focus="commPM">Focus P‑M Comm.</button>
-          <button class="toolbtn" data-focus="reset">Reset</button>
+    <!-- Team Section -->
+    <section class="section" id="team">
+        <div class="container">
+            <div class="section-header animate-on-scroll">
+                <h2 class="section-title">World-Class Leadership Team</h2>
+                <p class="section-subtitle">Our interdisciplinary team combines decades of clinical expertise with cutting-edge AI and robotics research, driving innovation in cardiac surgery.</p>
+            </div>
+
+            <div class="team-grid">
+                <div class="team-card animate-on-scroll">
+                    <div class="team-avatar">JK</div>
+                    <h4 class="team-name">Dr. Jacques Kpodonu, MD</h4>
+                    <div class="team-role">CEO & Clinical Principal Investigator</div>
+                    <div class="team-affiliation">Cardiac Surgeon, Beth Israel Deaconess Medical Center<br>Assistant Professor, Harvard Medical School</div>
+                </div>
+
+                <div class="team-card animate-on-scroll">
+                    <div class="team-avatar">PH</div>
+                    <h4 class="team-name">Dr. Phat K. Huynh, PhD</h4>
+                    <div class="team-role">CTO & Technical Principal Investigator</div>
+                    <div class="team-affiliation">Assistant Professor, Industrial & Systems Engineering<br>North Carolina A&T State University</div>
+                </div>
+
+                <div class="team-card animate-on-scroll">
+                    <div class="team-avatar">DN</div>
+                    <h4 class="team-name">Dang Nguyen, BSc</h4>
+                    <div class="team-role">COO & Clinical Operations Manager</div>
+                    <div class="team-affiliation">MS Student, Biostatistics<br>Harvard T.H. Chan School of Public Health</div>
+                </div>
+
+                <div class="team-card animate-on-scroll">
+                    <div class="team-avatar">HR</div>
+                    <h4 class="team-name">Heath Rutledge-Jukes, BSc</h4>
+                    <div class="team-role">Chief Business Officer</div>
+                    <div class="team-affiliation">CEO, King of the Curve<br>Strategic Business Development</div>
+                </div>
+            </div>
         </div>
-        <div class="mini" style="margin-top:8px">
-          <b>Orbit</b> drag · <b>Pan</b> shift+drag · <b>Zoom</b> wheel · Hotkeys:
-          <kbd>1</kbd> Annulus <kbd>2</kbd> A‑leaflet <kbd>3</kbd> P‑leaflet <kbd>4</kbd>/<kbd>5</kbd> Commissures
+    </section>
+
+    <!-- Research Section -->
+    <section class="section" id="research">
+        <div class="section-bg"></div>
+        <div class="container">
+            <div class="section-header animate-on-scroll">
+                <h2 class="section-title">Research Excellence</h2>
+                <p class="section-subtitle">Our research spans AI, robotics, digital twins, and surgical innovation with active NIH, NSF, and industry funding, advancing the field through rigorous scientific investigation.</p>
+            </div>
+
+            <div class="publications-container animate-on-scroll">
+                <div class="publications-timeline"></div>
+                
+                <div class="publication-item animate-on-scroll">
+                    <div class="publication-title">3-D TEE Mitral Valve Segmentation and Mesh Reconstruction with Real-Time Quality Assurance</div>
+                    <div class="publication-authors">Huynh, P. K., Kpodonu, J., Le, M. H. N., Nguyen, D., et al.</div>
+                    <div class="publication-venue">IEEE-EMBS International Conference on Biomedical and Health Informatics (BHI'25)</div>
+                </div>
+
+                <div class="publication-item animate-on-scroll">
+                    <div class="publication-title">Dual-Regulator Conformal Prediction for Medical Digital Twin Uncertainty</div>
+                    <div class="publication-authors">Y. Yong, Huynh, P. K., Y. Xu, and J. Kpodonu</div>
+                    <div class="publication-venue">2026 Annual Reliability and Maintainability Symposium (RAMS)</div>
+                </div>
+
+                <div class="publication-item animate-on-scroll">
+                    <div class="publication-title">A Real-Time Uncertainty-Aware Digital Twin Framework for Intra-Operative Valve Surgery Guidance</div>
+                    <div class="publication-authors">Huynh, P. K., Kpodonu, J., Le, H. N. M., O. P. Yadav, Y. Xu, and T. Q. Le</div>
+                    <div class="publication-venue">2026 Annual Reliability and Maintainability Symposium (RAMS)</div>
+                </div>
+
+                <div class="publication-item animate-on-scroll">
+                    <div class="publication-title">Real-time deep-learning segmentation of left-heart chambers on transthoracic echocardiography</div>
+                    <div class="publication-authors">Huynh, P. K., Nguyen, D. S., Truong, T., Rutledge-Jukes, H., et al.</div>
+                    <div class="publication-venue">Mitral Conclave 2025, American Association for Thoracic Surgery</div>
+                </div>
+
+                <div class="publication-item animate-on-scroll">
+                    <div class="publication-title">Retrieval Verified Trust Envelopes: Hallucination Safe Chest X Ray Reporting with Frozen Large Language Models</div>
+                    <div class="publication-authors">Huynh, P. K., P. Huynh, and D. Nguyen, J. Kpodonu, et al.</div>
+                    <div class="publication-venue">2nd International Conference on Health Science and Technology 2025</div>
+                </div>
+            </div>
         </div>
-      </div>
+    </section>
 
-      <div class="panel">
-        <h4>Step Guide</h4>
-        <div id="stepBox" class="step">
-          <div class="t">Step 1 — Mitral Annulus</div>
-          <div class="d">Elliptical fibrous ring with a saddle profile. Hover to highlight; click to pin label.</div>
+    <!-- Contact Section -->
+    <section class="section" id="contact">
+        <div class="container">
+            <div class="section-header animate-on-scroll">
+                <h2 class="section-title">Partner With Us</h2>
+                <p class="section-subtitle">Join us in revolutionizing cardiac surgery through AI and robotics innovation. Together, we can transform patient outcomes worldwide.</p>
+            </div>
+
+            <div style="text-align: center; margin-top: 4rem;">
+                <div class="animate-on-scroll">
+                    <h3 style="margin-bottom: 3rem; color: var(--text-primary); font-size: 2rem;">Industry Partnerships</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-bottom: 4rem;">
+                        <div class="glass-effect" style="padding: 2rem; border-radius: 16px;">
+                            <h4 style="color: var(--primary); margin-bottom: 1rem;">Intuitive Surgical</h4>
+                            <p style="color: var(--text-secondary);">dVRK Platform Integration<br>Joint Research Initiatives</p>
+                        </div>
+                        <div class="glass-effect" style="padding: 2rem; border-radius: 16px;">
+                            <h4 style="color: var(--primary); margin-bottom: 1rem;">Dassault Systèmes</h4>
+                            <p style="color: var(--text-secondary);">Living Heart Project<br>3D Modeling Excellence</p>
+                        </div>
+                        <div class="glass-effect" style="padding: 2rem; border-radius: 16px;">
+                            <h4 style="color: var(--primary); margin-bottom: 1rem;">Google AI</h4>
+                            <p style="color: var(--text-secondary);">Cloud Resources<br>Machine Learning Platforms</p>
+                        </div>
+                        <div class="glass-effect" style="padding: 2rem; border-radius: 16px;">
+                            <h4 style="color: var(--primary); margin-bottom: 1rem;">Corcym</h4>
+                            <p style="color: var(--text-secondary);">Valve Technologies<br>Clinical Validation</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="animate-on-scroll" style="display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;">
+                    <a href="mailto:info@cardiovis.com" class="btn btn-primary">
+                        <span>Contact Us</span>
+                        <span>✉</span>
+                    </a>
+                    <a href="#demo" class="btn btn-outline">
+                        <span>Request Demo</span>
+                        <span>→</span>
+                    </a>
+                </div>
+            </div>
         </div>
-        <div class="row" style="margin-top:8px">
-          <button id="btnPrev" class="btn secondary">◀ Prev</button>
-          <button id="btnNext" class="btn secondary">Next ▶</button>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4 class="text-gradient">CardioVis</h4>
+                    <p>Revolutionizing cardiac surgery through AI, robotics, and digital twin technology. Advancing surgical excellence through innovation.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Products</h4>
+                    <p><a href="#products">AUTO-VALVE Portal</a></p>
+                    <p><a href="#products">AI Surgical Copilot</a></p>
+                    <p><a href="#products">Cardiac Digital Twin</a></p>
+                    <p><a href="#products">Computer Vision Suite</a></p>
+                </div>
+                <div class="footer-section">
+                    <h4>Research</h4>
+                    <p><a href="#research">Publications</a></p>
+                    <p><a href="#research">Patents</a></p>
+                    <p><a href="#research">Collaborations</a></p>
+                    <p><a href="#">Open Source</a></p>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p>Beth Israel Deaconess Medical Center</p>
+                    <p>Harvard Medical School</p>
+                    <p><a href="mailto:info@cardiovis.com">info@cardiovis.com</a></p>
+                    <p><a href="tel:+1-617-555-0123">+1 (617) 555-0123</a></p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 CardioVis. All rights reserved. | Advancing surgical excellence through innovation.</p>
+            </div>
         </div>
-      </div>
-
-      <div class="panel">
-        <h4>Legend</h4>
-        <div class="legend">
-          <span class="tag"><b style="color:#9fe3ff">Cyan</b>: Coaptation line</span>
-          <span class="tag"><b style="color:#78b99a">Light‑green</b>: Anterior leaflet</span>
-          <span class="tag"><b style="color:#86b79d">Green</b>: Posterior leaflet</span>
-          <span class="tag"><b style="color:#2c8a51">Teal</b>: Annulus</span>
-          <span class="tag"><b style="color:#f0d47f">Gold</b>: Commissures</span>
-          <span class="tag"><b>Glow</b>: Selected structure</span>
-        </div>
-      </div>
-
-      <div class="panel">
-        <h4>KPIs</h4>
-        <div class="kpis3">
-          <div class="kpi3"><div class="label">Hovered</div><div id="kHovered" class="value">—</div></div>
-          <div class="kpi3"><div class="label">Identify Score</div><div id="kScore" class="value">0</div></div>
-          <div class="kpi3"><div class="label">GPU Scale</div><div id="kGPU" class="value">1.0x</div></div>
-        </div>
-        <div class="row" style="margin-top:8px">
-          <button id="btnPerf" class="btn secondary">Performance Mode</button>
-          <button id="btnHQ" class="btn secondary">Hi‑Q Mode</button>
-        </div>
-      </div>
-    </aside>
-
-    <!-- Main -->
-    <main>
-      <div id="canvasWrap" class="canvas-wrap">
-        <div class="hud-badge"><span class="hud-dot"></span> Module 1.1 · Mitral Apparatus Overview</div>
-        <svg id="hud-svg" width="100%" height="100%"></svg>
-        <div id="overlay"></div>
-      </div>
-      <div class="row" style="margin-top:10px; gap:12px">
-        <div class="chip"><b>Task:</b> <span id="task">Follow the guided steps or explore. Click a structure to pin a label.</span></div>
-        <div class="chip"><b>Status:</b> <span id="status">Ready</span></div>
-      </div>
-    </main>
-  </div>
-
-  <div class="footer small">© 2025 MitralSim Pro — Educational prototype · Not a medical device.</div>
-
-  <!-- ───────────────────────────── SCRIPT ───────────────────────────── -->
-  <script type="module">
-    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-    import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
-    import { RoomEnvironment } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/environments/RoomEnvironment.js';
-    import { EffectComposer } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/EffectComposer.js';
-    import { RenderPass } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/RenderPass.js';
-    import { UnrealBloomPass } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/UnrealBloomPass.js';
-    import { OutlinePass } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/OutlinePass.js';
-    import { SSAOPass } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/SSAOPass.js';
-    import { ShaderPass } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/ShaderPass.js';
-    import { FXAAShader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/shaders/FXAAShader.js';
-
-    // ======= DOM =======
-    const wrap = document.getElementById('canvasWrap');
-    const overlay = document.getElementById('overlay');
-    const hudSVG = document.getElementById('hud-svg');
-    const stepBox = document.getElementById('stepBox');
-    const statusEl = document.getElementById('status');
-    const taskEl = document.getElementById('task');
-    const kHovered = document.getElementById('kHovered');
-    const kScore = document.getElementById('kScore');
-    const kGPU = document.getElementById('kGPU');
-
-    const btnGuide = document.getElementById('btnGuide');
-    const btnExplore = document.getElementById('btnExplore');
-    const btnIdentify = document.getElementById('btnIdentify');
-    const btnPrev = document.getElementById('btnPrev');
-    const btnNext = document.getElementById('btnNext');
-    const btnPerf = document.getElementById('btnPerf');
-    const btnHQ = document.getElementById('btnHQ');
-
-    const rngExposure = document.getElementById('rngExposure');
-    const rngBloom = document.getElementById('rngBloom');
-    const rngSSAO = document.getElementById('rngSSAO');
-    const rngOutline = document.getElementById('rngOutline');
-    const rngPulse = document.getElementById('rngPulse');
-
-    // ======= Renderer =======
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference:'high-performance' });
-    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
-    renderer.setSize(wrap.clientWidth, wrap.clientHeight);
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.0;
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    renderer.physicallyCorrectLights = true;
-    wrap.appendChild(renderer.domElement);
-
-    // ======= Scene & Camera =======
-    const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x070a10, 0.08);
-    const camera = new THREE.PerspectiveCamera(45, wrap.clientWidth/wrap.clientHeight, 0.02, 50);
-    camera.position.set(0.95, 1.05, 3.0);
-
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true; controls.dampingFactor = 0.08;
-    controls.minDistance = 1.1; controls.maxDistance = 5.5;
-    controls.target.set(0,0.18,0); controls.update();
-
-    // PBR environment
-    const pmrem = new THREE.PMREMGenerator(renderer);
-    scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.75).texture;
-
-    // ======= Lights =======
-    scene.add(new THREE.AmbientLight(0x52606e, .45));
-    const key = new THREE.DirectionalLight(0xffffff, 1.0);
-    key.position.set(2.6, 3.6, 3.1);
-    key.castShadow = true; key.shadow.mapSize.set(1024,1024);
-    key.shadow.camera.near = 0.1; key.shadow.camera.far = 12;
-    scene.add(key);
-
-    const fill = new THREE.DirectionalLight(0x99aaff, .35); fill.position.set(-2.2, 1.2, -2.0); scene.add(fill);
-    const rim  = new THREE.DirectionalLight(0x3344aa, .35); rim.position.set(0.5, 1.8, -1.7); scene.add(rim);
-
-    // ======= Postprocessing =======
-    const composer = new EffectComposer(renderer);
-    const renderPass = new RenderPass(scene, camera); composer.addPass(renderPass);
-
-    const ssaoPass = new SSAOPass(scene, camera, wrap.clientWidth, wrap.clientHeight);
-    ssaoPass.kernelRadius = 12; ssaoPass.minDistance = 0.0008; ssaoPass.maxDistance = 0.12; ssaoPass.output = 0;
-    ssaoPass.enabled = true; composer.addPass(ssaoPass);
-
-    const outlinePass = new OutlinePass(new THREE.Vector2(wrap.clientWidth, wrap.clientHeight), scene, camera);
-    outlinePass.edgeStrength = 3.0; outlinePass.edgeGlow = .6; outlinePass.edgeThickness = 0.035/0.016;
-    outlinePass.visibleEdgeColor.set('#7fb6ff'); outlinePass.hiddenEdgeColor.set('#2a5bb7'); composer.addPass(outlinePass);
-
-    const bloomPass = new UnrealBloomPass(new THREE.Vector2(wrap.clientWidth, wrap.clientHeight), 0.75, 0.32, 0.85);
-    composer.addPass(bloomPass);
-
-    const fxaaPass = new ShaderPass(FXAAShader);
-    fxaaPass.material.uniforms['resolution'].value.set(1/(wrap.clientWidth*renderer.getPixelRatio()), 1/(wrap.clientHeight*renderer.getPixelRatio()));
-    composer.addPass(fxaaPass);
-
-    // ======= Root groups =======
-    const root = new THREE.Group(); scene.add(root);
-
-    // Backdrop (toggleable)
-    const backdrop = new THREE.Mesh(
-      new THREE.SphereGeometry(12, 48, 32),
-      new THREE.ShaderMaterial({
-        side: THREE.BackSide, transparent:true, depthWrite:false,
-        uniforms: {
-          c1:{value:new THREE.Color('#09121d')},
-          c2:{value:new THREE.Color('#0b1b2e')},
-          fogC:{value:new THREE.Color('#0a0f19')}
-        },
-        vertexShader: `
-          varying vec3 vPos;
-          void main(){
-            vPos = position;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
-          }
-        `,
-        fragmentShader: `
-          varying vec3 vPos;
-          uniform vec3 c1; uniform vec3 c2; uniform vec3 fogC;
-          void main(){
-            float h = normalize(vPos).y * 0.5 + 0.5;
-            vec3 col = mix(c1, c2, h);
-            gl_FragColor = vec4(mix(col, fogC, 0.2), 0.96);
-          }
-        `
-      })
-    );
-    root.add(backdrop);
-
-    // Ground (soft shadows)
-    const ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(8,8),
-      new THREE.ShadowMaterial({ color: 0x000000, opacity: .15 })
-    );
-    ground.rotation.x = -Math.PI/2; ground.position.y = -0.28; ground.receiveShadow = true; scene.add(ground);
-
-    // ======= Valve assembly =======
-    const valve = new THREE.Group(); valve.position.set(0,0,0); root.add(valve);
-
-    // Annulus (elliptical torus with saddle)
-    const annulus = makeAnnulus(); annulus.name = 'Mitral Annulus'; valve.add(annulus);
-
-    // Leaflets
-    const leafletA = makeLeaflet(+1, 0x78b99a, 'Anterior Leaflet'); valve.add(leafletA);
-    const leafletP = makeLeaflet(-1, 0x86b79d, 'Posterior Leaflet'); valve.add(leafletP);
-
-    // Coaptation line (cyan)
-    const coaptation = makeCoaptationLine(); coaptation.name = 'Coaptation Line'; valve.add(coaptation);
-
-    // Commissures (arc sectors near ~60° and ~240°)
-    const commissures = new THREE.Group(); commissures.name = 'Commissures';
-    const commAL = makeCommissure(Math.PI/3, 0.22, 'Anterolateral Commissure');
-    const commPM = makeCommissure((4*Math.PI)/3, 0.22, 'Posteromedial Commissure');
-    commissures.add(commAL, commPM); valve.add(commissures);
-
-    // Pinned label anchors
-    const anchors = [
-      { obj: annulus,  title:'Mitral Annulus', meta:'Elliptical, saddle‑shaped fibrous ring' },
-      { obj: leafletA, title:'Anterior Leaflet (A)', meta:'Broad leaflet; near LVOT/AMC; smooth free edge' },
-      { obj: leafletP, title:'Posterior Leaflet (P)', meta:'Scalloped leaflet (P1–P3); shorter height' },
-      { obj: commAL,   title:'Anterolateral Commissure', meta:'Junction A1–P1' },
-      { obj: commPM,   title:'Posteromedial Commissure', meta:'Junction A3–P3' }
-    ];
-
-    // ======= Materials & geometry helpers =======
-    function makeAnnulus(){
-      const geo = new THREE.TorusGeometry(0.62, 0.05, 56, 360);
-      // Sculpt saddle
-      const pos = geo.attributes.position;
-      for(let i=0;i<pos.count;i++){
-        const x = pos.getX(i), z = pos.getZ(i);
-        const theta = Math.atan2(z, x);
-        const saddle = 0.05 * Math.sin(2*theta);
-        pos.setY(i, pos.getY(i) + saddle);
-      }
-      pos.needsUpdate = true;
-
-      const mat = new THREE.MeshPhysicalMaterial({
-        color: 0x2c8a51,
-        metalness: 0.08, roughness: 0.38,
-        sheen: 1.0, sheenRoughness: 0.9, sheenColor: new THREE.Color(0x99f0c8),
-        clearcoat: 0.65, clearcoatRoughness: 0.3,
-        envMapIntensity: 0.45
-      });
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.scale.set(1.25, 1.0, 1.05);
-      mesh.rotation.x = Math.PI/2;
-      mesh.castShadow = true; mesh.receiveShadow = true;
-      return mesh;
-    }
-
-    function makeLeaflet(sign=+1, baseColor=0x7fbba0, name='Leaflet'){
-      const w=1.4, h=0.55, segX=84, segY=28;
-      const geo = new THREE.PlaneGeometry(w, h, segX, segY);
-      geo.rotateX(-Math.PI/2);
-      geo.translate(0, 0.22 + sign*0.07, 0.0);
-      const pos = geo.attributes.position;
-      const aniso = new Float32Array(pos.count*3);
-      for(let i=0;i<pos.count;i++){
-        const x = pos.getX(i), z = pos.getZ(i);
-        const bulge   = Math.exp(-Math.abs(x)*0.9) * 0.095 * sign;
-        const scallop = Math.sin((x*1.9) + (sign>0?0.2:-0.1))*0.032 * sign;
-        const hinge   = -0.015 * Math.sign(sign) * (z>0?1:-1);
-        pos.setY(i, pos.getY(i) + bulge + scallop + hinge);
-        aniso[i*3+0] = Math.cos(x*2.0); aniso[i*3+1] = 0.0; aniso[i*3+2] = Math.sin(x*2.0);
-      }
-      geo.setAttribute('aniso', new THREE.BufferAttribute(aniso, 3));
-      pos.needsUpdate = true;
-
-      const mat = new THREE.MeshPhysicalMaterial({
-        color: baseColor,
-        metalness: 0.06, roughness: 0.46,
-        clearcoat: 0.85, clearcoatRoughness: 0.22,
-        sheen: 1.0, sheenRoughness: 0.55, sheenColor: new THREE.Color(0xd9f2e8),
-        transmission: 0.08, thickness: 0.28, ior: 1.35,
-        side: THREE.DoubleSide, envMapIntensity: 0.55
-      });
-
-      // Subtle time‑varying micro‑roughness (onBeforeCompile)
-      mat.onBeforeCompile = (shader)=>{
-        shader.uniforms.uTime = { value: 0 };
-        shader.uniforms.uAmp = { value: 0.12 };
-        shader.fragmentShader = shader.fragmentShader.replace(
-          `#include <roughnessmap_fragment>`,
-          `
-          #include <roughnessmap_fragment>
-          // Add micro variation
-          float n = fract(sin(dot(vViewPosition.xy, vec2(12.9898,78.233))) * 43758.5453);
-          float w = 0.5 + 0.5*sin(uTime*1.2 + vViewPosition.x*6.0 + n*6.2831);
-          roughnessFactor = clamp(roughnessFactor * (1.0 - uAmp*0.15*w), 0.02, 1.0);
-          `
-        );
-        leafletUniforms.push(shader.uniforms);
-      };
-
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.name = name; mesh.castShadow = true; mesh.receiveShadow = true;
-      return mesh;
-    }
-
-    function makeCoaptationLine(){
-      const r = 0.595; const pts = [];
-      for(let i=0;i<=220;i++){
-        const t = i/220 * Math.PI*2;
-        pts.push(new THREE.Vector3(Math.cos(t)*r, 0.222 + 0.002*Math.sin(2*t), Math.sin(t)*r));
-      }
-      const geo = new THREE.BufferGeometry().setFromPoints(pts);
-      const mat = new THREE.LineBasicMaterial({ color:0x9fe3ff, transparent:true, opacity:0.75 });
-      return new THREE.Line(geo, mat);
-    }
-
-    function makeCommissure(centerAngle, halfWidth, label){
-      // Ring sector highlighting commissure region
-      const r=0.64, tube=0.02;
-      const start = centerAngle - halfWidth*0.5, end = centerAngle + halfWidth*0.5;
-      const shape = new THREE.Shape();
-      shape.absarc(0,0,r+tube, start, end, false);
-      const hole = new THREE.Path(); hole.absarc(0,0,r-tube, end, start, true);
-      shape.holes.push(hole);
-      const geo = new THREE.ShapeGeometry(shape, 72);
-      const mat = new THREE.MeshPhysicalMaterial({
-        color: 0xf0d47f,
-        emissive: 0x332000,
-        roughness: 0.44, metalness: 0.35,
-        clearcoat: 0.65, clearcoatRoughness: 0.3
-      });
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.rotation.x = Math.PI/2; mesh.position.y = 0.223;
-      mesh.name = label; mesh.castShadow = true; mesh.receiveShadow = true;
-      return mesh;
-    }
-
-    // ======= Subtle motion =======
-    const motion = { t: 0, pulseAmp: 0.35 };
-    const leafletUniforms = [];
-    function animateLeaflets(dt){
-      motion.t += dt;
-      const a = motion.pulseAmp * 0.0028; // meters
-      const yA = a * Math.sin(motion.t*2.0);
-      const yP = a * Math.sin(motion.t*2.0 + Math.PI);
-      leafletA.position.y = 0.29 + yA;
-      leafletP.position.y = 0.15 + yP;
-
-      // Shader time for micro‑roughness
-      leafletUniforms.forEach(u => u.uTime.value = motion.t);
-
-      // Clearcoat shimmer
-      const cc = 0.62 + 0.1*Math.sin(motion.t*1.6);
-      leafletA.material.clearcoat = cc; leafletP.material.clearcoat = cc;
-    }
-
-    // ======= Overlay (SVG connectors + HTML callouts) =======
-    const pinned = [];
-    function screenXY(vec3){
-      const v = vec3.clone().project(camera);
-      return {
-        x: (v.x * 0.5 + 0.5) * wrap.clientWidth,
-        y: (-v.y * 0.5 + 0.5) * wrap.clientHeight,
-        on: v.z < 1
-      };
-    }
-
-    function addCalloutAt(obj, title, meta){
-      const center = new THREE.Vector3(); obj.getWorldPosition(center);
-      const {x,y} = screenXY(center);
-
-      const box = document.createElement('div'); box.className='callout';
-      const t = document.createElement('div'); t.className='t'; t.textContent = title; box.appendChild(t);
-      if(meta){ const m = document.createElement('div'); m.className='m'; m.textContent = meta; box.appendChild(m); }
-      overlay.appendChild(box);
-
-      const pin = document.createElement('div'); pin.className = 'pin'; overlay.appendChild(pin);
-
-      // connector line via SVG
-      const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      line.setAttribute('stroke', '#7fb6ff'); line.setAttribute('fill','none'); line.setAttribute('stroke-width','1.4');
-      line.setAttribute('opacity','0.85'); hudSVG.appendChild(line);
-
-      pinned.push({ obj, box, pin, line });
-      layoutPinned();
-    }
-
-    function clearOverlay(){
-      overlay.innerHTML = ''; while(hudSVG.firstChild) hudSVG.removeChild(hudSVG.firstChild);
-      pinned.length = 0;
-    }
-
-    function layoutPinned(){
-      pinned.forEach(p=>{
-        const c = new THREE.Vector3(); p.obj.getWorldPosition(c);
-        const s = screenXY(c);
-        // position pin
-        p.pin.style.left = (s.x-5)+'px'; p.pin.style.top = (s.y-5)+'px'; p.pin.style.opacity = s.on ? '1':'0';
-        // position box
-        p.box.style.left = (s.x+12)+'px'; p.box.style.top = (s.y-12)+'px'; p.box.style.opacity = s.on ? '1':'0';
-        // update line (curved)
-        const bx = s.x+8, by = s.y-8;
-        const ex = s.x+140, ey = s.y-50; // end point near box (approx)
-        const cx = (bx+ex)/2, cy = (by+ey)/2 - 20; // control for curve
-        p.line.setAttribute('d', `M ${bx} ${by} Q ${cx} ${cy} ${ex} ${ey}`);
-      });
-    }
-
-    // Seed initial floating labels
-    anchors.forEach(a => addCalloutAt(a.obj, a.title, a.meta));
-
-    // ======= Picking & hover =======
-    const raycaster = new THREE.Raycaster();
-    const mouse = new THREE.Vector2();
-    let hovered = null;
-    const pickables = new Set([annulus, leafletA, leafletP, commAL, commPM, coaptation]);
-
-    function setHovered(obj){
-      if(hovered === obj) return;
-      hovered = obj;
-      outlinePass.selectedObjects = obj ? [obj] : [];
-      kHovered.textContent = obj ? (obj.name || '—') : '—';
-    }
-
-    renderer.domElement.addEventListener('mousemove', (e)=>{
-      const rect = renderer.domElement.getBoundingClientRect();
-      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-    });
-
-    renderer.domElement.addEventListener('click', ()=>{
-      if(!hovered) return;
-      addCalloutAt(hovered, hovered.name, hintFor(hovered));
-      statusEl.textContent = 'Pinned: ' + hovered.name;
-      if(mode.mode==='explore') addScore(2);
-      if(mode.mode==='identify'){
-        if(rootOf(hovered) === mode.expect){ addScore(10); statusEl.textContent = 'Identify ✓'; }
-        else { addScore(-6); statusEl.textContent = 'Identify ✗'; }
-        setTimeout(requestIdentify, 600);
-      }
-    });
-
-    function priority(o){
-      const n = rootOf(o).name || '';
-      if(n.includes('Commissure')) return 0;
-      if(n.includes('Annulus')) return 1;
-      if(n.includes('Leaflet')) return 2;
-      if(n.includes('Coaptation')) return 3;
-      return 4;
-    }
-    function rootOf(o){ while(o.parent && o.parent!==scene && !pickables.has(o)) o=o.parent; return o; }
-
-    function updateHover(){
-      raycaster.setFromCamera(mouse, camera);
-      const hits = raycaster.intersectObjects(Array.from(pickables), true);
-      if(hits.length){
-        hits.sort((a,b)=> priority(a.object)-priority(b.object));
-        setHovered(rootOf(hits[0].object));
-      }else setHovered(null);
-    }
-
-    function hintFor(obj){
-      switch(obj){
-        case annulus: return 'Elliptical, saddle profile; reference for sutures and ring placement.';
-        case leafletA: return 'Broader leaflet; adjacent to LVOT/AMC; higher height.';
-        case leafletP: return 'Scalloped P1–P3; shorter height; often prolapse sites.';
-        case coaptation: return 'Approximation line of leaflets.';
-        default:
-          if(obj && obj.name && obj.name.includes('Commissure')) return 'Leaflet junction (A–P transition).';
-          return '';
-      }
-    }
-
-    // ======= Camera presets =======
-    const tmpV = new THREE.Vector3();
-    function focusObject(obj, dist=2.2, elev=0.7, dur=0.6){
-      obj.getWorldPosition(tmpV);
-      const start = camera.position.clone(), startT = controls.target.clone();
-      const endT = tmpV.clone();
-      const end = tmpV.clone().add(new THREE.Vector3(dist*.3, elev, dist*.5));
-      let t=0; const tween = (dt)=>{ t += dt/dur; const k = Math.min(1, t);
-        const e = easeInOutCubic(k);
-        camera.position.lerpVectors(start, end, e);
-        controls.target.lerpVectors(startT, endT, e);
-        if(k>=1) loopFns.delete(tween);
-      };
-      loopFns.add(tween);
-    }
-    function easeInOutCubic(x){ return x<0.5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3) / 2; }
-
-    document.querySelectorAll('[data-focus]').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const where = btn.getAttribute('data-focus');
-        if(where==='annulus')   focusObject(annulus, 2.0, 0.62);
-        if(where==='anterior')  focusObject(leafletA, 2.2, 0.68);
-        if(where==='posterior') focusObject(leafletP, 2.2, 0.66);
-        if(where==='commAL')    focusObject(commAL, 2.1, 0.6);
-        if(where==='commPM')    focusObject(commPM, 2.1, 0.6);
-        if(where==='reset'){ controls.target.set(0,0.18,0); camera.position.set(0.95,1.05,3.0); }
-        controls.update();
-      });
-    });
-
-    window.addEventListener('keydown', (e)=>{
-      if(e.key==='1') focusObject(annulus, 2.0, 0.62);
-      if(e.key==='2') focusObject(leafletA, 2.2, 0.68);
-      if(e.key==='3') focusObject(leafletP, 2.2, 0.66);
-      if(e.key==='4') focusObject(commAL, 2.1, 0.6);
-      if(e.key==='5') focusObject(commPM, 2.1, 0.6);
-    });
-
-    // ======= Modes & steps =======
-    const mode = { mode:'guided', score:0, expect:null };
-    btnGuide.addEventListener('click', ()=> setMode('guided'));
-    btnExplore.addEventListener('click', ()=> setMode('explore'));
-    btnIdentify.addEventListener('click', ()=> setMode('identify'));
-
-    const steps = [
-      { id:'annulus',  title:'Step 1 — Mitral Annulus',      desc:'Elliptical, saddle‑shaped fibrous ring. Hover to inspect; click to pin a label.', focus: annulus },
-      { id:'anterior', title:'Step 2 — Anterior Leaflet (A)', desc:'Broad leaflet adjacent to the LVOT/AMC. Smooth curved free edge.', focus: leafletA },
-      { id:'posterior',title:'Step 3 — Posterior Leaflet (P)',desc:'Scalloped leaflet (P1–P3) with shorter height.', focus: leafletP },
-      { id:'comm',     title:'Step 4 — Commissures',          desc:'Anterolateral (A1–P1) and posteromedial (A3–P3) junctions of the leaflets.', focus: commAL }
-    ];
-    let stepIndex = 0;
-
-    btnPrev.addEventListener('click', ()=> { stepIndex = Math.max(0, stepIndex-1); renderStep(); });
-    btnNext.addEventListener('click', ()=> { stepIndex = Math.min(steps.length-1, stepIndex+1); renderStep(); });
-
-    function setMode(m){
-      mode.mode = m;
-      btnGuide.dataset.active = (m==='guided')?'1':'0';
-      btnExplore.dataset.active = (m==='explore')?'1':'0';
-      btnIdentify.dataset.active = (m==='identify')?'1':'0';
-      if(m==='guided'){ stepIndex=0; outlinePass.selectedObjects = []; renderStep(); taskEl.textContent = 'Guided tour. Follow the steps.'; statusEl.textContent='Guided'; }
-      if(m==='explore'){ outlinePass.selectedObjects = []; taskEl.textContent = 'Explore freely. Toggle layers and cinematic settings. Click to pin labels.'; statusEl.textContent='Exploring'; }
-      if(m==='identify'){ taskEl.textContent = 'Identify the requested structure (no hints).'; statusEl.textContent='Identify Mode'; requestIdentify(); }
-    }
-
-    function renderStep(){
-      const s = steps[stepIndex];
-      stepBox.innerHTML = `<div class="t">${s.title}</div><div class="d">${s.desc}</div>`;
-      focusObject(s.focus, 2.2, 0.66);
-      outlinePass.selectedObjects = [s.focus];
-      statusEl.textContent = 'Guided: ' + s.title;
-    }
-
-    function requestIdentify(){
-      const candidates = [annulus, leafletA, leafletP, commAL, commPM];
-      const pick = candidates[Math.floor(Math.random()*candidates.length)];
-      mode.expect = pick;
-      // No outline hint; camera cues only
-      focusObject(pick, 2.25, 0.68);
-      taskEl.textContent = 'Identify: ' + pick.name;
-    }
-
-    function addScore(d){ mode.score = Math.max(0, mode.score + d); kScore.textContent = mode.score.toFixed(0); }
-
-    // ======= Layer toggles =======
-    document.getElementById('layers').addEventListener('change', (e)=>{
-      if(!(e.target instanceof HTMLInputElement)) return;
-      const k = e.target.dataset.layer, v = e.target.checked;
-      if(k==='annulus') annulus.visible = v;
-      if(k==='leafletA') leafletA.visible = v;
-      if(k==='leafletP') leafletP.visible = v;
-      if(k==='commissures') commissures.visible = v;
-      if(k==='coaptation') coaptation.visible = v;
-      if(k==='backdrop') backdrop.visible = v;
-      if(k==='rim') rim.visible = v;
-      if(k==='labels'){ if(!v) clearOverlay(); else { clearOverlay(); anchors.forEach(a=> addCalloutAt(a.obj, a.title, a.meta)); } }
-    });
-
-    // ======= Cinematic sliders =======
-    rngExposure.addEventListener('input', ()=> { renderer.toneMappingExposure = parseFloat(rngExposure.value); });
-    rngBloom.addEventListener('input', ()=> { bloomPass.strength = parseFloat(rngBloom.value); });
-    rngSSAO.addEventListener('input', ()=> { ssaoPass.kernelRadius = 8 + 18*parseFloat(rngSSAO.value); ssaoPass.minDistance = 0.0006 + 0.0006*parseFloat(rngSSAO.value); });
-    rngOutline.addEventListener('input', ()=> { outlinePass.edgeThickness = parseFloat(rngOutline.value)/0.016; });
-    rngPulse.addEventListener('input', ()=> { motion.pulseAmp = parseFloat(rngPulse.value); });
-
-    // ======= Performance toggles =======
-    btnPerf.addEventListener('click', ()=>{
-      const r = Math.max(0.75, Math.min(1.25, (renderer.getPixelRatio()||1)*0.8));
-      renderer.setPixelRatio(r);
-      kGPU.textContent = r.toFixed(2)+'x';
-      resizeComposer();
-      statusEl.textContent = 'Performance mode';
-    });
-    btnHQ.addEventListener('click', ()=>{
-      const r = Math.min(2, (renderer.getPixelRatio()||1)*1.25);
-      renderer.setPixelRatio(r);
-      kGPU.textContent = r.toFixed(2)+'x';
-      resizeComposer();
-      statusEl.textContent = 'Hi‑Q mode';
-    });
-
-    // ======= Main loop =======
-    const loopFns = new Set();
-    let last = performance.now();
-    renderer.setAnimationLoop((now)=>{
-      const dt = Math.min(0.033, (now - last)/1000); last = now;
-      loopFns.forEach(fn => fn(dt));
-      animateLeaflets(dt);
-      updateHover();
-      layoutPinned();
-      controls.update();
-      composer.render();
-    });
-
-    // ======= Guided mode default =======
-    setMode('guided');
-    renderStep();
-
-    // ======= Resize =======
-    window.addEventListener('resize', resizeComposer);
-    function resizeComposer(){
-      const w = wrap.clientWidth, h=wrap.clientHeight;
-      camera.aspect = w/h; camera.updateProjectionMatrix();
-      renderer.setSize(w,h);
-      composer.setSize(w,h);
-      outlinePass.setSize(w,h);
-      fxaaPass.material.uniforms['resolution'].value.set(1/(w*renderer.getPixelRatio()), 1/(h*renderer.getPixelRatio()));
-      ssaoPass.setSize(w,h);
-    }
-
-  </script>
+    </footer>
+
+    <script>
+        // Advanced JavaScript System
+        class CardioVisApp {
+            constructor() {
+                this.particles = [];
+                this.stats = [];
+                this.currentDemo = 'heart-model';
+                this.init();
+            }
+
+            init() {
+                this.setupLoadingScreen();
+                this.setupNavigation();
+                this.setupAnimations();
+                this.setupParticles();
+                this.setup3DDemo();
+                this.setupStats();
+                this.setupInteractiveElements();
+                console.log('CardioVis Advanced System Initialized');
+            }
+
+            setupLoadingScreen() {
+                setTimeout(() => {
+                    const loadingScreen = document.getElementById('loadingScreen');
+                    loadingScreen.classList.add('hide');
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                    }, 1000);
+                }, 2000);
+            }
+
+            setupNavigation() {
+                const navbar = document.getElementById('navbar');
+                const logo = document.getElementById('logo');
+
+                window.addEventListener('scroll', () => {
+                    const scrolled = window.pageYOffset > 100;
+                    navbar.classList.toggle('scrolled', scrolled);
+                });
+
+                // Smooth scrolling
+                document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                    anchor.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const target = document.querySelector(anchor.getAttribute('href'));
+                        if (target) {
+                            target.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        }
+                    });
+                });
+
+                // Logo animation
+                logo.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    logo.style.animation = 'pulse 0.6s ease-in-out';
+                    setTimeout(() => {
+                        logo.style.animation = '';
+                    }, 600);
+                });
+            }
+
+            setupAnimations() {
+                const observerOptions = {
+                    threshold: 0.1,
+                    rootMargin: '0px 0px -50px 0px'
+                };
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('animated');
+                            
+                            // Trigger stats animation
+                            if (entry.target.querySelector('.stat-number')) {
+                                this.animateStats(entry.target);
+                            }
+                        }
+                    });
+                }, observerOptions);
+
+                document.querySelectorAll('.animate-on-scroll').forEach(el => {
+                    observer.observe(el);
+                });
+            }
+
+            setupParticles() {
+                const canvas = document.getElementById('particlesCanvas');
+                const ctx = canvas.getContext('2d');
+                
+                const resizeCanvas = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+                
+                resizeCanvas();
+                window.addEventListener('resize', resizeCanvas);
+
+                // Create particles
+                for (let i = 0; i < 50; i++) {
+                    this.particles.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        vx: (Math.random() - 0.5) * 0.5,
+                        vy: (Math.random() - 0.5) * 0.5,
+                        size: Math.random() * 2 + 1,
+                        opacity: Math.random() * 0.5 + 0.3,
+                        hue: Math.random() * 60 + 200 // Blue to cyan range
+                    });
+                }
+
+                const animate = () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    this.particles.forEach((particle, index) => {
+                        // Update position
+                        particle.x += particle.vx;
+                        particle.y += particle.vy;
+                        
+                        // Wrap around edges
+                        if (particle.x < 0) particle.x = canvas.width;
+                        if (particle.x > canvas.width) particle.x = 0;
+                        if (particle.y < 0) particle.y = canvas.height;
+                        if (particle.y > canvas.height) particle.y = 0;
+                        
+                        // Draw particle
+                        ctx.beginPath();
+                        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                        ctx.fillStyle = `hsla(${particle.hue}, 70%, 60%, ${particle.opacity})`;
+                        ctx.fill();
+                        
+                        // Draw connections
+                        this.particles.forEach((otherParticle, otherIndex) => {
+                            if (index !== otherIndex) {
+                                const dx = particle.x - otherParticle.x;
+                                const dy = particle.y - otherParticle.y;
+                                const distance = Math.sqrt(dx * dx + dy * dy);
+                                
+                                if (distance < 100) {
+                                    ctx.beginPath();
+                                    ctx.moveTo(particle.x, particle.y);
+                                    ctx.lineTo(otherParticle.x, otherParticle.y);
+                                    ctx.strokeStyle = `hsla(${particle.hue}, 70%, 60%, ${0.1 * (1 - distance / 100)})`;
+                                    ctx.stroke();
+                                }
+                            }
+                        });
+                    });
+                    
+                    requestAnimationFrame(animate);
+                };
+                
+                animate();
+            }
+
+            setup3DDemo() {
+                const canvas = document.getElementById('heartCanvas');
+                const ctx = canvas.getContext('2d');
+                
+                let rotation = 0;
+                
+                const resizeCanvas = () => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                };
+                
+                resizeCanvas();
+                window.addEventListener('resize', resizeCanvas);
+
+                const drawHeart = () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    const centerX = canvas.width / 2;
+                    const centerY = canvas.height / 2;
+                    const scale = Math.min(canvas.width, canvas.height) * 0.1;
+                    
+                    ctx.save();
+                    ctx.translate(centerX, centerY);
+                    ctx.rotate(rotation);
+                    
+                    // Draw 3D heart shape
+                    ctx.beginPath();
+                    for (let t = 0; t < Math.PI * 2; t += 0.01) {
+                        const x = 16 * Math.pow(Math.sin(t), 3);
+                        const y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+                        
+                        if (t === 0) {
+                            ctx.moveTo(x * scale * 0.05, y * scale * 0.05);
+                        } else {
+                            ctx.lineTo(x * scale * 0.05, y * scale * 0.05);
+                        }
+                    }
+                    
+                    const gradient = ctx.createLinearGradient(-100, -100, 100, 100);
+                    gradient.addColorStop(0, 'hsl(220, 85%, 55%)');
+                    gradient.addColorStop(0.5, 'hsl(200, 100%, 60%)');
+                    gradient.addColorStop(1, 'hsl(340, 85%, 65%)');
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.fill();
+                    
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    
+                    ctx.restore();
+                    
+                    rotation += 0.01;
+                    requestAnimationFrame(drawHeart);
+                };
+                
+                drawHeart();
+
+                // Demo controls
+                const demoButtons = document.querySelectorAll('.demo-button');
+                const demoOverlay = document.getElementById('demoOverlay');
+                
+                demoButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        demoButtons.forEach(b => b.classList.remove('active'));
+                        button.classList.add('active');
+                        
+                        const demo = button.dataset.demo;
+                        this.currentDemo = demo;
+                        
+                        const messages = {
+                            'heart-model': 'Interactive 3D Heart Model - Click and drag to rotate',
+                            'ai-analysis': 'AI Analysis Mode - Real-time surgical guidance',
+                            'surgical-plan': 'Surgical Planning - Digital twin simulation',
+                            'outcomes': 'Outcome Prediction - ML-powered forecasting'
+                        };
+                        
+                        demoOverlay.textContent = messages[demo];
+                        
+                        // Add visual effects based on demo
+                        canvas.style.filter = demo === 'ai-analysis' ? 'hue-rotate(90deg)' : 
+                                           demo === 'surgical-plan' ? 'hue-rotate(180deg)' : 
+                                           demo === 'outcomes' ? 'hue-rotate(270deg)' : 'none';
+                    });
+                });
+            }
+
+            animateStats(container) {
+                const statNumbers = container.querySelectorAll('.stat-number');
+                const progressBars = container.querySelectorAll('.stat-progress-fill');
+                
+                statNumbers.forEach(stat => {
+                    const target = parseInt(stat.dataset.target);
+                    let current = 0;
+                    const increment = target / 100;
+                    const timer = setInterval(() => {
+                        current += increment;
+                        if (current >= target) {
+                            current = target;
+                            clearInterval(timer);
+                        }
+                        
+                        if (target >= 1000000) {
+                            stat.textContent = '$' + (current / 1000000).toFixed(1) + 'M+';
+                        } else if (target >= 1000) {
+                            stat.textContent = (current / 1000).toFixed(0) + 'K+';
+                        } else {
+                            stat.textContent = Math.floor(current) + '+';
+                        }
+                    }, 20);
+                });
+                
+                progressBars.forEach(bar => {
+                    setTimeout(() => {
+                        bar.style.width = bar.dataset.width;
+                    }, 500);
+                });
+            }
+
+            setupStats() {
+                // Real-time stats simulation
+                setInterval(() => {
+                    const statNumbers = document.querySelectorAll('.stat-number');
+                    statNumbers.forEach(stat => {
+                        if (stat.classList.contains('animated')) {
+                            const currentText = stat.textContent;
+                            const matches = currentText.match(/[\d.]+/);
+                            if (matches) {
+                                let value = parseFloat(matches[0]);
+                                const isMillions = currentText.includes('M');
+                                const isThousands = currentText.includes('K');
+                                
+                                // Slight random fluctuation
+                                const change = (Math.random() - 0.5) * 0.1;
+                                value += change;
+                                
+                                if (isMillions) {
+                                    stat.textContent = '$' + value.toFixed(1) + 'M+';
+                                } else if (isThousands) {
+                                    stat.textContent = Math.round(value) + 'K+';
+                                } else {
+                                    stat.textContent = Math.round(value) + '+';
+                                }
+                            }
+                        }
+                    });
+                }, 5000);
+            }
+
+            setupInteractiveElements() {
+                // Advanced button interactions
+                document.querySelectorAll('.btn, .product-card, .team-card').forEach(element => {
+                    element.addEventListener('mouseenter', function() {
+                        this.style.transform = this.classList.contains('btn') ? 
+                            'translateY(-2px) scale(1.05)' : 
+                            'translateY(-5px) scale(1.02)';
+                    });
+                    
+                    element.addEventListener('mouseleave', function() {
+                        this.style.transform = 'translateY(0) scale(1)';
+                    });
+                });
+
+                // Ripple effect for buttons
+                document.querySelectorAll('.btn').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        const ripple = document.createElement('span');
+                        const rect = this.getBoundingClientRect();
+                        const size = Math.max(rect.width, rect.height);
+                        const x = e.clientX - rect.left - size / 2;
+                        const y = e.clientY - rect.top - size / 2;
+                        
+                        ripple.style.cssText = `
+                            position: absolute;
+                            width: ${size}px;
+                            height: ${size}px;
+                            left: ${x}px;
+                            top: ${y}px;
+                            background: rgba(255, 255, 255, 0.3);
+                            border-radius: 50%;
+                            transform: scale(0);
+                            animation: ripple 0.6s ease-out;
+                            pointer-events: none;
+                            z-index: 10;
+                        `;
+                        
+                        this.appendChild(ripple);
+                        setTimeout(() => ripple.remove(), 600);
+                    });
+                });
+
+                // Dynamic CSS animation injection
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes ripple {
+                        to {
+                            transform: scale(4);
+                            opacity: 0;
+                        }
+                    }
+                    @keyframes dataFlow {
+                        0% { transform: translateX(-100%); }
+                        100% { transform: translateX(100%); }
+                    }
+                    .data-flow::after {
+                        content: '';
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent);
+                        animation: dataFlow 2s ease-in-out infinite;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            new CardioVisApp();
+        });
+
+        // Performance monitoring
+        if ('performance' in window) {
+            window.addEventListener('load', () => {
+                const perfData = performance.getEntriesByType('navigation')[0];
+                console.log('Advanced CardioVis System Performance:', {
+                    'Page Load Time': Math.round(perfData.loadEventEnd - perfData.fetchStart) + 'ms',
+                    'DOM Content Loaded': Math.round(perfData.domContentLoadedEventEnd - perfData.fetchStart) + 'ms',
+                    'First Paint': Math.round(performance.getEntriesByType('paint')[0]?.startTime) + 'ms'
+                });
+            });
+        }
+    </script>
 </body>
 </html>
